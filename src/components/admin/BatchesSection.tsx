@@ -22,7 +22,7 @@ interface Batch {
   endDate: string;
   fee?: string;
   courseId: string;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'completed';
   createdAt: string;
 }
 
@@ -46,7 +46,7 @@ export function BatchesSection() {
     endDate: '',
     fee: '',
     courseId: '',
-    status: 'active' as 'active' | 'inactive',
+    status: 'active' as 'active' | 'inactive' | 'completed',
   });
 
   useEffect(() => {
@@ -170,6 +170,19 @@ export function BatchesSection() {
     return course ? course.name : 'Unknown Course';
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'inactive':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      case 'completed':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -280,13 +293,14 @@ export function BatchesSection() {
                 </div>
                 <div>
                   <Label htmlFor="status" className="text-foreground">Status</Label>
-                  <Select value={formData.status} onValueChange={(value: 'active' | 'inactive') => setFormData({...formData, status: value})}>
+                  <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'completed') => setFormData({...formData, status: value})}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -357,11 +371,7 @@ export function BatchesSection() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      batch.status === 'active' 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
-                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                    }`}>
+                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(batch.status)}`}>
                       {batch.status}
                     </span>
                   </TableCell>
