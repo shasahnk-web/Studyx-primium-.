@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2, Video } from 'lucide-react';
 import { toast } from 'sonner';
+import { getStorageData, setStorageData } from '@/utils/localStorage';
 
 interface Lecture {
   id: string;
@@ -43,13 +44,32 @@ export function LecturesSection() {
   }, []);
 
   const loadLectures = () => {
-    const savedLectures = JSON.parse(localStorage.getItem('studyx_lectures') || '[]');
+    const savedLectures = getStorageData<Lecture>('lectures');
     setLectures(savedLectures);
+    console.log('Loaded lectures:', savedLectures);
   };
 
   const loadBatches = () => {
-    const savedBatches = JSON.parse(localStorage.getItem('studyx_batches') || '[]');
+    const savedBatches = getStorageData('batches');
     setBatches(savedBatches);
+    console.log('Loaded batches:', savedBatches);
+  };
+
+  const saveLectures = (updatedLectures: Lecture[]) => {
+    const success = setStorageData('lectures', updatedLectures);
+    if (success) {
+      setLectures(updatedLectures);
+      console.log('Lectures saved successfully:', updatedLectures);
+      
+      // Trigger storage event for cross-component updates
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'studyx_lectures',
+        newValue: JSON.stringify(updatedLectures),
+        storageArea: localStorage
+      }));
+    } else {
+      toast.error('Failed to save lectures. Please try again.');
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,6 +86,8 @@ export function LecturesSection() {
       createdAt: editingLecture ? editingLecture.createdAt : new Date().toISOString(),
     };
 
+    console.log('Saving lecture:', newLecture);
+
     let updatedLectures;
     if (editingLecture) {
       updatedLectures = lectures.map(lecture => 
@@ -77,9 +99,7 @@ export function LecturesSection() {
       toast.success('Lecture added successfully');
     }
 
-    setLectures(updatedLectures);
-    localStorage.setItem('studyx_lectures', JSON.stringify(updatedLectures));
-    
+    saveLectures(updatedLectures);
     resetForm();
   };
 
@@ -112,8 +132,7 @@ export function LecturesSection() {
   const handleDelete = (id: string) => {
     if (confirm('Are you sure you want to delete this lecture?')) {
       const updatedLectures = lectures.filter(lecture => lecture.id !== id);
-      setLectures(updatedLectures);
-      localStorage.setItem('studyx_lectures', JSON.stringify(updatedLectures));
+      saveLectures(updatedLectures);
       toast.success('Lecture deleted successfully');
     }
   };

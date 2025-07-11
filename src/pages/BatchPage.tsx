@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,10 +65,26 @@ const BatchPage = () => {
     
     // Set up storage listener for real-time updates
     const removeListener = addStorageListener(() => {
+      console.log('Storage changed, reloading batch data...');
       loadBatchData();
     });
 
-    return removeListener;
+    // Also listen for the custom storage events
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'studyx_lectures' || e.key === 'studyx_batches' || 
+          e.key === 'studyx_notes' || e.key === 'studyx_dpps' || 
+          e.key === 'studyx_live_lectures') {
+        console.log('Custom storage event detected, reloading...');
+        loadBatchData();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      removeListener();
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [batchId]);
 
   const loadBatchData = () => {
@@ -77,9 +92,14 @@ const BatchPage = () => {
       setIsLoading(true);
       setError(null);
 
+      console.log('Loading batch data for batchId:', batchId);
+
       // Load batch data
       const allBatches = getStorageData<Batch>('batches');
       const currentBatch = allBatches.find((b: Batch) => b.id === batchId);
+      
+      console.log('All batches:', allBatches);
+      console.log('Current batch:', currentBatch);
       
       if (!currentBatch) {
         setError('Batch not found');
@@ -91,18 +111,23 @@ const BatchPage = () => {
       // Load content for this batch
       const allLectures = getStorageData<Lecture>('lectures');
       const batchLectures = allLectures.filter((lecture: Lecture) => lecture.batchId === batchId);
+      console.log('All lectures:', allLectures);
+      console.log('Batch lectures:', batchLectures);
       setLectures(batchLectures);
 
       const allNotes = getStorageData<Note>('notes');
       const batchNotes = allNotes.filter((note: Note) => note.batchId === batchId);
+      console.log('Batch notes:', batchNotes);
       setNotes(batchNotes);
 
       const allDPPs = getStorageData<DPP>('dpps');
       const batchDPPs = allDPPs.filter((dpp: DPP) => dpp.batchId === batchId);
+      console.log('Batch DPPs:', batchDPPs);
       setDPPs(batchDPPs);
 
       const allLiveLectures = getStorageData<LiveLecture>('liveLectures');
       const batchLiveLectures = allLiveLectures.filter((live: LiveLecture) => live.batchId === batchId);
+      console.log('Batch live lectures:', batchLiveLectures);
       setLiveLectures(batchLiveLectures);
 
     } catch (error) {
