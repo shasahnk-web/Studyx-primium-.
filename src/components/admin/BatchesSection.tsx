@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,21 +9,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2, Users, Calendar, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
-import { getStorageData, setStorageData } from '@/utils/localStorage';
-
-interface Batch {
-  id: string;
-  name: string;
-  description: string;
-  subjects: string[];
-  image?: string;
-  startDate: string;
-  endDate: string;
-  fee?: string;
-  courseId: string;
-  status: 'active' | 'inactive';
-  createdAt: string;
-}
+import { 
+  fetchBatches, 
+  createBatch, 
+  updateBatch, 
+  deleteBatch, 
+  subscribeToBatches,
+  type Batch 
+} from '@/services/supabaseService';
 
 const subjects = ['Maths', 'Chemistry', 'Biology', 'Physics', 'Hindi', 'English', 'IT', 'Sanskrit', 'SST'];
 const courses = [
@@ -37,68 +29,94 @@ export function BatchesSection() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingBatch, setEditingBatch] = useState<Batch | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     subjects: [] as string[],
-    image: '',
-    startDate: '',
-    endDate: '',
+    image_url: '',
+    start_date: '',
+    end_date: '',
     fee: '',
-    courseId: '',
-    status: 'active' as 'active' | 'inactive',
+    course_id: '',
+    status: 'active' as string,
   });
 
   useEffect(() => {
     loadBatches();
+    
+    // Set up real-time subscription
+    const unsubscribe = subscribeToBatches((updatedBatches) => {
+      console.log('📡 Batches updated via subscription:', updatedBatches.length);
+      setBatches(updatedBatches);
+    });
+
+    return unsubscribe;
   }, []);
 
-  const loadBatches = () => {
-    const savedBatches = getStorageData<Batch>('batches');
-    setBatches(savedBatches);
-  };
-
-  const saveBatches = (updatedBatches: Batch[]) => {
-    const success = setStorageData('batches', updatedBatches);
-    if (success) {
-      setBatches(updatedBatches);
-    } else {
-      toast.error('Failed to save batches. Please try again.');
+  const loadBatches = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchBatches();
+      setBatches(data);
+    } catch (error) {
+      console.error('Error loading batches:', error);
+      toast.error('Failed to load batches');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    if (!formData.name || !formData.description || !formData.courseId || formData.subjects.length === 0) {
-      toast.error('Please fill in all required fields');
-      return;
+    try {
+      if (!formData.name || !formData.description || !formData.course_id || formData.subjects.length === 0) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+
+      if (formData.start_date && formData.end_date && new Date(formData.end_date) <= new Date(formData.start_date)) {
+        toast.error('End date must be after start date');
+        return;
+      }
+
+      const batchData = {
+        name: formData.name,
+        description: formData.description,
+        subjects: formData.subjects,
+        image_url: formData.image_url || null,
+        start_date: formData.start_date || null,
+        end_date: formData.end_date || null,
+        fee: formData.fee ? parseInt(formData.fee) : null,
+        course_id: formData.course_id,
+        status: formData.status,
+      };
+
+      if (editingBatch) {
+        const updated = await updateBatch(editingBatch.id, batchData);
+        if (updated) {
+          setBatches(prev => prev.map(batch => 
+            batch.id === editingBatch.id ? updated : batch
+          ));
+        }
+      } else {
+        const created = await createBatch(batchData);
+        if (created) {
+          setBatches(prev => [created, ...prev]);
+        }
+      }
+
+      if (editingBatch || formData.name) {
+        resetForm();
+      }
+    } catch (error) {
+      console.error('Error submitting batch:', error);
+      toast.error('Failed to save batch');
+    } finally {
+      setIsLoading(false);
     }
-
-    if (new Date(formData.endDate) <= new Date(formData.startDate)) {
-      toast.error('End date must be after start date');
-      return;
-    }
-
-    const newBatch: Batch = {
-      id: editingBatch ? editingBatch.id : Date.now().toString(),
-      ...formData,
-      createdAt: editingBatch ? editingBatch.createdAt : new Date().toISOString(),
-    };
-
-    let updatedBatches;
-    if (editingBatch) {
-      updatedBatches = batches.map(batch => 
-        batch.id === editingBatch.id ? newBatch : batch
-      );
-      toast.success('Batch updated successfully');
-    } else {
-      updatedBatches = [...batches, newBatch];
-      toast.success('Batch added successfully');
-    }
-
-    saveBatches(updatedBatches);
-    resetForm();
   };
 
   const resetForm = () => {
@@ -106,11 +124,11 @@ export function BatchesSection() {
       name: '',
       description: '',
       subjects: [],
-      image: '',
-      startDate: '',
-      endDate: '',
+      image_url: '',
+      start_date: '',
+      end_date: '',
       fee: '',
-      courseId: '',
+      course_id: '',
       status: 'active',
     });
     setShowForm(false);
@@ -120,39 +138,25 @@ export function BatchesSection() {
   const handleEdit = (batch: Batch) => {
     setFormData({
       name: batch.name,
-      description: batch.description,
-      subjects: batch.subjects,
-      image: batch.image || '',
-      startDate: batch.startDate,
-      endDate: batch.endDate,
-      fee: batch.fee || '',
-      courseId: batch.courseId,
-      status: batch.status,
+      description: batch.description || '',
+      subjects: batch.subjects || [],
+      image_url: batch.image_url || '',
+      start_date: batch.start_date || '',
+      end_date: batch.end_date || '',
+      fee: batch.fee ? batch.fee.toString() : '',
+      course_id: batch.course_id || '',
+      status: batch.status || 'active',
     });
     setEditingBatch(batch);
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this batch? This will also remove all associated lectures, notes, and DPPs.')) {
-      // Remove batch
-      const updatedBatches = batches.filter(batch => batch.id !== id);
-      saveBatches(updatedBatches);
-
-      // Remove associated content
-      const lectures = getStorageData('lectures');
-      const filteredLectures = lectures.filter((item: any) => item.batchId !== id);
-      setStorageData('lectures', filteredLectures);
-
-      const notes = getStorageData('notes');
-      const filteredNotes = notes.filter((item: any) => item.batchId !== id);
-      setStorageData('notes', filteredNotes);
-
-      const dpps = getStorageData('dpps');
-      const filteredDpps = dpps.filter((item: any) => item.batchId !== id);
-      setStorageData('dpps', filteredDpps);
-
-      toast.success('Batch and associated content deleted successfully');
+      const success = await deleteBatch(id);
+      if (success) {
+        setBatches(prev => prev.filter(batch => batch.id !== id));
+      }
     }
   };
 
@@ -169,6 +173,17 @@ export function BatchesSection() {
     const course = courses.find(c => c.id === courseId);
     return course ? course.name : 'Unknown Course';
   };
+
+  if (isLoading && batches.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <span className="ml-2 text-muted-foreground">Loading batches...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -203,7 +218,7 @@ export function BatchesSection() {
                 </div>
                 <div>
                   <Label htmlFor="course" className="text-foreground">Course *</Label>
-                  <Select value={formData.courseId} onValueChange={(value) => setFormData({...formData, courseId: value})}>
+                  <Select value={formData.course_id} onValueChange={(value) => setFormData({...formData, course_id: value})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select course" />
                     </SelectTrigger>
@@ -246,22 +261,22 @@ export function BatchesSection() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="startDate" className="text-foreground">Start Date *</Label>
+                  <Label htmlFor="start_date" className="text-foreground">Start Date *</Label>
                   <Input
-                    id="startDate"
+                    id="start_date"
                     type="date"
-                    value={formData.startDate}
-                    onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                    value={formData.start_date}
+                    onChange={(e) => setFormData({...formData, start_date: e.target.value})}
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="endDate" className="text-foreground">End Date *</Label>
+                  <Label htmlFor="end_date" className="text-foreground">End Date *</Label>
                   <Input
-                    id="endDate"
+                    id="end_date"
                     type="date"
-                    value={formData.endDate}
-                    onChange={(e) => setFormData({...formData, endDate: e.target.value})}
+                    value={formData.end_date}
+                    onChange={(e) => setFormData({...formData, end_date: e.target.value})}
                     required
                   />
                 </div>
@@ -293,18 +308,18 @@ export function BatchesSection() {
               </div>
 
               <div>
-                <Label htmlFor="image" className="text-foreground">Image URL (Optional)</Label>
+                <Label htmlFor="image_url" className="text-foreground">Image URL (Optional)</Label>
                 <Input
-                  id="image"
-                  value={formData.image}
-                  onChange={(e) => setFormData({...formData, image: e.target.value})}
+                  id="image_url"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({...formData, image_url: e.target.value})}
                   placeholder="Enter image URL"
                 />
               </div>
 
               <div className="flex space-x-2">
-                <Button type="submit">
-                  {editingBatch ? 'Update Batch' : 'Add Batch'}
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? 'Saving...' : (editingBatch ? 'Update Batch' : 'Add Batch')}
                 </Button>
                 <Button type="button" variant="outline" onClick={resetForm}>
                   Cancel
@@ -335,25 +350,29 @@ export function BatchesSection() {
               {batches.map((batch) => (
                 <TableRow key={batch.id}>
                   <TableCell className="text-foreground font-medium">{batch.name}</TableCell>
-                  <TableCell className="text-foreground">{getCourseName(batch.courseId)}</TableCell>
+                  <TableCell className="text-foreground">{getCourseName(batch.course_id || '')}</TableCell>
                   <TableCell className="text-foreground">
                     <div className="flex flex-wrap gap-1">
-                      {batch.subjects.slice(0, 2).map(subject => (
+                      {(batch.subjects || []).slice(0, 2).map(subject => (
                         <span key={subject} className="bg-primary/10 text-primary px-2 py-1 rounded text-xs">
                           {subject}
                         </span>
                       ))}
-                      {batch.subjects.length > 2 && (
+                      {(batch.subjects || []).length > 2 && (
                         <span className="text-xs text-muted-foreground">
-                          +{batch.subjects.length - 2} more
+                          +{(batch.subjects || []).length - 2} more
                         </span>
                       )}
                     </div>
                   </TableCell>
                   <TableCell className="text-foreground">
                     <div className="text-sm">
-                      <div>{new Date(batch.startDate).toLocaleDateString()}</div>
-                      <div className="text-muted-foreground">to {new Date(batch.endDate).toLocaleDateString()}</div>
+                      {batch.start_date && batch.end_date && (
+                        <>
+                          <div>{new Date(batch.start_date).toLocaleDateString()}</div>
+                          <div className="text-muted-foreground">to {new Date(batch.end_date).toLocaleDateString()}</div>
+                        </>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>

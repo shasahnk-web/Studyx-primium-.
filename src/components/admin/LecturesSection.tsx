@@ -9,59 +9,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2, Video, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { getStorageData, setStorageData } from '@/utils/localStorage';
-
-interface Lecture {
-  id: string;
-  title: string;
-  description: string;
-  videoUrl: string;
-  subject: string;
-  topic: string;
-  batchId: string;
-  createdAt: string;
-}
-
-interface Batch {
-  id: string;
-  name: string;
-  subjects: string[];
-}
+import { 
+  fetchLectures, 
+  createLecture, 
+  updateLecture, 
+  deleteLecture,
+  fetchBatches,
+  subscribeToLectures,
+  type Lecture,
+  type Batch 
+} from '@/services/supabaseService';
 
 const subjects = ['Maths', 'Chemistry', 'Biology', 'Physics', 'Hindi', 'English', 'IT', 'Sanskrit', 'SST'];
-
-// Data validation schema
-const validateLectureData = (data: any): { isValid: boolean; errors: string[] } => {
-  const errors: string[] = [];
-  
-  if (!data.title || data.title.trim().length === 0) {
-    errors.push('Title is required');
-  }
-  
-  if (!data.videoUrl || data.videoUrl.trim().length === 0) {
-    errors.push('Video URL is required');
-  } else {
-    // Basic URL validation
-    try {
-      new URL(data.videoUrl);
-    } catch {
-      errors.push('Valid video URL is required');
-    }
-  }
-  
-  if (!data.subject || data.subject.trim().length === 0) {
-    errors.push('Subject is required');
-  }
-  
-  if (!data.batchId || data.batchId.trim().length === 0) {
-    errors.push('Batch selection is required');
-  }
-  
-  return {
-    isValid: errors.length === 0,
-    errors
-  };
-};
 
 export function LecturesSection() {
   const [lectures, setLectures] = useState<Lecture[]>([]);
@@ -72,66 +31,47 @@ export function LecturesSection() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    videoUrl: '',
+    video_url: '',
     subject: '',
     topic: '',
-    batchId: '',
+    batch_id: '',
+    course_id: '',
   });
 
   useEffect(() => {
     loadData();
+    
+    // Set up real-time subscription for lectures
+    const unsubscribe = subscribeToLectures((updatedLectures) => {
+      console.log('📡 Lectures updated via subscription:', updatedLectures.length);
+      setLectures(updatedLectures);
+    });
+
+    return unsubscribe;
   }, []);
 
-  const loadData = () => {
+  const loadData = async () => {
+    setIsLoading(true);
     try {
-      console.log('Loading lectures and batches data...');
+      console.log('🔄 Loading lectures and batches data...');
       
-      const savedLectures = getStorageData<Lecture>('lectures');
-      const savedBatches = getStorageData<Batch>('batches');
+      const [lecturesData, batchesData] = await Promise.all([
+        fetchLectures(),
+        fetchBatches()
+      ]);
       
-      console.log('Loaded lectures from storage:', savedLectures);
-      console.log('Loaded batches from storage:', savedBatches);
+      console.log('✅ Loaded data:', {
+        lectures: lecturesData.length,
+        batches: batchesData.length
+      });
       
-      setLectures(savedLectures);
-      setBatches(savedBatches);
+      setLectures(lecturesData);
+      setBatches(batchesData);
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('❌ Error loading data:', error);
       toast.error('Failed to load data. Please refresh the page.');
-    }
-  };
-
-  const saveLectureData = (updatedLectures: Lecture[]) => {
-    try {
-      console.log('Saving lectures to storage:', updatedLectures);
-      
-      const success = setStorageData('lectures', updatedLectures);
-      
-      if (success) {
-        setLectures(updatedLectures);
-        console.log('Lectures saved successfully');
-        
-        // Trigger storage event for cross-component updates
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: 'studyx_lectures',
-          newValue: JSON.stringify(updatedLectures),
-          storageArea: localStorage
-        }));
-        
-        // Also dispatch a custom event for immediate updates
-        window.dispatchEvent(new CustomEvent('lecturesUpdated', {
-          detail: { lectures: updatedLectures }
-        }));
-        
-        return true;
-      } else {
-        console.error('Failed to save lectures to localStorage');
-        toast.error('Failed to save lecture. Please try again.');
-        return false;
-      }
-    } catch (error) {
-      console.error('Error saving lectures:', error);
-      toast.error('Failed to save lecture. Please try again.');
-      return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -140,64 +80,78 @@ export function LecturesSection() {
     setIsLoading(true);
     
     try {
-      // Validate form data
-      const validation = validateLectureData(formData);
-      
-      if (!validation.isValid) {
-        validation.errors.forEach(error => toast.error(error));
+      console.log('🔄 Submitting lecture form:', formData);
+
+      // Validate required fields
+      if (!formData.title.trim()) {
+        toast.error('Title is required');
+        return;
+      }
+      if (!formData.video_url.trim()) {
+        toast.error('Video URL is required');
+        return;
+      }
+      if (!formData.subject) {
+        toast.error('Subject is required');
+        return;
+      }
+      if (!formData.batch_id) {
+        toast.error('Batch selection is required');
         return;
       }
 
-      // Verify batch exists and subject is valid
-      const selectedBatch = batches.find(batch => batch.id === formData.batchId);
+      // Validate URL format
+      try {
+        new URL(formData.video_url);
+      } catch {
+        toast.error('Please enter a valid video URL');
+        return;
+      }
+
+      // Verify batch exists and get course_id
+      const selectedBatch = batches.find(batch => batch.id === formData.batch_id);
       if (!selectedBatch) {
         toast.error('Selected batch not found');
         return;
       }
 
       // Verify subject exists in batch
-      const normalizedSubject = formData.subject.toLowerCase().trim();
-      const batchHasSubject = selectedBatch.subjects.some(batchSubject => 
-        batchSubject.toLowerCase().trim() === normalizedSubject
-      );
-
-      if (!batchHasSubject) {
-        console.warn(`Subject "${formData.subject}" not found in batch subjects:`, selectedBatch.subjects);
-        // Still allow it but log warning
+      const batchSubjects = selectedBatch.subjects || [];
+      if (!batchSubjects.includes(formData.subject)) {
+        console.warn(`Subject "${formData.subject}" not in batch subjects:`, batchSubjects);
+        // Allow it but warn user
+        toast.warning(`Subject "${formData.subject}" is not in the selected batch's subjects list`);
       }
 
-      const newLecture: Lecture = {
-        id: editingLecture ? editingLecture.id : Date.now().toString(),
+      const lectureData = {
         title: formData.title.trim(),
-        description: formData.description.trim(),
-        videoUrl: formData.videoUrl.trim(),
+        description: formData.description.trim() || null,
+        video_url: formData.video_url.trim(),
         subject: formData.subject,
-        topic: formData.topic.trim(),
-        batchId: formData.batchId,
-        createdAt: editingLecture ? editingLecture.createdAt : new Date().toISOString(),
+        topic: formData.topic.trim() || null,
+        batch_id: formData.batch_id,
+        course_id: selectedBatch.course_id,
       };
 
-      console.log('Creating/updating lecture:', newLecture);
+      console.log('📝 Lecture data to save:', lectureData);
 
-      let updatedLectures;
       if (editingLecture) {
-        updatedLectures = lectures.map(lecture => 
-          lecture.id === editingLecture.id ? newLecture : lecture
-        );
-        console.log('Updated existing lecture');
+        const updated = await updateLecture(editingLecture.id, lectureData);
+        if (updated) {
+          setLectures(prev => prev.map(lecture => 
+            lecture.id === editingLecture.id ? updated : lecture
+          ));
+          resetForm();
+        }
       } else {
-        updatedLectures = [...lectures, newLecture];
-        console.log('Added new lecture');
-      }
-
-      const saveSuccess = saveLectureData(updatedLectures);
-      
-      if (saveSuccess) {
-        toast.success(editingLecture ? 'Lecture updated successfully' : 'Lecture added successfully');
-        resetForm();
+        const created = await createLecture(lectureData);
+        if (created) {
+          setLectures(prev => [created, ...prev]);
+          resetForm();
+        }
       }
     } catch (error) {
-      console.error('Error submitting lecture:', error);
+      console.error('❌ Error submitting lecture:', error);
       toast.error('An error occurred while saving the lecture');
     } finally {
       setIsLoading(false);
@@ -208,37 +162,38 @@ export function LecturesSection() {
     setFormData({
       title: '',
       description: '',
-      videoUrl: '',
+      video_url: '',
       subject: '',
       topic: '',
-      batchId: '',
+      batch_id: '',
+      course_id: '',
     });
     setShowForm(false);
     setEditingLecture(null);
   };
 
   const handleEdit = (lecture: Lecture) => {
-    console.log('Editing lecture:', lecture);
+    console.log('✏️ Editing lecture:', lecture);
     setFormData({
       title: lecture.title,
-      description: lecture.description,
-      videoUrl: lecture.videoUrl,
-      subject: lecture.subject,
-      topic: lecture.topic,
-      batchId: lecture.batchId,
+      description: lecture.description || '',
+      video_url: lecture.video_url,
+      subject: lecture.subject || '',
+      topic: lecture.topic || '',
+      batch_id: lecture.batch_id || '',
+      course_id: lecture.course_id || '',
     });
     setEditingLecture(lecture);
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this lecture?')) {
-      console.log('Deleting lecture with ID:', id);
-      const updatedLectures = lectures.filter(lecture => lecture.id !== id);
-      const success = saveLectureData(updatedLectures);
+      console.log('🗑️ Deleting lecture with ID:', id);
+      const success = await deleteLecture(id);
       
       if (success) {
-        toast.success('Lecture deleted successfully');
+        setLectures(prev => prev.filter(lecture => lecture.id !== id));
       }
     }
   };
@@ -250,11 +205,22 @@ export function LecturesSection() {
 
   // Get available subjects for selected batch
   const getAvailableSubjects = () => {
-    if (!formData.batchId) return subjects;
+    if (!formData.batch_id) return subjects;
     
-    const selectedBatch = batches.find(batch => batch.id === formData.batchId);
-    return selectedBatch ? selectedBatch.subjects : subjects;
+    const selectedBatch = batches.find(batch => batch.id === formData.batch_id);
+    return selectedBatch?.subjects || subjects;
   };
+
+  if (isLoading && lectures.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <span className="ml-2 text-muted-foreground">Loading lectures...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -290,8 +256,8 @@ export function LecturesSection() {
                 <div>
                   <Label htmlFor="batch" className="text-foreground">Batch *</Label>
                   <Select 
-                    value={formData.batchId} 
-                    onValueChange={(value) => setFormData({...formData, batchId: value, subject: ''})}
+                    value={formData.batch_id} 
+                    onValueChange={(value) => setFormData({...formData, batch_id: value, subject: ''})}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select batch first" />
@@ -311,10 +277,10 @@ export function LecturesSection() {
                   <Select 
                     value={formData.subject} 
                     onValueChange={(value) => setFormData({...formData, subject: value})}
-                    disabled={!formData.batchId}
+                    disabled={!formData.batch_id}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder={formData.batchId ? "Select subject" : "Select batch first"} />
+                      <SelectValue placeholder={formData.batch_id ? "Select subject" : "Select batch first"} />
                     </SelectTrigger>
                     <SelectContent>
                       {getAvailableSubjects().map(subject => (
@@ -322,7 +288,7 @@ export function LecturesSection() {
                       ))}
                     </SelectContent>
                   </Select>
-                  {formData.batchId && (
+                  {formData.batch_id && (
                     <p className="text-sm text-muted-foreground mt-1">
                       Available subjects for selected batch
                     </p>
@@ -340,11 +306,11 @@ export function LecturesSection() {
               </div>
 
               <div>
-                <Label htmlFor="videoUrl" className="text-foreground">Video URL *</Label>
+                <Label htmlFor="video_url" className="text-foreground">Video URL *</Label>
                 <Input
-                  id="videoUrl"
-                  value={formData.videoUrl}
-                  onChange={(e) => setFormData({...formData, videoUrl: e.target.value})}
+                  id="video_url"
+                  value={formData.video_url}
+                  onChange={(e) => setFormData({...formData, video_url: e.target.value})}
                   placeholder="YouTube, Vimeo, Google Drive link"
                   required
                 />
@@ -401,7 +367,7 @@ export function LecturesSection() {
                     <TableCell className="text-foreground font-medium">{lecture.title}</TableCell>
                     <TableCell className="text-foreground">{lecture.subject}</TableCell>
                     <TableCell className="text-foreground">{lecture.topic || 'N/A'}</TableCell>
-                    <TableCell className="text-foreground">{getBatchName(lecture.batchId)}</TableCell>
+                    <TableCell className="text-foreground">{getBatchName(lecture.batch_id || '')}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button size="sm" variant="outline" onClick={() => handleEdit(lecture)}>

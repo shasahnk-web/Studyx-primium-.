@@ -172,31 +172,37 @@ export type Database = {
       lectures: {
         Row: {
           batch_id: string | null
+          course_id: string | null
           created_at: string | null
           description: string | null
           id: string
           subject: string | null
           title: string
+          topic: string | null
           updated_at: string | null
           video_url: string
         }
         Insert: {
           batch_id?: string | null
+          course_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           subject?: string | null
           title: string
+          topic?: string | null
           updated_at?: string | null
           video_url: string
         }
         Update: {
           batch_id?: string | null
+          course_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           subject?: string | null
           title?: string
+          topic?: string | null
           updated_at?: string | null
           video_url?: string
         }

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,49 +6,29 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ArrowLeft, PlayCircle, FileText, BookOpen, Download, AlertCircle, Video } from 'lucide-react';
-import { getStorageData, addStorageListener, debugLocalStorage } from '@/utils/localStorage';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  fetchBatches, 
+  fetchLectures, 
+  fetchNotes, 
+  fetchDPPs,
+  type Batch,
+  type Lecture,
+  type Note,
+  type DPP 
+} from '@/services/supabaseService';
 
-interface Batch {
-  id: string;
-  name: string;
-  description: string;
-  subjects: string[];
-  image?: string;
-  startDate: string;
-  endDate: string;
-  fee?: string;
-  courseId: string;
-}
-
-interface ContentItem {
+interface LiveLecture {
   id: string;
   title: string;
   description?: string;
-  url: string;
+  liveUrl: string;
   subject: string;
   batchId: string;
-  createdAt: string;
-}
-
-interface Lecture extends ContentItem {
-  videoUrl: string;
-  topic?: string;
-}
-
-interface Note extends ContentItem {
-  pdfUrl: string;
-}
-
-interface DPP extends ContentItem {
-  pdfUrl: string;
-}
-
-interface LiveLecture extends ContentItem {
-  liveUrl: string;
   scheduledDate: string;
   scheduledTime: string;
   status: 'upcoming' | 'live' | 'completed';
+  createdAt: string;
 }
 
 const BatchPage = () => {
@@ -64,73 +45,57 @@ const BatchPage = () => {
 
   useEffect(() => {
     loadBatchData();
-    
-    // Debug localStorage on mount
-    debugLocalStorage();
-    
-    // Set up storage listener for real-time updates
-    const removeListener = addStorageListener(() => {
-      console.log('Storage changed, reloading batch data...');
-      loadBatchData();
-    });
-
-    return () => {
-      removeListener();
-    };
   }, [batchId]);
 
-  const loadBatchData = () => {
+  const loadBatchData = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      console.log('=== Loading batch data ===');
-      console.log('Target batchId:', batchId);
+      console.log('🔄 Loading batch data for ID:', batchId);
 
-      // Load batch data
-      const allBatches = getStorageData<Batch>('batches');
-      const currentBatch = allBatches.find((b: Batch) => b.id === batchId);
-      
-      console.log('All batches loaded:', allBatches.length);
-      console.log('Current batch found:', currentBatch ? 'Yes' : 'No');
-      
-      if (!currentBatch) {
-        console.error('Batch not found with ID:', batchId);
-        setError('Batch not found');
-        setBatch(null);
-      } else {
-        console.log('Batch details:', currentBatch);
-        setBatch(currentBatch);
+      if (!batchId) {
+        setError('No batch ID provided');
+        return;
       }
 
-      // Load content for this batch
-      const allLectures = getStorageData<Lecture>('lectures');
-      const batchLectures = allLectures.filter((lecture: Lecture) => {
-        const matches = lecture.batchId === batchId;
-        console.log(`Lecture "${lecture.title}" - batchId: ${lecture.batchId}, matches: ${matches}`);
-        return matches;
-      });
+      // Load batch data
+      const allBatches = await fetchBatches();
+      const currentBatch = allBatches.find((b: Batch) => b.id === batchId);
       
-      console.log(`Found ${batchLectures.length} lectures for batch ${batchId}`);
-      setLectures(batchLectures);
+      console.log('📊 All batches loaded:', allBatches.length);
+      console.log('🎯 Current batch found:', currentBatch ? 'Yes' : 'No');
+      
+      if (!currentBatch) {
+        console.error('❌ Batch not found with ID:', batchId);
+        setError('Batch not found');
+        setBatch(null);
+        return;
+      }
 
-      const allNotes = getStorageData<Note>('notes');
-      const batchNotes = allNotes.filter((note: Note) => note.batchId === batchId);
-      console.log(`Found ${batchNotes.length} notes for batch ${batchId}`);
-      setNotes(batchNotes);
+      console.log('✅ Batch details:', currentBatch);
+      setBatch(currentBatch);
 
-      const allDPPs = getStorageData<DPP>('dpps');
-      const batchDPPs = allDPPs.filter((dpp: DPP) => dpp.batchId === batchId);
-      console.log(`Found ${batchDPPs.length} DPPs for batch ${batchId}`);
-      setDPPs(batchDPPs);
+      // Load content for this batch in parallel
+      const [lecturesData, notesData, dppsData] = await Promise.all([
+        fetchLectures(batchId),
+        fetchNotes(batchId),
+        fetchDPPs(batchId)
+      ]);
+      
+      console.log('📚 Content loaded:', {
+        lectures: lecturesData.length,
+        notes: notesData.length,
+        dpps: dppsData.length
+      });
 
-      const allLiveLectures = getStorageData<LiveLecture>('liveLectures');
-      const batchLiveLectures = allLiveLectures.filter((live: LiveLecture) => live.batchId === batchId);
-      console.log(`Found ${batchLiveLectures.length} live lectures for batch ${batchId}`);
-      setLiveLectures(batchLiveLectures);
+      setLectures(lecturesData);
+      setNotes(notesData);
+      setDPPs(dppsData);
+      setLiveLectures([]); // No live lectures for now
 
     } catch (error) {
-      console.error('Error loading batch data:', error);
+      console.error('❌ Error loading batch data:', error);
       setError('Failed to load batch data. Please try refreshing the page.');
     } finally {
       setIsLoading(false);
@@ -139,10 +104,10 @@ const BatchPage = () => {
 
   const handleLectureClick = (videoUrl: string) => {
     if (videoUrl) {
-      console.log('Opening video URL:', videoUrl);
+      console.log('🎥 Opening video URL:', videoUrl);
       window.open(videoUrl, '_blank');
     } else {
-      console.warn('No video URL provided');
+      console.warn('⚠️ No video URL provided');
       toast({
         title: "Error",
         description: "Video URL not available",
@@ -153,10 +118,10 @@ const BatchPage = () => {
 
   const handleDownload = (url: string) => {
     if (url) {
-      console.log('Opening download URL:', url);
+      console.log('📥 Opening download URL:', url);
       window.open(url, '_blank');
     } else {
-      console.warn('No download URL provided');
+      console.warn('⚠️ No download URL provided');
       toast({
         title: "Error",
         description: "Download URL not available",
@@ -167,10 +132,10 @@ const BatchPage = () => {
 
   const handleLiveLectureClick = (liveUrl: string) => {
     if (liveUrl) {
-      console.log('Opening live lecture URL:', liveUrl);
+      console.log('📡 Opening live lecture URL:', liveUrl);
       window.open(liveUrl, '_blank');
     } else {
-      console.warn('No live lecture URL provided');
+      console.warn('⚠️ No live lecture URL provided');
       toast({
         title: "Error",
         description: "Live lecture URL not available",
@@ -187,7 +152,7 @@ const BatchPage = () => {
   const findMatchingBatchSubject = (lectureSubject: string, batchSubjects: string[]) => {
     const normalizedLectureSubject = normalizeSubjectName(lectureSubject);
     
-    console.log(`Matching subject "${lectureSubject}" against batch subjects:`, batchSubjects);
+    console.log(`🔍 Matching subject "${lectureSubject}" against batch subjects:`, batchSubjects);
     
     // Direct match first
     const directMatch = batchSubjects.find(batchSubject => 
@@ -195,7 +160,7 @@ const BatchPage = () => {
     );
     
     if (directMatch) {
-      console.log(`Direct match found: ${directMatch}`);
+      console.log(`✅ Direct match found: ${directMatch}`);
       return directMatch;
     }
     
@@ -206,7 +171,7 @@ const BatchPage = () => {
                      normalizedLectureSubject.includes(normalizedBatchSubject);
       
       if (matches) {
-        console.log(`Partial match found: ${batchSubject} matches ${lectureSubject}`);
+        console.log(`🔄 Partial match found: ${batchSubject} matches ${lectureSubject}`);
       }
       
       return matches;
@@ -235,40 +200,40 @@ const BatchPage = () => {
       // Check if batch subject maps to lecture subject
       const mappings = subjectMappings[normalizedBatchSubject] || [];
       if (mappings.includes(normalizedLectureSubject)) {
-        console.log(`Mapping match found: ${batchSubject} maps to ${lectureSubject}`);
+        console.log(`🗂️ Mapping match found: ${batchSubject} maps to ${lectureSubject}`);
         return batchSubject;
       }
       
       // Check reverse mapping
       for (const [key, values] of Object.entries(subjectMappings)) {
         if (values.includes(normalizedBatchSubject) && key === normalizedLectureSubject) {
-          console.log(`Reverse mapping match found: ${batchSubject} reverse maps to ${lectureSubject}`);
+          console.log(`🔄 Reverse mapping match found: ${batchSubject} reverse maps to ${lectureSubject}`);
           return batchSubject;
         }
       }
     }
     
-    console.log(`No match found for subject: ${lectureSubject}, using original`);
+    console.log(`❓ No match found for subject: ${lectureSubject}, using original`);
     return lectureSubject; // Return original if no match found
   };
 
   const getContentBySubject = (subject: string) => {
-    console.log(`=== Getting content for subject: "${subject}" ===`);
+    console.log(`📋 Getting content for subject: "${subject}"`);
     
     const subjectLectures = lectures.filter(item => {
-      const matchingSubject = findMatchingBatchSubject(item.subject, batch?.subjects || []);
+      const matchingSubject = findMatchingBatchSubject(item.subject || '', batch?.subjects || []);
       const matches = matchingSubject === subject;
-      console.log(`Lecture "${item.title}" (${item.subject}) -> ${matchingSubject} -> matches "${subject}": ${matches}`);
+      console.log(`📚 Lecture "${item.title}" (${item.subject}) -> ${matchingSubject} -> matches "${subject}": ${matches}`);
       return matches;
     });
     
     const subjectNotes = notes.filter(item => {
-      const matchingSubject = findMatchingBatchSubject(item.subject, batch?.subjects || []);
+      const matchingSubject = findMatchingBatchSubject(item.subject || '', batch?.subjects || []);
       return matchingSubject === subject;
     });
     
     const subjectDpps = dpps.filter(item => {
-      const matchingSubject = findMatchingBatchSubject(item.subject, batch?.subjects || []);
+      const matchingSubject = findMatchingBatchSubject(item.subject || '', batch?.subjects || []);
       return matchingSubject === subject;
     });
     
@@ -284,7 +249,7 @@ const BatchPage = () => {
       liveLectures: subjectLiveLectures
     };
 
-    console.log(`Content summary for "${subject}":`, {
+    console.log(`📊 Content summary for "${subject}":`, {
       lectures: result.lectures.length,
       notes: result.notes.length,
       dpps: result.dpps.length,
@@ -445,9 +410,9 @@ const BatchPage = () => {
       <section className="bg-gradient-to-br from-blue-600 to-purple-600 p-8">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row gap-8 items-start">
-            {batch.image && (
+            {batch.image_url && (
               <img 
-                src={batch.image} 
+                src={batch.image_url} 
                 alt={batch.name}
                 className="w-full md:w-64 h-40 object-cover rounded-lg"
               />
@@ -456,14 +421,16 @@ const BatchPage = () => {
               <h1 className="text-4xl font-bold mb-2 text-white">{batch.name}</h1>
               <p className="text-white/80 text-lg mb-4">{batch.description}</p>
               <div className="flex flex-wrap gap-2 mb-4">
-                {batch.subjects.map((subject, index) => (
+                {(batch.subjects || []).map((subject, index) => (
                   <span key={index} className="bg-white/20 px-3 py-1 rounded-full text-sm">
                     {subject}
                   </span>
                 ))}
               </div>
               <div className="text-sm text-white/70">
-                <p>Duration: {new Date(batch.startDate).toLocaleDateString()} - {new Date(batch.endDate).toLocaleDateString()}</p>
+                {batch.start_date && batch.end_date && (
+                  <p>Duration: {new Date(batch.start_date).toLocaleDateString()} - {new Date(batch.end_date).toLocaleDateString()}</p>
+                )}
                 {batch.fee && <p>Fee: ₹{batch.fee}</p>}
               </div>
             </div>
@@ -476,7 +443,7 @@ const BatchPage = () => {
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl font-bold mb-6 text-white">Subjects</h2>
           
-          {batch.subjects.length === 0 ? (
+          {!batch.subjects || batch.subjects.length === 0 ? (
             <Card className="bg-gray-800 border-gray-700">
               <CardContent className="p-8 text-center">
                 <BookOpen className="w-16 h-16 mx-auto text-gray-600 mb-4" />
@@ -526,7 +493,7 @@ const BatchPage = () => {
                             <PlayCircle className="w-8 h-8" />,
                             'No lectures available for this subject.',
                             handleLectureClick,
-                            'videoUrl'
+                            'video_url'
                           )}
                         </TabsContent>
 
@@ -537,7 +504,7 @@ const BatchPage = () => {
                             <BookOpen className="w-8 h-8" />,
                             'No notes available for this subject.',
                             handleDownload,
-                            'pdfUrl'
+                            'pdf_url'
                           )}
                         </TabsContent>
 
@@ -548,7 +515,7 @@ const BatchPage = () => {
                             <FileText className="w-8 h-8" />,
                             'No DPPs available for this subject.',
                             handleDownload,
-                            'pdfUrl'
+                            'pdf_url'
                           )}
                         </TabsContent>
 

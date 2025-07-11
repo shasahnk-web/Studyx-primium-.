@@ -5,19 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Calendar, Users, DollarSign, PlayCircle, AlertCircle } from 'lucide-react';
-import { getStorageData, addStorageListener } from '@/utils/localStorage';
-
-interface Batch {
-  id: string;
-  name: string;
-  description: string;
-  subjects: string[];
-  image?: string;
-  startDate: string;
-  endDate: string;
-  fee?: string;
-  courseId: string;
-}
+import { fetchBatches, type Batch } from '@/services/supabaseService';
 
 const CoursePage = () => {
   const { courseId } = useParams();
@@ -51,25 +39,24 @@ const CoursePage = () => {
 
   useEffect(() => {
     loadBatches();
-    
-    // Set up storage listener for real-time updates
-    const removeListener = addStorageListener(() => {
-      loadBatches();
-    });
-
-    return removeListener;
   }, [courseId]);
 
-  const loadBatches = () => {
+  const loadBatches = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const allBatches = getStorageData<Batch>('batches');
-      const courseBatches = allBatches.filter((batch: Batch) => batch.courseId === courseId);
+      console.log('🔄 Loading batches for course:', courseId);
+
+      const allBatches = await fetchBatches();
+      const courseBatches = allBatches.filter((batch: Batch) => batch.course_id === courseId);
+      
+      console.log('📊 Total batches:', allBatches.length);
+      console.log('🎯 Course batches:', courseBatches.length);
+      
       setBatches(courseBatches);
     } catch (error) {
-      console.error('Error loading batches:', error);
+      console.error('❌ Error loading batches:', error);
       setError('Failed to load batches. Please try refreshing the page.');
     } finally {
       setIsLoading(false);
@@ -197,9 +184,9 @@ const CoursePage = () => {
               {batches.map((batch) => (
                 <Card key={batch.id} className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors">
                   <CardHeader>
-                    {batch.image && (
+                    {batch.image_url && (
                       <img 
-                        src={batch.image} 
+                        src={batch.image_url} 
                         alt={batch.name}
                         className="w-full h-40 object-cover rounded-lg mb-4"
                       />
@@ -209,10 +196,12 @@ const CoursePage = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3 mb-4">
-                      <div className="flex items-center text-sm text-gray-400">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        {new Date(batch.startDate).toLocaleDateString()} - {new Date(batch.endDate).toLocaleDateString()}
-                      </div>
+                      {batch.start_date && batch.end_date && (
+                        <div className="flex items-center text-sm text-gray-400">
+                          <Calendar className="w-4 h-4 mr-2" />
+                          {new Date(batch.start_date).toLocaleDateString()} - {new Date(batch.end_date).toLocaleDateString()}
+                        </div>
+                      )}
                       {batch.fee && (
                         <div className="flex items-center text-sm text-gray-400">
                           <DollarSign className="w-4 h-4 mr-2" />
@@ -222,7 +211,7 @@ const CoursePage = () => {
                     </div>
                     
                     <div className="flex flex-wrap gap-1 mb-4">
-                      {batch.subjects.map((subject, index) => (
+                      {(batch.subjects || []).map((subject, index) => (
                         <Badge key={index} variant="outline" className="text-xs border-gray-600 text-gray-300">
                           {subject}
                         </Badge>
