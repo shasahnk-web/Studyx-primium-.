@@ -208,44 +208,11 @@ const Index = () => {
       </section>
 
       {/* Recent Content Section */}
-      {(batches.length > 0 || lectures.length > 0 || notes.length > 0 || dpps.length > 0) && (
+      {(lectures.length > 0 || notes.length > 0 || dpps.length > 0) && (
         <section className="px-4 pb-16">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12 text-white">Your Learning Content</h2>
             
-            {/* Recent Batches */}
-            {batches.length > 0 && (
-              <div className="mb-12">
-                <h3 className="text-2xl font-bold mb-6 text-white">Active Batches ({batches.length})</h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {batches.slice(0, 6).map((batch) => (
-                    <Card key={batch.id} className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors cursor-pointer"
-                          onClick={() => navigate(`/batch/${batch.id}`)}>
-                      <CardContent className="p-6">
-                        {batch.image && (
-                          <img src={batch.image} alt={batch.name} className="w-full h-32 object-cover rounded-lg mb-4" />
-                        )}
-                        <h4 className="text-xl font-bold mb-2 text-white">{batch.name}</h4>
-                        <p className="text-gray-400 text-sm mb-3">{batch.description}</p>
-                        <div className="flex flex-wrap gap-1">
-                          {batch.subjects.slice(0, 3).map((subject, index) => (
-                            <span key={index} className="bg-blue-600/20 text-blue-400 px-2 py-1 rounded text-xs">
-                              {subject}
-                            </span>
-                          ))}
-                          {batch.subjects.length > 3 && (
-                            <span className="bg-gray-600/20 text-gray-400 px-2 py-1 rounded text-xs">
-                              +{batch.subjects.length - 3} more
-                            </span>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Recent Lectures */}
             {lectures.length > 0 && (
               <div className="mb-12">
