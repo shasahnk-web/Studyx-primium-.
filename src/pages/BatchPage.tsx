@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, PlayCircle, FileText, BookOpen, Download, AlertCircle } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { ArrowLeft, PlayCircle, FileText, BookOpen, Download, AlertCircle, Video } from 'lucide-react';
 import { getStorageData, addStorageListener } from '@/utils/localStorage';
 
 interface Batch {
@@ -19,35 +20,34 @@ interface Batch {
   courseId: string;
 }
 
-interface Lecture {
+interface ContentItem {
   id: string;
   title: string;
   description?: string;
+  url: string;
+  subject: string;
+  batchId: string;
+  createdAt: string;
+}
+
+interface Lecture extends ContentItem {
   videoUrl: string;
-  subject: string;
   topic?: string;
-  batchId: string;
-  createdAt: string;
 }
 
-interface Note {
-  id: string;
-  title: string;
-  description?: string;
+interface Note extends ContentItem {
   pdfUrl: string;
-  subject: string;
-  batchId: string;
-  createdAt: string;
 }
 
-interface DPP {
-  id: string;
-  title: string;
-  description?: string;
+interface DPP extends ContentItem {
   pdfUrl: string;
-  subject: string;
-  batchId: string;
-  createdAt: string;
+}
+
+interface LiveLecture extends ContentItem {
+  liveUrl: string;
+  scheduledDate: string;
+  scheduledTime: string;
+  status: 'upcoming' | 'live' | 'completed';
 }
 
 const BatchPage = () => {
@@ -57,6 +57,7 @@ const BatchPage = () => {
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [dpps, setDPPs] = useState<DPP[]>([]);
+  const [liveLectures, setLiveLectures] = useState<LiveLecture[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -87,20 +88,22 @@ const BatchPage = () => {
         setBatch(currentBatch);
       }
 
-      // Load lectures for this batch
+      // Load content for this batch
       const allLectures = getStorageData<Lecture>('lectures');
       const batchLectures = allLectures.filter((lecture: Lecture) => lecture.batchId === batchId);
       setLectures(batchLectures);
 
-      // Load notes for this batch
       const allNotes = getStorageData<Note>('notes');
       const batchNotes = allNotes.filter((note: Note) => note.batchId === batchId);
       setNotes(batchNotes);
 
-      // Load DPPs for this batch
       const allDPPs = getStorageData<DPP>('dpps');
       const batchDPPs = allDPPs.filter((dpp: DPP) => dpp.batchId === batchId);
       setDPPs(batchDPPs);
+
+      const allLiveLectures = getStorageData<LiveLecture>('liveLectures');
+      const batchLiveLectures = allLiveLectures.filter((live: LiveLecture) => live.batchId === batchId);
+      setLiveLectures(batchLiveLectures);
 
     } catch (error) {
       console.error('Error loading batch data:', error);
@@ -120,6 +123,89 @@ const BatchPage = () => {
     if (url) {
       window.open(url, '_blank');
     }
+  };
+
+  const handleLiveLectureClick = (liveUrl: string) => {
+    if (liveUrl) {
+      window.open(liveUrl, '_blank');
+    }
+  };
+
+  const getContentBySubject = (subject: string) => {
+    return {
+      lectures: lectures.filter(item => item.subject === subject),
+      notes: notes.filter(item => item.subject === subject),
+      dpps: dpps.filter(item => item.subject === subject),
+      liveLectures: liveLectures.filter(item => item.subject === subject)
+    };
+  };
+
+  const renderContentSection = (title: string, items: any[], icon: any, emptyMessage: string, onItemClick: (url: string) => void, urlKey: string) => {
+    if (items.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <div className="w-16 h-16 mx-auto text-gray-600 mb-4">{icon}</div>
+          <p className="text-gray-400">{emptyMessage}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        {items.map((item) => (
+          <Card key={item.id} className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3 flex-1">
+                  <div className="w-8 h-8 text-blue-400 flex-shrink-0">{icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-white truncate">{item.title}</h4>
+                    {item.description && (
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">{item.description}</p>
+                    )}
+                    {item.topic && (
+                      <p className="text-sm text-gray-400">Topic: {item.topic}</p>
+                    )}
+                    {item.scheduledDate && (
+                      <p className="text-sm text-gray-400">
+                        Scheduled: {new Date(item.scheduledDate).toLocaleDateString()} at {item.scheduledTime}
+                      </p>
+                    )}
+                    {item.status && (
+                      <span className={`inline-block px-2 py-1 rounded text-xs ${
+                        item.status === 'live' ? 'bg-red-100 text-red-800' :
+                        item.status === 'upcoming' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
+                        {item.status}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => onItemClick(item[urlKey])}
+                  className={`flex-shrink-0 ml-4 ${
+                    title === 'Live Lectures' ? 'bg-red-600 hover:bg-red-700' :
+                    title === 'Lectures' ? 'bg-blue-600 hover:bg-blue-700' :
+                    title === 'Notes' ? 'bg-green-600 hover:bg-green-700' :
+                    'bg-orange-600 hover:bg-orange-700'
+                  }`}
+                  disabled={!item[urlKey]}
+                >
+                  {title === 'Lectures' || title === 'Live Lectures' ? 'Watch' : 
+                   title === 'Notes' || title === 'DPP' ? (
+                     <>
+                       <Download className="w-4 h-4 mr-2" />
+                       Download
+                     </>
+                   ) : 'Access'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -231,153 +317,104 @@ const BatchPage = () => {
         </div>
       </section>
 
-      {/* Content Tabs */}
+      {/* Subjects Section */}
       <section className="p-8">
         <div className="max-w-6xl mx-auto">
-          <Tabs defaultValue="lectures" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-800">
-              <TabsTrigger value="lectures" className="data-[state=active]:bg-gray-700 text-white">
-                Lectures ({lectures.length})
-              </TabsTrigger>
-              <TabsTrigger value="notes" className="data-[state=active]:bg-gray-700 text-white">
-                Notes ({notes.length})
-              </TabsTrigger>
-              <TabsTrigger value="dpps" className="data-[state=active]:bg-gray-700 text-white">
-                DPPs ({dpps.length})
-              </TabsTrigger>
-            </TabsList>
+          <h2 className="text-2xl font-bold mb-6 text-white">Subjects</h2>
+          
+          {batch.subjects.length === 0 ? (
+            <Card className="bg-gray-800 border-gray-700">
+              <CardContent className="p-8 text-center">
+                <BookOpen className="w-16 h-16 mx-auto text-gray-600 mb-4" />
+                <p className="text-gray-400">No subjects available for this batch.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Accordion type="multiple" className="space-y-4">
+              {batch.subjects.map((subject) => {
+                const subjectContent = getContentBySubject(subject);
+                const totalContent = subjectContent.lectures.length + 
+                                   subjectContent.notes.length + 
+                                   subjectContent.dpps.length + 
+                                   subjectContent.liveLectures.length;
 
-            <TabsContent value="lectures" className="mt-6">
-              {lectures.length === 0 ? (
-                <Card className="bg-gray-800 border-gray-700">
-                  <CardContent className="p-8 text-center">
-                    <PlayCircle className="w-16 h-16 mx-auto text-gray-600 mb-4" />
-                    <p className="text-gray-400">No lectures available yet.</p>
-                    <p className="text-sm text-gray-500 mt-2">
-                      Lectures will appear here once they are added by the admin.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid gap-4">
-                  {lectures.map((lecture) => (
-                    <Card key={lecture.id} className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3 flex-1">
-                            <PlayCircle className="w-8 h-8 text-blue-400 flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-white truncate">{lecture.title}</h3>
-                              <div className="text-sm text-gray-400">
-                                <span>{lecture.subject}</span>
-                                {lecture.topic && <span> • {lecture.topic}</span>}
-                              </div>
-                              {lecture.description && (
-                                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{lecture.description}</p>
-                              )}
-                            </div>
-                          </div>
-                          <Button 
-                            onClick={() => handleLectureClick(lecture.videoUrl)}
-                            className="bg-blue-600 hover:bg-blue-700 flex-shrink-0 ml-4"
-                            disabled={!lecture.videoUrl}
-                          >
-                            Watch
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+                return (
+                  <AccordionItem key={subject} value={subject} className="bg-gray-800 border-gray-700 rounded-lg">
+                    <AccordionTrigger className="px-6 py-4 text-white hover:no-underline">
+                      <div className="flex items-center justify-between w-full mr-4">
+                        <span className="text-lg font-semibold">{subject}</span>
+                        <span className="text-sm text-gray-400">
+                          {totalContent} items
+                        </span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-6">
+                      <Tabs defaultValue="lectures" className="w-full">
+                        <TabsList className="grid w-full grid-cols-4 bg-gray-700">
+                          <TabsTrigger value="lectures" className="data-[state=active]:bg-gray-600 text-white">
+                            Lectures ({subjectContent.lectures.length})
+                          </TabsTrigger>
+                          <TabsTrigger value="notes" className="data-[state=active]:bg-gray-600 text-white">
+                            Notes ({subjectContent.notes.length})
+                          </TabsTrigger>
+                          <TabsTrigger value="dpps" className="data-[state=active]:bg-gray-600 text-white">
+                            DPP ({subjectContent.dpps.length})
+                          </TabsTrigger>
+                          <TabsTrigger value="live" className="data-[state=active]:bg-gray-600 text-white">
+                            Live ({subjectContent.liveLectures.length})
+                          </TabsTrigger>
+                        </TabsList>
 
-            <TabsContent value="notes" className="mt-6">
-              {notes.length === 0 ? (
-                <Card className="bg-gray-800 border-gray-700">
-                  <CardContent className="p-8 text-center">
-                    <BookOpen className="w-16 h-16 mx-auto text-gray-600 mb-4" />
-                    <p className="text-gray-400">No notes available yet.</p>
-                    <p className="text-sm text-gray-500 mt-2">
-                      Notes will appear here once they are added by the admin.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid gap-4">
-                  {notes.map((note) => (
-                    <Card key={note.id} className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3 flex-1">
-                            <BookOpen className="w-8 h-8 text-green-400 flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-white truncate">{note.title}</h3>
-                              <p className="text-sm text-gray-400">{note.subject} • PDF Notes</p>
-                              {note.description && (
-                                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{note.description}</p>
-                              )}
-                            </div>
-                          </div>
-                          <Button 
-                            onClick={() => handleDownload(note.pdfUrl)}
-                            className="bg-green-600 hover:bg-green-700 flex-shrink-0 ml-4"
-                            disabled={!note.pdfUrl}
-                          >
-                            <Download className="w-4 h-4 mr-2" />
-                            Download
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+                        <TabsContent value="lectures" className="mt-6">
+                          {renderContentSection(
+                            'Lectures',
+                            subjectContent.lectures,
+                            <PlayCircle className="w-8 h-8" />,
+                            'No lectures available for this subject.',
+                            handleLectureClick,
+                            'videoUrl'
+                          )}
+                        </TabsContent>
 
-            <TabsContent value="dpps" className="mt-6">
-              {dpps.length === 0 ? (
-                <Card className="bg-gray-800 border-gray-700">
-                  <CardContent className="p-8 text-center">
-                    <FileText className="w-16 h-16 mx-auto text-gray-600 mb-4" />
-                    <p className="text-gray-400">No DPPs available yet.</p>
-                    <p className="text-sm text-gray-500 mt-2">
-                      Daily Practice Problems will appear here once they are added by the admin.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid gap-4">
-                  {dpps.map((dpp) => (
-                    <Card key={dpp.id} className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3 flex-1">
-                            <FileText className="w-8 h-8 text-orange-400 flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-white truncate">{dpp.title}</h3>
-                              <p className="text-sm text-gray-400">{dpp.subject} • Daily Practice Problems</p>
-                              {dpp.description && (
-                                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{dpp.description}</p>
-                              )}
-                            </div>
-                          </div>
-                          <Button 
-                            onClick={() => handleDownload(dpp.pdfUrl)}
-                            className="bg-orange-600 hover:bg-orange-700 flex-shrink-0 ml-4"
-                            disabled={!dpp.pdfUrl}
-                          >
-                            <Download className="w-4 h-4 mr-2" />
-                            Download
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+                        <TabsContent value="notes" className="mt-6">
+                          {renderContentSection(
+                            'Notes',
+                            subjectContent.notes,
+                            <BookOpen className="w-8 h-8" />,
+                            'No notes available for this subject.',
+                            handleDownload,
+                            'pdfUrl'
+                          )}
+                        </TabsContent>
+
+                        <TabsContent value="dpps" className="mt-6">
+                          {renderContentSection(
+                            'DPP',
+                            subjectContent.dpps,
+                            <FileText className="w-8 h-8" />,
+                            'No DPPs available for this subject.',
+                            handleDownload,
+                            'pdfUrl'
+                          )}
+                        </TabsContent>
+
+                        <TabsContent value="live" className="mt-6">
+                          {renderContentSection(
+                            'Live Lectures',
+                            subjectContent.liveLectures,
+                            <Video className="w-8 h-8" />,
+                            'No live lectures scheduled for this subject.',
+                            handleLiveLectureClick,
+                            'liveUrl'
+                          )}
+                        </TabsContent>
+                      </Tabs>
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
+          )}
         </div>
       </section>
     </div>
