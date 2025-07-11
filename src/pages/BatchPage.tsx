@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ArrowLeft, PlayCircle, FileText, BookOpen, Download, AlertCircle, Video } from 'lucide-react';
-import { getStorageData, addStorageListener } from '@/utils/localStorage';
+import { getStorageData, addStorageListener, debugLocalStorage } from '@/utils/localStorage';
 
 interface Batch {
   id: string;
@@ -63,27 +64,17 @@ const BatchPage = () => {
   useEffect(() => {
     loadBatchData();
     
+    // Debug localStorage on mount
+    debugLocalStorage();
+    
     // Set up storage listener for real-time updates
     const removeListener = addStorageListener(() => {
       console.log('Storage changed, reloading batch data...');
       loadBatchData();
     });
 
-    // Also listen for the custom storage events
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'studyx_lectures' || e.key === 'studyx_batches' || 
-          e.key === 'studyx_notes' || e.key === 'studyx_dpps' || 
-          e.key === 'studyx_live_lectures') {
-        console.log('Custom storage event detected, reloading...');
-        loadBatchData();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
     return () => {
       removeListener();
-      window.removeEventListener('storage', handleStorageChange);
     };
   }, [batchId]);
 
@@ -92,42 +83,49 @@ const BatchPage = () => {
       setIsLoading(true);
       setError(null);
 
-      console.log('Loading batch data for batchId:', batchId);
+      console.log('=== Loading batch data ===');
+      console.log('Target batchId:', batchId);
 
       // Load batch data
       const allBatches = getStorageData<Batch>('batches');
       const currentBatch = allBatches.find((b: Batch) => b.id === batchId);
       
-      console.log('All batches:', allBatches);
-      console.log('Current batch:', currentBatch);
+      console.log('All batches loaded:', allBatches.length);
+      console.log('Current batch found:', currentBatch ? 'Yes' : 'No');
       
       if (!currentBatch) {
+        console.error('Batch not found with ID:', batchId);
         setError('Batch not found');
         setBatch(null);
       } else {
+        console.log('Batch details:', currentBatch);
         setBatch(currentBatch);
       }
 
       // Load content for this batch
       const allLectures = getStorageData<Lecture>('lectures');
-      const batchLectures = allLectures.filter((lecture: Lecture) => lecture.batchId === batchId);
-      console.log('All lectures:', allLectures);
-      console.log('Batch lectures for batch', batchId, ':', batchLectures);
+      const batchLectures = allLectures.filter((lecture: Lecture) => {
+        const matches = lecture.batchId === batchId;
+        console.log(`Lecture "${lecture.title}" - batchId: ${lecture.batchId}, matches: ${matches}`);
+        return matches;
+      });
+      
+      console.log(`Found ${batchLectures.length} lectures for batch ${batchId}`);
       setLectures(batchLectures);
 
       const allNotes = getStorageData<Note>('notes');
       const batchNotes = allNotes.filter((note: Note) => note.batchId === batchId);
-      console.log('Batch notes:', batchNotes);
+      console.log(`Found ${batchNotes.length} notes for batch ${batchId}`);
       setNotes(batchNotes);
 
       const allDPPs = getStorageData<DPP>('dpps');
       const batchDPPs = allDPPs.filter((dpp: DPP) => dpp.batchId === batchId);
-      console.log('Batch DPPs:', batchDPPs);
+      console.log(`Found ${batchDPPs.length} DPPs for batch ${batchId}`);
       setDPPs(batchDPPs);
 
       const allLiveLectures = getStorageData<LiveLecture>('liveLectures');
       const batchLiveLectures = allLiveLectures.filter((live: LiveLecture) => live.batchId === batchId);
-      console.log('Batch live lectures:', batchLiveLectures);
+      console.log(`Found ${batchLiveLectures.length} live lectures for batch ${batchId}`);
       setLiveLectures(batchLiveLectures);
 
     } catch (error) {
@@ -140,43 +138,65 @@ const BatchPage = () => {
 
   const handleLectureClick = (videoUrl: string) => {
     if (videoUrl) {
+      console.log('Opening video URL:', videoUrl);
       window.open(videoUrl, '_blank');
+    } else {
+      console.warn('No video URL provided');
+      toast.error('Video URL not available');
     }
   };
 
   const handleDownload = (url: string) => {
     if (url) {
+      console.log('Opening download URL:', url);
       window.open(url, '_blank');
+    } else {
+      console.warn('No download URL provided');
+      toast.error('Download URL not available');
     }
   };
 
   const handleLiveLectureClick = (liveUrl: string) => {
     if (liveUrl) {
+      console.log('Opening live lecture URL:', liveUrl);
       window.open(liveUrl, '_blank');
+    } else {
+      console.warn('No live lecture URL provided');
+      toast.error('Live lecture URL not available');
     }
   };
 
-  // Helper function to normalize subject names for comparison
+  // Enhanced subject matching with comprehensive debugging
   const normalizeSubjectName = (subject: string) => {
     return subject.toLowerCase().trim();
   };
 
-  // Helper function to find matching subject from batch subjects
   const findMatchingBatchSubject = (lectureSubject: string, batchSubjects: string[]) => {
     const normalizedLectureSubject = normalizeSubjectName(lectureSubject);
+    
+    console.log(`Matching subject "${lectureSubject}" against batch subjects:`, batchSubjects);
     
     // Direct match first
     const directMatch = batchSubjects.find(batchSubject => 
       normalizeSubjectName(batchSubject) === normalizedLectureSubject
     );
     
-    if (directMatch) return directMatch;
+    if (directMatch) {
+      console.log(`Direct match found: ${directMatch}`);
+      return directMatch;
+    }
     
     // Partial match for common variations
     const partialMatch = batchSubjects.find(batchSubject => {
       const normalizedBatchSubject = normalizeSubjectName(batchSubject);
-      return normalizedBatchSubject.includes(normalizedLectureSubject) || 
-             normalizedLectureSubject.includes(normalizedBatchSubject);
+      const matches = normalizedBatchSubject.includes(normalizedLectureSubject) || 
+                     normalizedLectureSubject.includes(normalizedBatchSubject);
+      
+      if (matches) {
+        console.log(`Partial match found: ${batchSubject} matches ${lectureSubject}`);
+      }
+      
+      return matches;
     });
     
     if (partialMatch) return partialMatch;
@@ -184,13 +204,16 @@ const BatchPage = () => {
     // Subject mapping for common variations
     const subjectMappings: { [key: string]: string[] } = {
       'mathematics': ['maths', 'math'],
+      'maths': ['mathematics', 'math'],
       'physics': ['phy'],
       'chemistry': ['chem'],
       'biology': ['bio'],
       'english': ['eng'],
       'hindi': ['hin'],
       'social science': ['sst', 'social studies'],
-      'information technology': ['it', 'computer']
+      'sst': ['social science', 'social studies'],
+      'information technology': ['it', 'computer'],
+      'it': ['information technology', 'computer']
     };
     
     for (const batchSubject of batchSubjects) {
@@ -199,31 +222,30 @@ const BatchPage = () => {
       // Check if batch subject maps to lecture subject
       const mappings = subjectMappings[normalizedBatchSubject] || [];
       if (mappings.includes(normalizedLectureSubject)) {
+        console.log(`Mapping match found: ${batchSubject} maps to ${lectureSubject}`);
         return batchSubject;
       }
       
       // Check reverse mapping
       for (const [key, values] of Object.entries(subjectMappings)) {
         if (values.includes(normalizedBatchSubject) && key === normalizedLectureSubject) {
+          console.log(`Reverse mapping match found: ${batchSubject} reverse maps to ${lectureSubject}`);
           return batchSubject;
         }
       }
     }
     
+    console.log(`No match found for subject: ${lectureSubject}, using original`);
     return lectureSubject; // Return original if no match found
   };
 
   const getContentBySubject = (subject: string) => {
-    console.log('Getting content for subject:', subject);
-    console.log('Available lectures:', lectures);
-    console.log('Available notes:', notes);
-    console.log('Available dpps:', dpps);
-    console.log('Available live lectures:', liveLectures);
+    console.log(`=== Getting content for subject: "${subject}" ===`);
     
     const subjectLectures = lectures.filter(item => {
       const matchingSubject = findMatchingBatchSubject(item.subject, batch?.subjects || []);
       const matches = matchingSubject === subject;
-      console.log(`Lecture "${item.title}" subject "${item.subject}" -> normalized to "${matchingSubject}" -> matches "${subject}": ${matches}`);
+      console.log(`Lecture "${item.title}" (${item.subject}) -> ${matchingSubject} -> matches "${subject}": ${matches}`);
       return matches;
     });
     
@@ -242,19 +264,21 @@ const BatchPage = () => {
       return matchingSubject === subject;
     });
 
-    console.log(`Content for subject "${subject}":`, {
-      lectures: subjectLectures,
-      notes: subjectNotes,
-      dpps: subjectDpps,
-      liveLectures: subjectLiveLectures
-    });
-
-    return {
+    const result = {
       lectures: subjectLectures,
       notes: subjectNotes,
       dpps: subjectDpps,
       liveLectures: subjectLiveLectures
     };
+
+    console.log(`Content summary for "${subject}":`, {
+      lectures: result.lectures.length,
+      notes: result.notes.length,
+      dpps: result.dpps.length,
+      liveLectures: result.liveLectures.length
+    });
+
+    return result;
   };
 
   const renderContentSection = (title: string, items: any[], icon: any, emptyMessage: string, onItemClick: (url: string) => void, urlKey: string) => {
