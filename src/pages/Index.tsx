@@ -4,34 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BookOpen, FileText, Users, Clock, Settings, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-interface Batch {
-  id: string;
-  name: string;
-  description: string;
-  subjects: string[];
-  image?: string;
-  startDate: string;
-  endDate: string;
-  fee?: string;
-  courseId: string;
-}
-
-interface Note {
-  id: string;
-  title: string;
-  subject: string;
-  batchId: string;
-  pdfUrl: string;
-}
-
-interface DPP {
-  id: string;
-  title: string;
-  subject: string;
-  batchId: string;
-  pdfUrl: string;
-}
+import { fetchBatches, fetchNotes, fetchDPPs, type Batch, type Note, type DPP } from '@/services/supabaseService';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -40,39 +13,35 @@ const Index = () => {
   const [dpps, setDPPs] = useState<DPP[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from localStorage
+  // Load data from Supabase
   useEffect(() => {
     loadAllData();
   }, []);
 
-  const loadAllData = () => {
+  const loadAllData = async () => {
     try {
-      // Load batches
-      const savedBatches = localStorage.getItem('studyx_batches');
-      if (savedBatches) {
-        const parsedBatches = JSON.parse(savedBatches);
-        setBatches(Array.isArray(parsedBatches) ? parsedBatches : []);
-      }
+      setIsLoading(true);
+      
+      console.log('🔄 Loading all data from Supabase...');
+      
+      // Load all data in parallel
+      const [batchesData, notesData, dppsData] = await Promise.all([
+        fetchBatches(),
+        fetchNotes(),
+        fetchDPPs()
+      ]);
+      
+      console.log('📊 Data loaded:', {
+        batches: batchesData.length,
+        notes: notesData.length,
+        dpps: dppsData.length
+      });
 
-      // Load notes
-      const savedNotes = localStorage.getItem('studyx_notes');
-      if (savedNotes) {
-        const parsedNotes = JSON.parse(savedNotes);
-        setNotes(Array.isArray(parsedNotes) ? parsedNotes : []);
-      }
-
-      // Load DPPs
-      const savedDPPs = localStorage.getItem('studyx_dpps');
-      if (savedDPPs) {
-        const parsedDPPs = JSON.parse(savedDPPs);
-        setDPPs(Array.isArray(parsedDPPs) ? parsedDPPs : []);
-      }
+      setBatches(batchesData);
+      setNotes(notesData);
+      setDPPs(dppsData);
     } catch (error) {
-      console.error('Error loading data from localStorage:', error);
-      // Graceful fallback - reset corrupted data
-      localStorage.removeItem('studyx_batches');
-      localStorage.removeItem('studyx_notes');
-      localStorage.removeItem('studyx_dpps');
+      console.error('❌ Error loading data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -206,11 +175,11 @@ const Index = () => {
                         <BookOpen className="w-8 h-8 text-blue-400" />
                         <div className="flex-1">
                           <h4 className="font-semibold text-white">{note.title}</h4>
-                          <p className="text-sm text-gray-400">Notes • {note.subject} • {getBatchName(note.batchId)}</p>
+                          <p className="text-sm text-gray-400">Notes • {note.subject} • {getBatchName(note.batch_id || '')}</p>
                         </div>
                         <Button 
                           size="sm" 
-                          onClick={() => window.open(note.pdfUrl, '_blank')}
+                          onClick={() => window.open(note.pdf_url, '_blank')}
                           className="bg-blue-600 hover:bg-blue-700"
                         >
                           <Download className="w-4 h-4" />
@@ -226,11 +195,11 @@ const Index = () => {
                         <FileText className="w-8 h-8 text-orange-400" />
                         <div className="flex-1">
                           <h4 className="font-semibold text-white">{dpp.title}</h4>
-                          <p className="text-sm text-gray-400">DPP • {dpp.subject} • {getBatchName(dpp.batchId)}</p>
+                          <p className="text-sm text-gray-400">DPP • {dpp.subject} • {getBatchName(dpp.batch_id || '')}</p>
                         </div>
                         <Button 
                           size="sm" 
-                          onClick={() => window.open(dpp.pdfUrl, '_blank')}
+                          onClick={() => window.open(dpp.pdf_url, '_blank')}
                           className="bg-orange-600 hover:bg-orange-700"
                         >
                           <Download className="w-4 h-4" />

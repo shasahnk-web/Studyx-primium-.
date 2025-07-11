@@ -49,10 +49,38 @@ const CoursePage = () => {
       console.log('🔄 Loading batches for course:', courseId);
 
       const allBatches = await fetchBatches();
-      const courseBatches = allBatches.filter((batch: Batch) => batch.course_id === courseId);
+      console.log('📊 All batches from database:', allBatches);
+      
+      // More flexible filtering - check for exact match first, then fallback to contains or null
+      let courseBatches = allBatches.filter((batch: Batch) => {
+        const batchCourseId = batch.course_id;
+        console.log(`🔍 Checking batch "${batch.name}": course_id="${batchCourseId}" vs expected="${courseId}"`);
+        
+        // Exact match
+        if (batchCourseId === courseId) {
+          console.log(`✅ Exact match for batch: ${batch.name}`);
+          return true;
+        }
+        
+        // If batch has no course_id, include it in pw-courses (default)
+        if (!batchCourseId && courseId === 'pw-courses') {
+          console.log(`✅ Default match for batch: ${batch.name}`);
+          return true;
+        }
+        
+        console.log(`❌ No match for batch: ${batch.name}`);
+        return false;
+      });
+      
+      // If no batches found and we're looking for pw-courses, show all batches without course_id
+      if (courseBatches.length === 0 && courseId === 'pw-courses') {
+        console.log('🔄 No matches found, showing all batches for pw-courses');
+        courseBatches = allBatches.filter((batch: Batch) => !batch.course_id || batch.course_id === 'pw-courses');
+      }
       
       console.log('📊 Total batches:', allBatches.length);
       console.log('🎯 Course batches:', courseBatches.length);
+      console.log('📋 Filtered batches:', courseBatches.map(b => ({ name: b.name, course_id: b.course_id })));
       
       setBatches(courseBatches);
     } catch (error) {

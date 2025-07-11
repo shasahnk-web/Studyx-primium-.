@@ -79,7 +79,6 @@ const validateBatch = (batch: Partial<Batch>): string[] => {
   
   if (!batch.name?.trim()) errors.push('Batch name is required');
   if (!batch.description?.trim()) errors.push('Description is required');
-  if (!batch.course_id?.trim()) errors.push('Course ID is required');
   if (!batch.subjects?.length) errors.push('At least one subject is required');
   
   if (batch.start_date && batch.end_date) {
@@ -108,6 +107,7 @@ export const fetchBatches = async (): Promise<Batch[]> => {
     }
 
     console.log('✅ Successfully fetched batches:', data?.length || 0);
+    console.log('📊 Batch data:', data?.map(b => ({ name: b.name, course_id: b.course_id })));
     return data || [];
   } catch (error) {
     console.error('❌ Exception fetching batches:', error);
@@ -126,9 +126,16 @@ export const createBatch = async (batchData: Omit<Batch, 'id' | 'created_at' | '
   }
 
   try {
+    // Ensure course_id is set, default to 'pw-courses' if not provided
+    const batchWithDefaults = {
+      ...batchData,
+      course_id: batchData.course_id || 'pw-courses',
+      status: batchData.status || 'active'
+    };
+
     const { data, error } = await supabase
       .from('batches')
-      .insert([batchData])
+      .insert([batchWithDefaults])
       .select()
       .single();
 
