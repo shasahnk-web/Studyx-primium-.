@@ -112,7 +112,7 @@ const BatchPage = () => {
       const allLectures = getStorageData<Lecture>('lectures');
       const batchLectures = allLectures.filter((lecture: Lecture) => lecture.batchId === batchId);
       console.log('All lectures:', allLectures);
-      console.log('Batch lectures:', batchLectures);
+      console.log('Batch lectures for batch', batchId, ':', batchLectures);
       setLectures(batchLectures);
 
       const allNotes = getStorageData<Note>('notes');
@@ -156,12 +156,104 @@ const BatchPage = () => {
     }
   };
 
+  // Helper function to normalize subject names for comparison
+  const normalizeSubjectName = (subject: string) => {
+    return subject.toLowerCase().trim();
+  };
+
+  // Helper function to find matching subject from batch subjects
+  const findMatchingBatchSubject = (lectureSubject: string, batchSubjects: string[]) => {
+    const normalizedLectureSubject = normalizeSubjectName(lectureSubject);
+    
+    // Direct match first
+    const directMatch = batchSubjects.find(batchSubject => 
+      normalizeSubjectName(batchSubject) === normalizedLectureSubject
+    );
+    
+    if (directMatch) return directMatch;
+    
+    // Partial match for common variations
+    const partialMatch = batchSubjects.find(batchSubject => {
+      const normalizedBatchSubject = normalizeSubjectName(batchSubject);
+      return normalizedBatchSubject.includes(normalizedLectureSubject) || 
+             normalizedLectureSubject.includes(normalizedBatchSubject);
+    });
+    
+    if (partialMatch) return partialMatch;
+    
+    // Subject mapping for common variations
+    const subjectMappings: { [key: string]: string[] } = {
+      'mathematics': ['maths', 'math'],
+      'physics': ['phy'],
+      'chemistry': ['chem'],
+      'biology': ['bio'],
+      'english': ['eng'],
+      'hindi': ['hin'],
+      'social science': ['sst', 'social studies'],
+      'information technology': ['it', 'computer']
+    };
+    
+    for (const batchSubject of batchSubjects) {
+      const normalizedBatchSubject = normalizeSubjectName(batchSubject);
+      
+      // Check if batch subject maps to lecture subject
+      const mappings = subjectMappings[normalizedBatchSubject] || [];
+      if (mappings.includes(normalizedLectureSubject)) {
+        return batchSubject;
+      }
+      
+      // Check reverse mapping
+      for (const [key, values] of Object.entries(subjectMappings)) {
+        if (values.includes(normalizedBatchSubject) && key === normalizedLectureSubject) {
+          return batchSubject;
+        }
+      }
+    }
+    
+    return lectureSubject; // Return original if no match found
+  };
+
   const getContentBySubject = (subject: string) => {
+    console.log('Getting content for subject:', subject);
+    console.log('Available lectures:', lectures);
+    console.log('Available notes:', notes);
+    console.log('Available dpps:', dpps);
+    console.log('Available live lectures:', liveLectures);
+    
+    const subjectLectures = lectures.filter(item => {
+      const matchingSubject = findMatchingBatchSubject(item.subject, batch?.subjects || []);
+      const matches = matchingSubject === subject;
+      console.log(`Lecture "${item.title}" subject "${item.subject}" -> normalized to "${matchingSubject}" -> matches "${subject}": ${matches}`);
+      return matches;
+    });
+    
+    const subjectNotes = notes.filter(item => {
+      const matchingSubject = findMatchingBatchSubject(item.subject, batch?.subjects || []);
+      return matchingSubject === subject;
+    });
+    
+    const subjectDpps = dpps.filter(item => {
+      const matchingSubject = findMatchingBatchSubject(item.subject, batch?.subjects || []);
+      return matchingSubject === subject;
+    });
+    
+    const subjectLiveLectures = liveLectures.filter(item => {
+      const matchingSubject = findMatchingBatchSubject(item.subject, batch?.subjects || []);
+      return matchingSubject === subject;
+    });
+
+    console.log(`Content for subject "${subject}":`, {
+      lectures: subjectLectures,
+      notes: subjectNotes,
+      dpps: subjectDpps,
+      liveLectures: subjectLiveLectures
+    });
+
     return {
-      lectures: lectures.filter(item => item.subject === subject),
-      notes: notes.filter(item => item.subject === subject),
-      dpps: dpps.filter(item => item.subject === subject),
-      liveLectures: liveLectures.filter(item => item.subject === subject)
+      lectures: subjectLectures,
+      notes: subjectNotes,
+      dpps: subjectDpps,
+      liveLectures: subjectLiveLectures
     };
   };
 

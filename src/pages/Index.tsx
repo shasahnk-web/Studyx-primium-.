@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, FileText, Users, Clock, Settings, PlayCircle, Download } from 'lucide-react';
+import { BookOpen, FileText, Users, Clock, Settings, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Batch {
@@ -15,14 +15,6 @@ interface Batch {
   endDate: string;
   fee?: string;
   courseId: string;
-}
-
-interface Lecture {
-  id: string;
-  title: string;
-  subject: string;
-  batchId: string;
-  videoUrl: string;
 }
 
 interface Note {
@@ -44,7 +36,6 @@ interface DPP {
 const Index = () => {
   const navigate = useNavigate();
   const [batches, setBatches] = useState<Batch[]>([]);
-  const [lectures, setLectures] = useState<Lecture[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [dpps, setDPPs] = useState<DPP[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,13 +52,6 @@ const Index = () => {
       if (savedBatches) {
         const parsedBatches = JSON.parse(savedBatches);
         setBatches(Array.isArray(parsedBatches) ? parsedBatches : []);
-      }
-
-      // Load lectures
-      const savedLectures = localStorage.getItem('studyx_lectures');
-      if (savedLectures) {
-        const parsedLectures = JSON.parse(savedLectures);
-        setLectures(Array.isArray(parsedLectures) ? parsedLectures : []);
       }
 
       // Load notes
@@ -87,7 +71,6 @@ const Index = () => {
       console.error('Error loading data from localStorage:', error);
       // Graceful fallback - reset corrupted data
       localStorage.removeItem('studyx_batches');
-      localStorage.removeItem('studyx_lectures');
       localStorage.removeItem('studyx_notes');
       localStorage.removeItem('studyx_dpps');
     } finally {
@@ -131,8 +114,8 @@ const Index = () => {
 
   const stats = [
     { number: `${batches.length}`, label: 'Active Batches', icon: BookOpen, color: 'text-blue-400' },
-    { number: `${lectures.length}`, label: 'Video Lectures', icon: PlayCircle, color: 'text-green-400' },
     { number: `${notes.length + dpps.length}`, label: 'Study Materials', icon: FileText, color: 'text-purple-400' },
+    { number: '100+', label: 'Students', icon: Users, color: 'text-green-400' },
     { number: '24/7', label: 'Expert Support', icon: Clock, color: 'text-orange-400' }
   ];
 
@@ -207,89 +190,57 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Recent Content Section */}
-      {(lectures.length > 0 || notes.length > 0 || dpps.length > 0) && (
+      {/* Recent Study Materials Section */}
+      {(notes.length > 0 || dpps.length > 0) && (
         <section className="px-4 pb-16">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12 text-white">Your Learning Content</h2>
+            <h2 className="text-3xl font-bold text-center mb-12 text-white">Your Study Materials</h2>
             
-            {/* Recent Lectures */}
-            {lectures.length > 0 && (
-              <div className="mb-12">
-                <h3 className="text-2xl font-bold mb-6 text-white">Recent Lectures ({lectures.length})</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {lectures.slice(0, 4).map((lecture) => (
-                    <Card key={lecture.id} className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors">
-                      <CardContent className="p-4">
-                        <div className="flex items-center space-x-3">
-                          <PlayCircle className="w-8 h-8 text-green-400" />
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-white">{lecture.title}</h4>
-                            <p className="text-sm text-gray-400">{lecture.subject} • {getBatchName(lecture.batchId)}</p>
-                          </div>
-                          <Button 
-                            size="sm" 
-                            onClick={() => window.open(lecture.videoUrl, '_blank')}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            Watch
-                          </Button>
+            <div className="mb-12">
+              <h3 className="text-2xl font-bold mb-6 text-white">Recent Materials</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                {notes.slice(0, 3).map((note) => (
+                  <Card key={note.id} className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors">
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <BookOpen className="w-8 h-8 text-blue-400" />
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-white">{note.title}</h4>
+                          <p className="text-sm text-gray-400">Notes • {note.subject} • {getBatchName(note.batchId)}</p>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                        <Button 
+                          size="sm" 
+                          onClick={() => window.open(note.pdfUrl, '_blank')}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                {dpps.slice(0, 3).map((dpp) => (
+                  <Card key={dpp.id} className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors">
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <FileText className="w-8 h-8 text-orange-400" />
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-white">{dpp.title}</h4>
+                          <p className="text-sm text-gray-400">DPP • {dpp.subject} • {getBatchName(dpp.batchId)}</p>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          onClick={() => window.open(dpp.pdfUrl, '_blank')}
+                          className="bg-orange-600 hover:bg-orange-700"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            )}
-
-            {/* Recent Notes & DPPs */}
-            {(notes.length > 0 || dpps.length > 0) && (
-              <div className="mb-12">
-                <h3 className="text-2xl font-bold mb-6 text-white">Study Materials</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {notes.slice(0, 3).map((note) => (
-                    <Card key={note.id} className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors">
-                      <CardContent className="p-4">
-                        <div className="flex items-center space-x-3">
-                          <BookOpen className="w-8 h-8 text-blue-400" />
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-white">{note.title}</h4>
-                            <p className="text-sm text-gray-400">Notes • {note.subject} • {getBatchName(note.batchId)}</p>
-                          </div>
-                          <Button 
-                            size="sm" 
-                            onClick={() => window.open(note.pdfUrl, '_blank')}
-                            className="bg-blue-600 hover:bg-blue-700"
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  {dpps.slice(0, 3).map((dpp) => (
-                    <Card key={dpp.id} className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors">
-                      <CardContent className="p-4">
-                        <div className="flex items-center space-x-3">
-                          <FileText className="w-8 h-8 text-orange-400" />
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-white">{dpp.title}</h4>
-                            <p className="text-sm text-gray-400">DPP • {dpp.subject} • {getBatchName(dpp.batchId)}</p>
-                          </div>
-                          <Button 
-                            size="sm" 
-                            onClick={() => window.open(dpp.pdfUrl, '_blank')}
-                            className="bg-orange-600 hover:bg-orange-700"
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </section>
       )}
