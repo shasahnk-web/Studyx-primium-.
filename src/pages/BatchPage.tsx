@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ArrowLeft, PlayCircle, FileText, BookOpen, Download, AlertCircle, Video } from 'lucide-react';
 import { getStorageData, addStorageListener, debugLocalStorage } from '@/utils/localStorage';
+import { useToast } from '@/hooks/use-toast';
 
 interface Batch {
   id: string;
@@ -53,6 +53,7 @@ interface LiveLecture extends ContentItem {
 const BatchPage = () => {
   const { batchId } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [batch, setBatch] = useState<Batch | null>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -142,7 +143,11 @@ const BatchPage = () => {
       window.open(videoUrl, '_blank');
     } else {
       console.warn('No video URL provided');
-      toast.error('Video URL not available');
+      toast({
+        title: "Error",
+        description: "Video URL not available",
+        variant: "destructive"
+      });
     }
   };
 
@@ -152,7 +157,11 @@ const BatchPage = () => {
       window.open(url, '_blank');
     } else {
       console.warn('No download URL provided');
-      toast.error('Download URL not available');
+      toast({
+        title: "Error",
+        description: "Download URL not available",
+        variant: "destructive"
+      });
     }
   };
 
@@ -162,7 +171,11 @@ const BatchPage = () => {
       window.open(liveUrl, '_blank');
     } else {
       console.warn('No live lecture URL provided');
-      toast.error('Live lecture URL not available');
+      toast({
+        title: "Error",
+        description: "Live lecture URL not available",
+        variant: "destructive"
+      });
     }
   };
 
