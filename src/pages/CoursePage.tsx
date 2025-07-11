@@ -4,7 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Users, DollarSign, PlayCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, DollarSign, PlayCircle, AlertCircle } from 'lucide-react';
+import { getStorageData, addStorageListener } from '@/utils/localStorage';
 
 interface Batch {
   id: string;
@@ -22,6 +23,8 @@ const CoursePage = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const [batches, setBatches] = useState<Batch[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const courseInfo = {
     'pw-courses': {
@@ -47,17 +50,81 @@ const CoursePage = () => {
   const currentCourse = courseInfo[courseId as keyof typeof courseInfo];
 
   useEffect(() => {
-    // Load batches from localStorage
-    const savedBatches = localStorage.getItem('studyx_batches');
-    if (savedBatches) {
-      const allBatches = JSON.parse(savedBatches);
-      const courseBatches = allBatches.filter((batch: Batch) => batch.courseId === courseId);
-      setBatches(courseBatches);
-    }
+    loadBatches();
+    
+    // Set up storage listener for real-time updates
+    const removeListener = addStorageListener(() => {
+      loadBatches();
+    });
+
+    return removeListener;
   }, [courseId]);
 
+  const loadBatches = () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const allBatches = getStorageData<Batch>('batches');
+      const courseBatches = allBatches.filter((batch: Batch) => batch.courseId === courseId);
+      setBatches(courseBatches);
+    } catch (error) {
+      console.error('Error loading batches:', error);
+      setError('Failed to load batches. Please try refreshing the page.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!currentCourse) {
-    return <div>Course not found</div>;
+    return (
+      <div className="min-h-screen bg-gray-900 text-white">
+        <header className="flex items-center justify-between p-4 border-b border-gray-800">
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate('/')}
+              className="text-gray-400 hover:text-white"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <div className="flex items-center space-x-2">
+              <img 
+                src="/lovable-uploads/dcac7197-2a19-41d1-9f13-20ca958e4750.png" 
+                alt="StudyX Premium" 
+                className="h-8 w-auto"
+              />
+            </div>
+          </div>
+        </header>
+
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="bg-gray-800 border-gray-700 max-w-md mx-4">
+            <CardContent className="p-8 text-center">
+              <AlertCircle className="w-16 h-16 mx-auto text-red-400 mb-4" />
+              <h2 className="text-xl font-bold mb-2 text-white">Course Not Found</h2>
+              <p className="text-gray-400 mb-6">The requested course could not be found.</p>
+              <Button onClick={() => navigate('/')} className="w-full">
+                Return to Home
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-xl">Loading course batches...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -75,10 +142,11 @@ const CoursePage = () => {
             Back
           </Button>
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
-            </div>
-            <span className="text-xl font-bold">StudyX</span>
+            <img 
+              src="/lovable-uploads/dcac7197-2a19-41d1-9f13-20ca958e4750.png" 
+              alt="StudyX Premium" 
+              className="h-8 w-auto"
+            />
           </div>
         </div>
       </header>
@@ -86,7 +154,7 @@ const CoursePage = () => {
       {/* Course Hero */}
       <section className={`bg-gradient-to-br ${currentCourse.gradient} p-8`}>
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2">{currentCourse.title}</h1>
+          <h1 className="text-4xl font-bold mb-2 text-white">{currentCourse.title}</h1>
           <p className="text-white/80 text-lg mb-4">{currentCourse.subtitle}</p>
           <div className="flex flex-wrap gap-2">
             {currentCourse.subjects.map((subject, index) => (
@@ -101,11 +169,23 @@ const CoursePage = () => {
       {/* Batches Section */}
       <section className="p-8">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold mb-8">Available Batches</h2>
+          <h2 className="text-3xl font-bold mb-8 text-white">Available Batches</h2>
+          
+          {error && (
+            <Card className="bg-red-900/20 border-red-500/50 mb-6">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <AlertCircle className="w-5 h-5 text-red-400" />
+                  <p className="text-red-300">{error}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           
           {batches.length === 0 ? (
             <Card className="bg-gray-800 border-gray-700">
               <CardContent className="p-8 text-center">
+                <Users className="w-16 h-16 mx-auto text-gray-600 mb-4" />
                 <p className="text-gray-400 mb-4">No batches available for this course yet.</p>
                 <p className="text-sm text-gray-500">
                   Batches will appear here once they are added by the admin.
@@ -124,7 +204,7 @@ const CoursePage = () => {
                         className="w-full h-40 object-cover rounded-lg mb-4"
                       />
                     )}
-                    <h3 className="text-xl font-bold">{batch.name}</h3>
+                    <h3 className="text-xl font-bold text-white">{batch.name}</h3>
                     <p className="text-gray-400 text-sm">{batch.description}</p>
                   </CardHeader>
                   <CardContent>
@@ -143,14 +223,14 @@ const CoursePage = () => {
                     
                     <div className="flex flex-wrap gap-1 mb-4">
                       {batch.subjects.map((subject, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
+                        <Badge key={index} variant="outline" className="text-xs border-gray-600 text-gray-300">
                           {subject}
                         </Badge>
                       ))}
                     </div>
 
                     <Button 
-                      className="w-full"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                       onClick={() => navigate(`/batch/${batch.id}`)}
                     >
                       <PlayCircle className="w-4 h-4 mr-2" />

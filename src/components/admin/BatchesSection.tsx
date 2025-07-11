@@ -6,26 +6,32 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Edit, Trash2, Users, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Plus, Edit, Trash2, Users, Calendar, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
+import { getStorageData, setStorageData } from '@/utils/localStorage';
 
 interface Batch {
   id: string;
   name: string;
   description: string;
   subjects: string[];
-  imageUrl: string;
+  image?: string;
   startDate: string;
   endDate: string;
-  fee: number;
+  fee?: string;
+  courseId: string;
   status: 'active' | 'inactive';
-  enrolledCount: number;
   createdAt: string;
 }
 
 const subjects = ['Maths', 'Chemistry', 'Biology', 'Physics', 'Hindi', 'English', 'IT', 'Sanskrit', 'SST'];
+const courses = [
+  { id: 'pw-courses', name: 'PW Courses' },
+  { id: 'pw-khazana', name: 'PW Khazana' },
+  { id: 'pw-tests', name: 'PW Tests' }
+];
 
 export function BatchesSection() {
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -35,10 +41,11 @@ export function BatchesSection() {
     name: '',
     description: '',
     subjects: [] as string[],
-    imageUrl: '',
+    image: '',
     startDate: '',
     endDate: '',
-    fee: 0,
+    fee: '',
+    courseId: '',
     status: 'active' as 'active' | 'inactive',
   });
 
@@ -47,22 +54,35 @@ export function BatchesSection() {
   }, []);
 
   const loadBatches = () => {
-    const savedBatches = JSON.parse(localStorage.getItem('studyx_batches') || '[]');
+    const savedBatches = getStorageData<Batch>('batches');
     setBatches(savedBatches);
+  };
+
+  const saveBatches = (updatedBatches: Batch[]) => {
+    const success = setStorageData('batches', updatedBatches);
+    if (success) {
+      setBatches(updatedBatches);
+    } else {
+      toast.error('Failed to save batches. Please try again.');
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.description || formData.subjects.length === 0) {
-      toast.error('Please fill in all required fields and select at least one subject');
+    if (!formData.name || !formData.description || !formData.courseId || formData.subjects.length === 0) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    if (new Date(formData.endDate) <= new Date(formData.startDate)) {
+      toast.error('End date must be after start date');
       return;
     }
 
     const newBatch: Batch = {
       id: editingBatch ? editingBatch.id : Date.now().toString(),
       ...formData,
-      enrolledCount: editingBatch ? editingBatch.enrolledCount : 0,
       createdAt: editingBatch ? editingBatch.createdAt : new Date().toISOString(),
     };
 
@@ -77,9 +97,7 @@ export function BatchesSection() {
       toast.success('Batch added successfully');
     }
 
-    setBatches(updatedBatches);
-    localStorage.setItem('studyx_batches', JSON.stringify(updatedBatches));
-    
+    saveBatches(updatedBatches);
     resetForm();
   };
 
@@ -88,10 +106,11 @@ export function BatchesSection() {
       name: '',
       description: '',
       subjects: [],
-      imageUrl: '',
+      image: '',
       startDate: '',
       endDate: '',
-      fee: 0,
+      fee: '',
+      courseId: '',
       status: 'active',
     });
     setShowForm(false);
@@ -103,10 +122,11 @@ export function BatchesSection() {
       name: batch.name,
       description: batch.description,
       subjects: batch.subjects,
-      imageUrl: batch.imageUrl,
+      image: batch.image || '',
       startDate: batch.startDate,
       endDate: batch.endDate,
-      fee: batch.fee,
+      fee: batch.fee || '',
+      courseId: batch.courseId,
       status: batch.status,
     });
     setEditingBatch(batch);
@@ -114,41 +134,40 @@ export function BatchesSection() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this batch? This will also delete all associated lectures, notes, and DPPs.')) {
+    if (confirm('Are you sure you want to delete this batch? This will also remove all associated lectures, notes, and DPPs.')) {
+      // Remove batch
       const updatedBatches = batches.filter(batch => batch.id !== id);
-      setBatches(updatedBatches);
-      localStorage.setItem('studyx_batches', JSON.stringify(updatedBatches));
-      
-      // Also clean up associated content
-      const lectures = JSON.parse(localStorage.getItem('studyx_lectures') || '[]');
-      const notes = JSON.parse(localStorage.getItem('studyx_notes') || '[]');
-      const dpps = JSON.parse(localStorage.getItem('studyx_dpps') || '[]');
-      
-      localStorage.setItem('studyx_lectures', JSON.stringify(lectures.filter((l: any) => l.batchId !== id)));
-      localStorage.setItem('studyx_notes', JSON.stringify(notes.filter((n: any) => n.batchId !== id)));
-      localStorage.setItem('studyx_dpps', JSON.stringify(dpps.filter((d: any) => d.batchId !== id)));
-      
+      saveBatches(updatedBatches);
+
+      // Remove associated content
+      const lectures = getStorageData('lectures');
+      const filteredLectures = lectures.filter((item: any) => item.batchId !== id);
+      setStorageData('lectures', filteredLectures);
+
+      const notes = getStorageData('notes');
+      const filteredNotes = notes.filter((item: any) => item.batchId !== id);
+      setStorageData('notes', filteredNotes);
+
+      const dpps = getStorageData('dpps');
+      const filteredDpps = dpps.filter((item: any) => item.batchId !== id);
+      setStorageData('dpps', filteredDpps);
+
       toast.success('Batch and associated content deleted successfully');
     }
   };
 
-  const toggleBatchStatus = (id: string) => {
-    const updatedBatches = batches.map(batch => 
-      batch.id === id 
-        ? { ...batch, status: batch.status === 'active' ? 'inactive' as const : 'active' as const }
-        : batch
-    );
-    setBatches(updatedBatches);
-    localStorage.setItem('studyx_batches', JSON.stringify(updatedBatches));
-    toast.success('Batch status updated');
+  const handleSubjectToggle = (subject: string) => {
+    setFormData(prev => ({
+      ...prev,
+      subjects: prev.subjects.includes(subject)
+        ? prev.subjects.filter(s => s !== subject)
+        : [...prev.subjects, subject]
+    }));
   };
 
-  const handleSubjectChange = (subject: string, checked: boolean) => {
-    if (checked) {
-      setFormData({...formData, subjects: [...formData.subjects, subject]});
-    } else {
-      setFormData({...formData, subjects: formData.subjects.filter(s => s !== subject)});
-    }
+  const getCourseName = (courseId: string) => {
+    const course = courses.find(c => c.id === courseId);
+    return course ? course.name : 'Unknown Course';
   };
 
   return (
@@ -183,14 +202,17 @@ export function BatchesSection() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="fee" className="text-foreground">Fee (₹)</Label>
-                  <Input
-                    id="fee"
-                    type="number"
-                    value={formData.fee}
-                    onChange={(e) => setFormData({...formData, fee: Number(e.target.value)})}
-                    placeholder="Enter fee amount"
-                  />
+                  <Label htmlFor="course" className="text-foreground">Course *</Label>
+                  <Select value={formData.courseId} onValueChange={(value) => setFormData({...formData, courseId: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select course" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {courses.map(course => (
+                        <SelectItem key={course.id} value={course.id}>{course.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -208,13 +230,13 @@ export function BatchesSection() {
 
               <div>
                 <Label className="text-foreground">Subjects *</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                <div className="grid grid-cols-3 gap-3 mt-2">
                   {subjects.map(subject => (
                     <div key={subject} className="flex items-center space-x-2">
                       <Checkbox
                         id={subject}
                         checked={formData.subjects.includes(subject)}
-                        onCheckedChange={(checked) => handleSubjectChange(subject, checked as boolean)}
+                        onCheckedChange={() => handleSubjectToggle(subject)}
                       />
                       <Label htmlFor={subject} className="text-sm text-foreground">{subject}</Label>
                     </div>
@@ -224,46 +246,60 @@ export function BatchesSection() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="startDate" className="text-foreground">Start Date</Label>
+                  <Label htmlFor="startDate" className="text-foreground">Start Date *</Label>
                   <Input
                     id="startDate"
                     type="date"
                     value={formData.startDate}
                     onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                    required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="endDate" className="text-foreground">End Date</Label>
+                  <Label htmlFor="endDate" className="text-foreground">End Date *</Label>
                   <Input
                     id="endDate"
                     type="date"
                     value={formData.endDate}
                     onChange={(e) => setFormData({...formData, endDate: e.target.value})}
+                    required
                   />
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="imageUrl" className="text-foreground">Thumbnail Image URL</Label>
-                <Input
-                  id="imageUrl"
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                  placeholder="Enter image URL"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="fee" className="text-foreground">Fee (Optional)</Label>
+                  <Input
+                    id="fee"
+                    type="number"
+                    value={formData.fee}
+                    onChange={(e) => setFormData({...formData, fee: e.target.value})}
+                    placeholder="Enter fee amount"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="status" className="text-foreground">Status</Label>
+                  <Select value={formData.status} onValueChange={(value: 'active' | 'inactive') => setFormData({...formData, status: value})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div>
-                <Label htmlFor="status" className="text-foreground">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value as 'active' | 'inactive'})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="image" className="text-foreground">Image URL (Optional)</Label>
+                <Input
+                  id="image"
+                  value={formData.image}
+                  onChange={(e) => setFormData({...formData, image: e.target.value})}
+                  placeholder="Enter image URL"
+                />
               </div>
 
               <div className="flex space-x-2">
@@ -288,9 +324,9 @@ export function BatchesSection() {
             <TableHeader>
               <TableRow>
                 <TableHead className="text-foreground">Name</TableHead>
+                <TableHead className="text-foreground">Course</TableHead>
                 <TableHead className="text-foreground">Subjects</TableHead>
-                <TableHead className="text-foreground">Students</TableHead>
-                <TableHead className="text-foreground">Fee</TableHead>
+                <TableHead className="text-foreground">Duration</TableHead>
                 <TableHead className="text-foreground">Status</TableHead>
                 <TableHead className="text-foreground">Actions</TableHead>
               </TableRow>
@@ -299,41 +335,35 @@ export function BatchesSection() {
               {batches.map((batch) => (
                 <TableRow key={batch.id}>
                   <TableCell className="text-foreground font-medium">{batch.name}</TableCell>
+                  <TableCell className="text-foreground">{getCourseName(batch.courseId)}</TableCell>
                   <TableCell className="text-foreground">
                     <div className="flex flex-wrap gap-1">
-                      {batch.subjects.slice(0, 3).map(subject => (
-                        <span key={subject} className="px-2 py-1 bg-muted text-xs rounded">
+                      {batch.subjects.slice(0, 2).map(subject => (
+                        <span key={subject} className="bg-primary/10 text-primary px-2 py-1 rounded text-xs">
                           {subject}
                         </span>
                       ))}
-                      {batch.subjects.length > 3 && (
-                        <span className="px-2 py-1 bg-muted text-xs rounded">
-                          +{batch.subjects.length - 3} more
+                      {batch.subjects.length > 2 && (
+                        <span className="text-xs text-muted-foreground">
+                          +{batch.subjects.length - 2} more
                         </span>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-foreground">{batch.enrolledCount || 0}</TableCell>
-                  <TableCell className="text-foreground">₹{batch.fee || 0}</TableCell>
+                  <TableCell className="text-foreground">
+                    <div className="text-sm">
+                      <div>{new Date(batch.startDate).toLocaleDateString()}</div>
+                      <div className="text-muted-foreground">to {new Date(batch.endDate).toLocaleDateString()}</div>
+                    </div>
+                  </TableCell>
                   <TableCell>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => toggleBatchStatus(batch.id)}
-                      className="flex items-center space-x-1"
-                    >
-                      {batch.status === 'active' ? (
-                        <>
-                          <ToggleRight className="w-4 h-4 text-green-600" />
-                          <span className="text-green-600">Active</span>
-                        </>
-                      ) : (
-                        <>
-                          <ToggleLeft className="w-4 h-4 text-red-600" />
-                          <span className="text-red-600">Inactive</span>
-                        </>
-                      )}
-                    </Button>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      batch.status === 'active' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                    }`}>
+                      {batch.status}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
