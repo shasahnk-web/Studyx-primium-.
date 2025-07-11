@@ -1,173 +1,141 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Search, Play, BookOpen, Users, Star, Clock, Calendar, MapPin, Phone, Mail, Facebook, Twitter, Instagram, Youtube, Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { BookOpen, FileText, Users, Clock, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const courses = [
     {
-      id: "jee-main-advanced",
-      title: "JEE Main + Advanced",
-      description: "Complete preparation for JEE Main and Advanced with expert faculty",
-      image: "/placeholder.svg",
-      rating: 4.8,
-      students: "2.5L+",
-      duration: "2 Years",
-      subjects: ["Physics", "Chemistry", "Mathematics"]
+      id: 'pw-courses',
+      title: 'PW Courses',
+      subtitle: 'Physics Wallah Integration',
+      description: 'Padhlo chahe kahin se, Manzil milegi yahi se!',
+      subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
+      gradient: 'from-green-400 to-green-600',
+      icon: '🔬',
+      badge: 'PW'
     },
     {
-      id: "neet-ug",
-      title: "NEET UG",
-      description: "Comprehensive NEET preparation with previous year analysis",
-      image: "/placeholder.svg",
-      rating: 4.9,
-      students: "3L+",
-      duration: "2 Years",
-      subjects: ["Physics", "Chemistry", "Biology"]
+      id: 'pw-khazana',
+      title: 'PW Khazana',
+      subtitle: 'Treasure of Knowledge',
+      description: 'Padhlo chahe kahin se, Manzil milegi yahi se!',
+      subjects: ['Hindi', 'English', 'History', 'Geography', 'Political Science', 'Economics'],
+      gradient: 'from-orange-400 to-orange-600',
+      icon: '💎',
+      badge: 'PW'
     },
     {
-      id: "class-12-cbse",
-      title: "Class 12 CBSE",
-      description: "Board exam preparation with conceptual clarity",
-      image: "/placeholder.svg",
-      rating: 4.7,
-      students: "1.8L+",
-      duration: "1 Year",
-      subjects: ["Physics", "Chemistry", "Mathematics", "Biology"]
-    },
-    {
-      id: "class-11-cbse",
-      title: "Class 11 CBSE",
-      description: "Foundation building for competitive exams and boards",
-      image: "/placeholder.svg",
-      rating: 4.6,
-      students: "1.5L+",
-      duration: "1 Year",
-      subjects: ["Physics", "Chemistry", "Mathematics", "Biology"]
+      id: 'pw-tests',
+      title: 'PW Tests',
+      subtitle: 'Practice & Assessment',
+      description: 'Padhlo chahe kahin se, Manzil milegi yahi se!',
+      subjects: ['Mock Tests', 'Previous Year Papers', 'Chapter Tests', 'Full Syllabus Tests'],
+      gradient: 'from-purple-400 to-purple-600',
+      icon: '📝',
+      badge: 'Beta',
+      isBeta: true
     }
   ];
 
-  const features = [
-    {
-      icon: <Play className="h-8 w-8 text-primary" />,
-      title: "Live Classes",
-      description: "Interactive live sessions with top educators"
-    },
-    {
-      icon: <BookOpen className="h-8 w-8 text-primary" />,
-      title: "Study Material",
-      description: "Comprehensive notes and practice questions"
-    },
-    {
-      icon: <Users className="h-8 w-8 text-primary" />,
-      title: "Doubt Clearing",
-      description: "24/7 doubt resolution by expert mentors"
-    }
+  const stats = [
+    { number: '500+', label: 'Video Lectures', icon: BookOpen, color: 'text-blue-400' },
+    { number: '1000+', label: 'Practice Questions', icon: Users, color: 'text-purple-400' },
+    { number: '24/7', label: 'Expert Support', icon: Clock, color: 'text-green-400' }
   ];
+
+  const handleCourseClick = (courseId: string) => {
+    navigate(`/courses/${courseId}`);
+  };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-900 text-white">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-foreground">StudyX</h1>
-            </div>
-            
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-6">
-              <a href="#" className="text-foreground hover:text-primary transition-colors">Home</a>
-              <a href="#courses" className="text-foreground hover:text-primary transition-colors">Courses</a>
-              <a href="#about" className="text-foreground hover:text-primary transition-colors">About</a>
-              <a href="#contact" className="text-foreground hover:text-primary transition-colors">Contact</a>
-            </nav>
-
-            {/* Mobile Menu Button */}
-            <button 
-              className="md:hidden text-foreground"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-
-            {/* Desktop Auth Buttons */}
-            <div className="hidden md:flex items-center space-x-4">
-              <Button variant="outline">Login</Button>
-              <Button>Sign Up</Button>
-            </div>
+      <header className="flex items-center justify-between p-4 border-b border-gray-800">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">S</span>
           </div>
-
-          {/* Mobile Navigation */}
-          {isMobileMenuOpen && (
-            <nav className="md:hidden mt-4 pb-4 border-t">
-              <div className="flex flex-col space-y-4 pt-4">
-                <a href="#" className="text-foreground hover:text-primary transition-colors">Home</a>
-                <a href="#courses" className="text-foreground hover:text-primary transition-colors">Courses</a>
-                <a href="#about" className="text-foreground hover:text-primary transition-colors">About</a>
-                <a href="#contact" className="text-foreground hover:text-primary transition-colors">Contact</a>
-                <div className="flex flex-col space-y-2 pt-4">
-                  <Button variant="outline">Login</Button>
-                  <Button>Sign Up</Button>
-                </div>
-              </div>
-            </nav>
-          )}
+          <span className="text-xl font-bold">StudyX</span>
         </div>
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => navigate('/admin')}
+          className="text-gray-400 hover:text-white"
+        >
+          <Settings className="w-4 h-4 mr-2" />
+          Admin Panel
+        </Button>
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-            Master Your Studies with
-            <span className="text-primary"> StudyX</span>
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join millions of students in their journey to academic excellence with our comprehensive learning platform
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input 
-                placeholder="Search courses..." 
-                className="pl-10"
-              />
-            </div>
-            <Button size="lg">Get Started</Button>
-          </div>
-        </div>
+      <section className="text-center py-16 px-4">
+        <h1 className="text-4xl md:text-6xl font-bold mb-6">
+          Study Smart with StudyX
+        </h1>
+        <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
+          Comprehensive learning modules designed for academic excellence
+        </p>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-foreground mb-4">Why Choose StudyX?</h3>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Experience the best in online education with our innovative features and expert guidance
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="text-center border-border">
-                <CardHeader>
-                  <div className="flex justify-center mb-4">
-                    {feature.icon}
+      {/* Courses Section */}
+      <section className="px-4 pb-16">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-4">Our Courses</h2>
+          <p className="text-gray-400 text-center mb-12">
+            Choose from our comprehensive learning programs
+          </p>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {courses.map((course) => (
+              <Card 
+                key={course.id}
+                className={`bg-gradient-to-br ${course.gradient} border-0 cursor-pointer transform hover:scale-105 transition-all duration-300`}
+                onClick={() => handleCourseClick(course.id)}
+              >
+                <CardContent className="p-6 text-white relative">
+                  <div className="absolute top-4 right-4">
+                    <span className="bg-white text-gray-900 px-2 py-1 rounded-full text-xs font-bold">
+                      {course.badge}
+                    </span>
+                    {course.isBeta && (
+                      <span className="bg-yellow-400 text-gray-900 px-2 py-1 rounded-full text-xs font-bold ml-1">
+                        Beta
+                      </span>
+                    )}
                   </div>
-                  <CardTitle className="text-foreground">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-muted-foreground">
-                    {feature.description}
-                  </CardDescription>
+                  
+                  <div className="mb-4">
+                    <div className="text-3xl mb-2">{course.icon}</div>
+                    <h3 className="text-2xl font-bold mb-1">{course.title}</h3>
+                    <p className="text-white/80 text-sm mb-3">{course.subtitle}</p>
+                    <p className="text-white/70 text-sm mb-4">{course.description}</p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {course.subjects.slice(0, 4).map((subject, index) => (
+                      <span 
+                        key={index}
+                        className="bg-white/20 px-2 py-1 rounded text-xs"
+                      >
+                        {subject}
+                      </span>
+                    ))}
+                    {course.subjects.length > 4 && (
+                      <span className="bg-white/20 px-2 py-1 rounded text-xs">
+                        +{course.subjects.length - 4} more
+                      </span>
+                    )}
+                  </div>
+
+                  <Button className="w-full bg-white text-gray-900 hover:bg-gray-100">
+                    {course.id === 'pw-tests' ? 'Start Practice' : 'Start Learning'}
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -175,189 +143,73 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Courses Section */}
-      <section id="courses" className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-foreground mb-4">Popular Courses</h3>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Choose from our wide range of courses designed by expert educators
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {courses.map((course) => (
-              <Link key={course.id} to={`/courses/${course.id}`}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer border-border h-full">
-                  <div className="aspect-video bg-muted rounded-t-lg"></div>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {course.duration}
-                      </Badge>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                        <span>{course.rating}</span>
-                      </div>
-                    </div>
-                    <CardTitle className="text-lg text-foreground">{course.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <CardDescription className="text-muted-foreground mb-3">
-                      {course.description}
-                    </CardDescription>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1" />
-                        <span>{course.students} students</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {course.subjects.map((subject) => (
-                        <Badge key={subject} variant="outline" className="text-xs">
-                          {subject}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+      {/* Stats Section */}
+      <section className="px-4 pb-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6">
+            {stats.map((stat, index) => (
+              <Card key={index} className="bg-gray-800 border-gray-700">
+                <CardContent className="p-6 text-center">
+                  <stat.icon className={`w-12 h-12 mx-auto mb-4 ${stat.color}`} />
+                  <h3 className="text-3xl font-bold mb-2">{stat.number}</h3>
+                  <p className="text-gray-400">{stat.label}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-primary/5">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div>
-              <h4 className="text-3xl font-bold text-foreground mb-2">10M+</h4>
-              <p className="text-muted-foreground">Students Enrolled</p>
-            </div>
-            <div>
-              <h4 className="text-3xl font-bold text-foreground mb-2">500+</h4>
-              <p className="text-muted-foreground">Expert Teachers</p>
-            </div>
-            <div>
-              <h4 className="text-3xl font-bold text-foreground mb-2">1000+</h4>
-              <p className="text-muted-foreground">Courses Available</p>
-            </div>
-            <div>
-              <h4 className="text-3xl font-bold text-foreground mb-2">95%</h4>
-              <p className="text-muted-foreground">Success Rate</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="py-16 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-foreground mb-4">Get in Touch</h3>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Have questions? We're here to help you succeed in your academic journey
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="text-center border-border">
-              <CardHeader>
-                <div className="flex justify-center mb-4">
-                  <Phone className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-foreground">Call Us</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-muted-foreground">
-                  +91 98765 43210
-                </CardDescription>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center border-border">
-              <CardHeader>
-                <div className="flex justify-center mb-4">
-                  <Mail className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-foreground">Email Us</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-muted-foreground">
-                  support@studyx.com
-                </CardDescription>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center border-border">
-              <CardHeader>
-                <div className="flex justify-center mb-4">
-                  <MapPin className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-foreground">Visit Us</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-muted-foreground">
-                  123 Education Street, Learning City
-                </CardDescription>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="bg-muted py-12">
-        <div className="container mx-auto px-4">
+      <footer className="bg-gray-800 border-t border-gray-700">
+        <div className="max-w-6xl mx-auto px-4 py-12">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h4 className="text-lg font-semibold text-foreground mb-4">StudyX</h4>
-              <p className="text-muted-foreground mb-4">
-                Empowering students worldwide with quality education and innovative learning solutions.
-              </p>
-              <div className="flex space-x-4">
-                <Facebook className="h-5 w-5 text-muted-foreground hover:text-primary cursor-pointer" />
-                <Twitter className="h-5 w-5 text-muted-foreground hover:text-primary cursor-pointer" />
-                <Instagram className="h-5 w-5 text-muted-foreground hover:text-primary cursor-pointer" />
-                <Youtube className="h-5 w-5 text-muted-foreground hover:text-primary cursor-pointer" />
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">S</span>
+                </div>
+                <span className="text-xl font-bold">StudyX</span>
               </div>
+              <p className="text-gray-400 text-sm">
+                Empowering students with quality education and comprehensive study materials for academic excellence.
+              </p>
             </div>
-            
+
             <div>
-              <h5 className="font-semibold text-foreground mb-4">Courses</h5>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">JEE Preparation</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">NEET Preparation</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Board Exams</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Foundation</a></li>
+              <h4 className="font-semibold mb-4 text-blue-400">Quick Links</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="#" className="hover:text-white">Home</a></li>
+                <li><a href="#" className="hover:text-white">About Us</a></li>
+                <li><a href="#" className="hover:text-white">Batches</a></li>
+                <li><a href="#" className="hover:text-white">Resources</a></li>
               </ul>
             </div>
-            
+
             <div>
-              <h5 className="font-semibold text-foreground mb-4">Support</h5>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
+              <h4 className="font-semibold mb-4 text-purple-400">Popular Subjects</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="#" className="hover:text-white">Physics</a></li>
+                <li><a href="#" className="hover:text-white">Chemistry</a></li>
+                <li><a href="#" className="hover:text-white">Mathematics</a></li>
+                <li><a href="#" className="hover:text-white">Biology</a></li>
               </ul>
             </div>
-            
+
             <div>
-              <h5 className="font-semibold text-foreground mb-4">Company</h5>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Press</a></li>
+              <h4 className="font-semibold mb-4 text-green-400">Contact Info</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>Email: support@studyx.com</li>
+                <li>Phone: +91 98765 43210</li>
+                <li>Address: Mumbai, India</li>
+                <li>Hours: 24/7 Support</li>
               </ul>
             </div>
           </div>
-          
-          <div className="border-t border-border mt-8 pt-8 text-center">
-            <p className="text-muted-foreground">
-              © 2024 StudyX. All rights reserved.
+
+          <div className="border-t border-gray-700 mt-8 pt-8 text-center">
+            <p className="text-gray-400 text-sm">
+              © 2024 StudyX. All rights reserved. Made with ❤️ for students in India.
             </p>
           </div>
         </div>
