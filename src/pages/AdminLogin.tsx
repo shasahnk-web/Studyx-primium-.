@@ -18,7 +18,7 @@ const AdminLogin = () => {
     if (password === '5355') {
       localStorage.setItem('studyx_admin_auth', 'true');
       toast.success('Login successful!');
-      navigate('/admin/dashboard');
+      navigate('/admin/panel');
     } else {
       toast.error('Invalid password!');
     }
