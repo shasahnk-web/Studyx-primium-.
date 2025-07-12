@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -138,8 +137,8 @@ const Index = () => {
             <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-yellow-50">
               <CardHeader>
                 <img 
-                  src={nextTopper.image} 
-                  alt={nextTopper.title}
+                  src="/placeholder.svg" 
+                  alt="Next Topper"
                   className="w-full h-40 object-cover rounded-t-lg"
                 />
               </CardHeader>
@@ -147,29 +146,29 @@ const Index = () => {
                 <CardTitle className="mb-2 flex items-center justify-between text-orange-800">
                   <div className="flex items-center">
                     <Trophy className="w-5 h-5 mr-2 text-orange-600" />
-                    {nextTopper.title}
+                    Next Topper
                   </div>
                   <Badge variant="secondary" className="ml-2 bg-orange-100 text-orange-800">
                     <Star className="w-3 h-3 mr-1" />
-                    {nextTopper.rating}
+                    4.8
                   </Badge>
                 </CardTitle>
                 <CardDescription className="mb-4 text-orange-700">
-                  {nextTopper.description}
+                  Become the next success story with our proven methodology
                 </CardDescription>
                 <div className="flex items-center justify-between text-sm text-orange-600 mb-4">
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 mr-1" />
-                    {nextTopper.duration}
+                    Ongoing
                   </div>
                   <div className="flex items-center">
                     <Users className="w-4 h-4 mr-1" />
-                    {nextTopper.students}
+                    1k+
                   </div>
                 </div>
                 <Button 
                   className="w-full bg-orange-600 hover:bg-orange-700" 
-                  onClick={() => window.open(nextTopper.link, '_blank')}
+                  onClick={() => window.open('https://studyverse-network.netlify.app/', '_blank')}
                 >
                   <Trophy className="w-4 h-4 mr-2" />
                   Join Next Topper

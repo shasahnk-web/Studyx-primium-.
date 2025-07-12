@@ -59,7 +59,8 @@ const TaskVerification = () => {
     
     setTimeout(() => {
       document.cookie = `${cookieName}=true; path=/; max-age=${24 * 61 * 60}`;
-      window.location.href = url;
+      // Instead of redirecting to external URL, redirect to PW Courses access page
+      navigate('/courses/pw-courses/access');
     }, 2000);
   };
 
@@ -125,6 +126,18 @@ const TaskVerification = () => {
       {/* Particles Background */}
       <div id="particles-js" className="absolute w-full h-full -z-10"></div>
       
+      {/* Header with Back Button */}
+      <div className="absolute top-4 left-4">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => navigate('/')}
+          className="text-gray-400 hover:text-white"
+        >
+          ← Back to Home
+        </Button>
+      </div>
+      
       {/* Main Container */}
       <Card className="bg-white/[0.07] border-[#00aeffe6]/20 backdrop-blur-sm shadow-[0_0_15px_rgba(0,174,255,0.3)] w-[400px] max-w-[90vw]">
         <CardContent className="p-8 text-center">
@@ -132,7 +145,7 @@ const TaskVerification = () => {
             Generate Your Access Key
           </h2>
           <p className="text-sm mb-5 text-[#d4eaff]">
-            Click the button below to generate your key.<br /><br />
+            Click the button below to generate your key for PW Courses access.<br /><br />
             Validity: 30 hours ⏰
           </p>
           
@@ -171,7 +184,7 @@ const TaskVerification = () => {
           </p>
           
           <p id="loadingMessage" className="loading-animation">
-            Generating URL, please wait...
+            Generating access key, please wait...
           </p>
         </CardContent>
       </Card>
