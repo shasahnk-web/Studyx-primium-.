@@ -2,11 +2,9 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, FileText, Users, Clock, Settings, Download } from 'lucide-react';
+import { BookOpen, FileText, Users, Clock, Settings, Download, Video, ExternalLink, Trophy, Star, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { fetchBatches, fetchNotes, fetchDPPs, type Batch, type Note, type DPP } from '@/services/supabaseService';
-import LiveLecturesSection from '@/components/LiveLecturesSection';
-import NextTopperSection from '@/components/NextTopperSection';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -94,6 +92,14 @@ const Index = () => {
     navigate(`/courses/${courseId}`);
   };
 
+  const handleNextTopperClick = () => {
+    window.open('https://studyverse-network.netlify.app/', '_blank', 'noopener,noreferrer');
+  };
+
+  const handleOpenLivePlayer = () => {
+    window.open('https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php', '_blank', 'noopener,noreferrer');
+  };
+
   const getBatchName = (batchId: string) => {
     const batch = batches.find(b => b.id === batchId);
     return batch ? batch.name : 'Unknown Batch';
@@ -161,12 +167,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Next Topper Section */}
-      <NextTopperSection />
-
-      {/* Live Lectures Section */}
-      <LiveLecturesSection />
-
       {/* Recent Study Materials Section */}
       {(notes.length > 0 || dpps.length > 0) && (
         <section className="px-4 pb-16">
@@ -222,7 +222,7 @@ const Index = () => {
         </section>
       )}
 
-      {/* Courses Section */}
+      {/* Courses Section with Next Topper */}
       <section className="px-4 pb-16">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-4 text-white">Our Courses</h2>
@@ -278,7 +278,83 @@ const Index = () => {
                 </CardContent>
               </Card>
             ))}
+
+            {/* Next Topper Card */}
+            <Card 
+              className="bg-gradient-to-br from-yellow-900/30 via-orange-800/20 to-red-900/30 border-yellow-500/50 hover:border-yellow-400/70 transition-all duration-300 cursor-pointer transform hover:scale-105"
+              onClick={handleNextTopperClick}
+            >
+              <CardContent className="p-6 text-white relative">
+                <div className="absolute top-4 right-4">
+                  <span className="bg-yellow-400 text-gray-900 px-2 py-1 rounded-full text-xs font-bold">
+                    Premium
+                  </span>
+                </div>
+                
+                <div className="mb-4">
+                  <div className="text-3xl mb-2">🏆</div>
+                  <h3 className="text-2xl font-bold mb-1">Next Topper</h3>
+                  <p className="text-white/80 text-sm mb-3">Success Network</p>
+                  <p className="text-white/70 text-sm mb-4">Join the community of achievers and be the next success story</p>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-6">
+                  <span className="bg-white/20 px-2 py-1 rounded text-xs">Top Performers</span>
+                  <span className="bg-white/20 px-2 py-1 rounded text-xs">Expert Guidance</span>
+                  <span className="bg-white/20 px-2 py-1 rounded text-xs">Success Stories</span>
+                  <span className="bg-white/20 px-2 py-1 rounded text-xs">Mentorship</span>
+                </div>
+
+                <Button className="w-full bg-yellow-400 text-gray-900 hover:bg-yellow-300">
+                  <Trophy className="w-4 h-4 mr-2" />
+                  Explore Network
+                </Button>
+              </CardContent>
+            </Card>
           </div>
+        </div>
+      </section>
+
+      {/* Live Player Section */}
+      <section className="px-4 pb-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-4 text-white flex items-center justify-center">
+              <Video className="w-8 h-8 mr-3 text-red-500" />
+              Live Player
+            </h2>
+            <p className="text-gray-400 text-lg">
+              Watch live lectures and interactive sessions
+            </p>
+          </div>
+
+          <Card className="bg-gray-800 border-gray-700 rounded-xl shadow-lg">
+            <CardContent className="p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-xl font-bold text-white flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                  <span>Live Session</span>
+                </h3>
+                <Button 
+                  onClick={handleOpenLivePlayer}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Open in New Tab
+                </Button>
+              </div>
+              
+              <div className="bg-gray-900 rounded-lg p-2">
+                <iframe
+                  src="https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php"
+                  title="Live Lectures Player"
+                  className="w-full h-96 rounded-lg border-0"
+                  allow="fullscreen"
+                  loading="lazy"
+                />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
