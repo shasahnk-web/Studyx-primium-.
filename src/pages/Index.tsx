@@ -51,7 +51,7 @@ const Index = () => {
     {
       id: 'pw-courses',
       title: 'PW Courses',
-      subtitle: 'Physics Wallah Integration',
+      subtitle: 'Physics Wallah Courses',
       description: 'Padhlo chahe kahin se, Manzil milegi yahi se!',
       subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
       gradient: 'from-green-400 to-green-600',
@@ -97,7 +97,7 @@ const Index = () => {
   };
 
   const handleOpenLivePlayer = () => {
-    window.open('https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php', '_blank', 'noopener,noreferrer');
+    window.open('https://studyverse-network.netlify.app/studyverse-pw', '_blank', 'noopener,noreferrer');
   };
 
   const getBatchName = (batchId: string) => {
@@ -346,7 +346,7 @@ const Index = () => {
               
               <div className="bg-gray-900 rounded-lg p-2">
                 <iframe
-                  src="https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php"
+                  src="https://studyverse-network.netlify.app/studyverse-pw"
                   title="Live Lectures Player"
                   className="w-full h-96 rounded-lg border-0"
                   allow="fullscreen"
@@ -398,8 +398,7 @@ const Index = () => {
             <div>
               <h4 className="font-semibold mb-4 text-green-400">Contact Info</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>Email: support@studyx.com</li>
-                <li>Phone: +91 98765 43210</li>
+                <li>Email: Coming soon!!</li>
                 <li>Address: Mumbai, India</li>
                 <li>Hours: 24/7 Support</li>
               </ul>
@@ -408,7 +407,7 @@ const Index = () => {
 
           <div className="border-t border-gray-700 mt-8 pt-8 text-center">
             <p className="text-gray-400 text-sm">
-              © 2024 StudyX Premium. All rights reserved. Made with ❤️ for students in India.
+              © 2025 StudyX Premium. All rights reserved. Made with ❤️ by StudyX for students in India.
             </p>
           </div>
         </div>
