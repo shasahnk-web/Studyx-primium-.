@@ -8,8 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit, Trash2, Calendar, Clock, Upload, GraduationCap } from 'lucide-react';
+import { Plus, Edit, Trash2, Calendar, Clock, Upload, GraduationCap, AlertCircle, Loader } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchBatches, type Batch } from '@/services/supabaseService';
 
 interface LiveLecture {
   id: string;
@@ -31,7 +32,9 @@ const grades = ['Class 9', 'Class 10', 'Class 11', 'Class 12', 'JEE', 'NEET'];
 
 export function LiveLecturesSection() {
   const [liveLectures, setLiveLectures] = useState<LiveLecture[]>([]);
-  const [batches, setBatches] = useState<any[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [loadingBatches, setLoadingBatches] = useState(true);
+  const [batchError, setBatchError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingLecture, setEditingLecture] = useState<LiveLecture | null>(null);
   const [formData, setFormData] = useState({
@@ -54,17 +57,36 @@ export function LiveLecturesSection() {
 
   useEffect(() => {
     loadLiveLectures();
-    loadBatches();
+    loadBatchesFromSupabase();
   }, []);
+
+  const loadBatchesFromSupabase = async () => {
+    try {
+      setLoadingBatches(true);
+      setBatchError(null);
+      console.log('🔄 Loading batches for live lectures...');
+      
+      const batchesData = await fetchBatches();
+      
+      if (batchesData.length === 0) {
+        setBatchError('No batches found. Please create some batches first.');
+        console.warn('⚠️ No batches available for live lectures');
+      } else {
+        setBatches(batchesData);
+        console.log('✅ Loaded batches for live lectures:', batchesData.length);
+      }
+    } catch (error) {
+      console.error('❌ Error loading batches:', error);
+      setBatchError('Failed to load batches. Please try again.');
+      toast.error('Failed to load batches');
+    } finally {
+      setLoadingBatches(false);
+    }
+  };
 
   const loadLiveLectures = () => {
     const savedLectures = JSON.parse(localStorage.getItem('studyx_live_lectures') || '[]');
     setLiveLectures(savedLectures);
-  };
-
-  const loadBatches = () => {
-    const savedBatches = JSON.parse(localStorage.getItem('studyx_batches') || '[]');
-    setBatches(savedBatches);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -72,6 +94,13 @@ export function LiveLecturesSection() {
     
     if (!formData.title || !formData.meetingUrl || !formData.date || !formData.time || !formData.subject || !formData.batchId) {
       toast.error('Please fill in all required fields');
+      return;
+    }
+
+    // Validate batch exists
+    const batchExists = batches.some(batch => batch.id === formData.batchId);
+    if (!batchExists) {
+      toast.error('Selected batch is invalid. Please choose a valid batch.');
       return;
     }
 
@@ -106,6 +135,13 @@ export function LiveLecturesSection() {
 
     if (!selectedBatch) {
       toast.error('Please select a batch');
+      return;
+    }
+
+    // Validate selected batch exists
+    const batchExists = batches.some(batch => batch.id === selectedBatch);
+    if (!batchExists) {
+      toast.error('Selected batch is invalid. Please choose a valid batch.');
       return;
     }
 
@@ -247,6 +283,60 @@ export function LiveLecturesSection() {
     return lectureDateTime > new Date();
   };
 
+  const renderBatchSelect = (value: string, onValueChange: (value: string) => void, placeholder: string) => {
+    if (loadingBatches) {
+      return (
+        <div className="flex items-center space-x-2 p-2 border rounded">
+          <Loader className="w-4 h-4 animate-spin" />
+          <span className="text-sm text-gray-500">Loading batches...</span>
+        </div>
+      );
+    }
+
+    if (batchError) {
+      return (
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2 p-2 border border-red-300 rounded bg-red-50 text-red-700">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm">{batchError}</span>
+          </div>
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm" 
+            onClick={loadBatchesFromSupabase}
+          >
+            Retry Loading Batches
+          </Button>
+        </div>
+      );
+    }
+
+    if (batches.length === 0) {
+      return (
+        <div className="flex items-center space-x-2 p-2 border border-yellow-300 rounded bg-yellow-50 text-yellow-700">
+          <AlertCircle className="w-4 h-4" />
+          <span className="text-sm">No batches available. Please create batches first.</span>
+        </div>
+      );
+    }
+
+    return (
+      <Select value={value} onValueChange={onValueChange}>
+        <SelectTrigger>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {batches.map(batch => (
+            <SelectItem key={batch.id} value={batch.id}>
+              {batch.name} {batch.subjects && batch.subjects.length > 0 && `(${batch.subjects.join(', ')})`}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -312,16 +402,11 @@ export function LiveLecturesSection() {
                     </div>
                     <div>
                       <Label htmlFor="batch" className="text-foreground">Batch *</Label>
-                      <Select value={formData.batchId} onValueChange={(value) => setFormData({...formData, batchId: value})}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select batch" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {batches.map(batch => (
-                            <SelectItem key={batch.id} value={batch.id}>{batch.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {renderBatchSelect(
+                        formData.batchId,
+                        (value) => setFormData({...formData, batchId: value}),
+                        "Select batch"
+                      )}
                     </div>
                   </div>
 
@@ -384,7 +469,7 @@ export function LiveLecturesSection() {
                   </div>
 
                   <div className="flex space-x-2">
-                    <Button type="submit">
+                    <Button type="submit" disabled={loadingBatches || batchError !== null}>
                       {editingLecture ? 'Update Live Lecture' : 'Add Live Lecture'}
                     </Button>
                     <Button type="button" variant="outline" onClick={resetForm}>
@@ -495,17 +580,12 @@ export function LiveLecturesSection() {
                 </div>
 
                 <div>
-                  <Label htmlFor="batch" className="text-foreground">Select Batch</Label>
-                  <Select value={selectedBatch} onValueChange={setSelectedBatch}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose a batch" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {batches.map(batch => (
-                        <SelectItem key={batch.id} value={batch.id}>{batch.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="batch" className="text-foreground">Select Batch *</Label>
+                  {renderBatchSelect(
+                    selectedBatch,
+                    setSelectedBatch,
+                    "Choose a batch"
+                  )}
                 </div>
               </div>
 
@@ -532,7 +612,7 @@ https://example.com/video3`}
 
               <Button 
                 onClick={handleBulkUpload}
-                disabled={!bulkData.trim() || !selectedBatch}
+                disabled={!bulkData.trim() || !selectedBatch || loadingBatches || batchError !== null}
                 className="w-full"
                 size="lg"
               >

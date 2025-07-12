@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,7 @@ import { BookOpen, FileText, Users, Clock, Settings, Download } from 'lucide-rea
 import { useNavigate } from 'react-router-dom';
 import { fetchBatches, fetchNotes, fetchDPPs, type Batch, type Note, type DPP } from '@/services/supabaseService';
 import LiveLecturesSection from '@/components/LiveLecturesSection';
+import NextTopperSection from '@/components/NextTopperSection';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -158,6 +160,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Next Topper Section */}
+      <NextTopperSection />
 
       {/* Live Lectures Section */}
       <LiveLecturesSection />
