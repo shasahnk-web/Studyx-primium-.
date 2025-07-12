@@ -5,7 +5,7 @@ import { ExternalLink, Video, Users, Clock, Play, Calendar } from 'lucide-react'
 
 const LiveLecturesSection = () => {
   const handleOpenLivePlayer = () => {
-    window.open('https://studyverse-network.netlify.app/studyverse-pw', '_blank', 'noopener,noreferrer');
+    window.open('https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php', '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -132,7 +132,7 @@ const LiveLecturesSection = () => {
           <CardContent>
             <div className="bg-gray-900 rounded-lg p-2">
               <iframe
-                src="https://studyverse-network.netlify.app/studyverse-pw"
+                src="https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php"
                 title="Live Lectures Player"
                 className="w-full h-96 rounded-lg border-0"
                 allow="fullscreen"
