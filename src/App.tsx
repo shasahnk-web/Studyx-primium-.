@@ -10,6 +10,7 @@ import BatchPage from "./pages/BatchPage";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminPanel from "./pages/AdminPanel";
+import TaskVerification from "./pages/TaskVerification";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/courses/pw-courses" element={<TaskVerification />} />
           <Route path="/courses/:courseId" element={<CoursePage />} />
           <Route path="/batch/:batchId" element={<BatchPage />} />
           <Route path="/admin" element={<AdminLogin />} />
