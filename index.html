@@ -1,250 +1,329 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Clock, Users, BookOpen, Play, Trophy, Star } from 'lucide-react';
-const Index = () => {
-  const courses = [
-    {
-      id: 'jee-advanced',
-      title: 'JEE Advanced',
-      description: 'Complete preparation for JEE Advanced with expert faculty',
-      image: '/placeholder.svg',
-      duration: '12 months',
-      students: '2.5k+',
-      rating: 4.8,
-      link: '/courses/jee-advanced'
-    },
-    {
-      id: 'neet',
-      title: 'NEET',
-      description: 'Comprehensive NEET preparation with medical experts',
-      image: '/placeholder.svg',
-      duration: '10 months',
-      students: '3.2k+',
-      rating: 4.9,
-      link: '/courses/neet'
-    },
-    {
-      id: 'pw-courses',
-      title: 'PW Courses',
-      description: 'Access premium Physics Wallah courses',
-      image: '/placeholder.svg',
-      duration: 'Varies',
-      students: '5k+',
-      rating: 4.7,
-      link: '/courses/pw-courses'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate Key</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  <style>
+    /* General Styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-  ];
-  const nextTopper = {
-    title: 'Next Topper',
-    description: 'Become the next success story with our proven methodology',
-    image: '/placeholder.svg',
-    duration: 'Ongoing',
-    students: '1k+',
-    rating: 4.8,
-    link: 'https://studyverse-network.netlify.app/'
-  };
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-gray-900">StudyX</h1>
-            </div>
-            <nav className="hidden md:flex space-x-8">
-              <a href="#courses" className="text-gray-700 hover:text-blue-600">Courses</a>
-              <a href="#about" className="text-gray-700 hover:text-blue-600">About</a>
-              <a href="#contact" className="text-gray-700 hover:text-blue-600">Contact</a>
-            </nav>
-          </div>
-        </div>
-      </header>
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-4xl md:text-6xl font-bold mb-6">
-              Master Your Future
-            </h2>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100">
-              Excellence in education, simplified for success
-            </p>
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
-              Get Started Today
-            </Button>
-          </div>
-        </div>
-      </section>
-      {/* Our Courses Section */}
-      <section id="courses" className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Our Courses</h3>
-            <p className="text-lg text-gray-600">Choose from our comprehensive range of courses</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {courses.map((course) => (
-              <Card key={course.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader>
-                  <img 
-                    src={course.image} 
-                    alt={course.title}
-                    className="w-full h-40 object-cover rounded-t-lg"
-                  />
-                </CardHeader>
-                <CardContent className="p-6">
-                  <CardTitle className="mb-2 flex items-center justify-between">
-                    {course.title}
-                    <Badge variant="secondary" className="ml-2">
-                      <Star className="w-3 h-3 mr-1" />
-                      {course.rating}
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription className="mb-4">
-                    {course.description}
-                  </CardDescription>
-                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                    <div className="flex items-center">
-                      <Clock className="w-4 h-4 mr-1" />
-                      {course.duration}
-                    </div>
-                    <div className="flex items-center">
-                      <Users className="w-4 h-4 mr-1" />
-                      {course.students}
-                    </div>
-                  </div>
-                  <Button 
-                    className="w-full" 
-                    onClick={() => window.location.href = course.link}
-                  >
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Explore Course
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-            {/* Next Topper Card */}
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-yellow-50">
-              <CardHeader>
-                <img 
-                  src="/placeholder.svg" 
-                  alt="Next Topper"
-                  className="w-full h-40 object-cover rounded-t-lg"
-                />
-              </CardHeader>
-              <CardContent className="p-6">
-                <CardTitle className="mb-2 flex items-center justify-between text-orange-800">
-                  <div className="flex items-center">
-                    <Trophy className="w-5 h-5 mr-2 text-orange-600" />
-                    Next Topper
-                  </div>
-                  <Badge variant="secondary" className="ml-2 bg-orange-100 text-orange-800">
-                    <Star className="w-3 h-3 mr-1" />
-                    4.8
-                  </Badge>
-                </CardTitle>
-                <CardDescription className="mb-4 text-orange-700">
-                  Become the next success story with our proven methodology
-                </CardDescription>
-                <div className="flex items-center justify-between text-sm text-orange-600 mb-4">
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-1" />
-                    Ongoing
-                  </div>
-                  <div className="flex items-center">
-                    <Users className="w-4 h-4 mr-1" />
-                    1k+
-                  </div>
-                </div>
-                <Button 
-                  className="w-full bg-orange-600 hover:bg-orange-700" 
-                  onClick={() => window.open('https://studyverse-network.netlify.app/', '_blank')}
-                >
-                  <Trophy className="w-4 h-4 mr-2" />
-                  Join Next Topper
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-      {/* Live Player Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Live Player</h3>
-            <p className="text-lg text-gray-600">Watch live lectures and recorded sessions</p>
-          </div>
-          
-          <div className="max-w-4xl mx-auto">
-            <Card className="overflow-hidden">
-              <CardContent className="p-0">
-                <div className="aspect-video bg-black flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <Play className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg">No live session currently</p>
-                    <p className="text-sm opacity-70">Check back later for live lectures</p>
-                  </div>
-                </div>
-                <div className="p-6 bg-white">
-                  <h4 className="text-xl font-semibold mb-2">Live Learning Experience</h4>
-                  <p className="text-gray-600 mb-4">
-                    Join our interactive live sessions with expert teachers and get your doubts cleared in real-time.
-                  </p>
-                  <Button className="w-full sm:w-auto">
-                    <Play className="w-4 h-4 mr-2" />
-                    View Schedule
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h4 className="text-lg font-semibold mb-4">StudyX</h4>
-              <p className="text-gray-400">Excellence in education, simplified for success.</p>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Courses</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="/courses/jee-advanced" className="hover:text-white">JEE Advanced</a></li>
-                <li><a href="/courses/neet" className="hover:text-white">NEET</a></li>
-                <li><a href="/courses/pw-courses" className="hover:text-white">PW Courses</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Help Center</a></li>
-                <li><a href="#" className="hover:text-white">Contact Us</a></li>
-                <li><a href="#" className="hover:text-white">FAQ</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Follow Us</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Facebook</a></li>
-                <li><a href="#" className="hover:text-white">Twitter</a></li>
-                <li><a href="#" className="hover:text-white">Instagram</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>© 2024 StudyX. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #0a0f1d; /* Dark grayish-blue */
+      overflow: hidden;
+      position: relative;
+      color: #ffffff;
+    }
+
+    /* Particle Background */
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    /* Cyberpunk-Themed Box */
+    .container {
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 15px;
+      padding: 30px;
+      width: 400px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0, 174, 255, 0.3);
+      border: 1px solid rgba(0, 174, 255, 0.2);
+      backdrop-filter: blur(8px);
+    }
+
+    h2 {
+      font-size: 24px;
+      color: #a3f7ff;
+      text-shadow: 0 0 10px rgba(0, 234, 255, 0.5);
+    }
+
+    p {
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: #d4eaff;
+    }
+
+    /* Buttons */
+    .button {
+      display: inline-block;
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      color: #ffffff;
+      border: 1px solid #00bcd4;
+      background: transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 8px 0;
+      font-weight: 600;
+      transition: 0.3s;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .button:hover {
+      background: #00bcd4;
+      color: #000;
+      box-shadow: 0 0 12px rgba(0, 188, 212, 0.6);
+    }
+
+    /* Key Generation Animation */
+    .loading {
+      font-size: 13px;
+      color: #ffcb6b;
+      margin-top: 10px;
+      display: none;
+      animation: flicker 1.5s infinite alternate;
+    }
+
+    /* Subtle Glow */
+    @keyframes flicker {
+      from {
+        opacity: 0.6;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+  
+<style>
+.tiny-footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #111;
+  color: #fff;
+  text-align: center;
+  font-size: 10px;
+  padding: 4px 0;
+  z-index: 1000;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.tiny-footer:hover {
+  box-shadow: 0 0 8px #0ff, 0 0 12px #0ff;
+  color: #0ff;
+}
+	
+.telegram-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(10, 10, 10, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: shake 1s ease-in-out infinite alternate;
+}
+
+/* Popup Box */
+.popup-content {
+  background-color: #111827;
+  color: #f9f9f9;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(0, 153, 255, 0.7);
+  animation: glow 2s infinite ease-in-out;
+  position: relative;
+}
+
+/* Popup Header */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.popup-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.close-btn {
+  font-size: 28px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Text */
+.popup-content h2 {
+  margin: 10px 0 5px;
+  font-size: 1.4rem;
+}
+
+.popup-content p {
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+/* Join Button */
+.join-btn {
+  background-color: #0088cc;
+  color: white;
+  padding: 12px 22px;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  display: inline-block;
+  transition: background 0.3s ease;
+}
+
+.join-btn:hover {
+  background-color: #0077b6;
+}
+
+/* Glow Animation */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 15px #00bfff;
+  }
+  100% {
+    box-shadow: 0 0 30px #00bfff;
+  }
+}
+
+/* Shake Animation */
+@keyframes shake {
+  0% {
+    transform: translateY(0px);
+  }
+  100% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Floating Telegram Button */
+.floating-telegram {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #0088cc;
+  padding: 12px;
+  border-radius: 50%;
+  z-index: 9999;
+  box-shadow: 0 0 15px rgba(0, 136, 204, 0.6);
+  animation: glow 2s infinite ease-in-out;
+}
+.floating-telegram img {
+  width: 26px;
+  height: 26px;
+}
+</style>
+</head>
+<body>
+<!--  <div id="telegram-popup" class="telegram-popup">
+  <div class="popup-content">
+    <div class="popup-header">
+<span class="close-btn" onclick="closePopup()">×</span>
     </div>
-  );
-};
-export default Index;
-      
+<h2>🚨 Notice 🚨</h2>
+	  <p><u>Read Carefully</u></p>
+    <p>Join the channel below to never miss any update. 🚨</p>
+    <a href="https://t.me/studyx_1" class="join-btn" onclick="joinChannel()">Join Channel</a>
+  </div>
+</div> -->
+  <div id="particles-js"></div>
+  <div class="container">
+    <h2>Generate Your Access Key</h2>
+    <p>Click the button below to generate your key.<br><br>Validity: 30 hours ⏰</p>
+    <button id="server02" class="button">Website Server - 1</button>
+    <button id="server03Url" class="button">Website Server - 2</button><br> 
+    <button id="recommendServer" class="button">Website Server - 3</button><br>
+    <button id="watchVideo" class="button">TUTORIAL VIDEO [EASY METHOD]</button>
+    <p>Please do <strong>Watch TUTORIAL Video FIRST</strong>, so that you not face any Problem.</p>
+    <p class="loading" id="loadingMessage">Generating URL, please wait...</p>
+  </div>
+
+  <script>
+    /* Particles.js Configuration */
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 100, density: { enable: true, value_area: 800 } },
+        color: { value: "#00bcd4" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5, anim: { enable: true, speed: 1, opacity_min: 0.1 } },
+        size: { value: 2.5, random: true },
+        line_linked: { enable: true, distance: 140, color: "#00bcd4", opacity: 0.3, width: 1 },
+        move: { enable: true, speed: 1.5, out_mode: "out" }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" } },
+        modes: { grab: { distance: 120, line_linked: { opacity: 1 } } }
+      },
+      retina_detect: true
+    });
+
+    /* JavaScript Logic */
+    const urls = {
+      server02: 'https://shortner.in/0b3Q',
+      server03: 'https://shortner.in/0b3Q',
+      recommendServer: 'https://shortner.in/0b3Q',
+      tutorialVideo: 'https://t.me/studyx_1'
+    };
+
+    function setTemporaryCookieAndRedirect(cookieName, url) {
+      if (!url) return alert('Invalid URL!');
+      document.getElementById("loadingMessage").style.display = "block";
+      setTimeout(() => {
+        document.cookie = `${cookieName}=true; path=/; max-age=${24 * 61 * 60}`;
+        window.location.href = url;
+      }, 2000);
+    }
+
+    document.getElementById('server02').addEventListener('click', () => setTemporaryCookieAndRedirect('server02KeyGenerated', urls.server02));
+    document.getElementById('server03Url').addEventListener('click', () => setTemporaryCookieAndRedirect('server03KeyGenerated', urls.server03));
+    document.getElementById('recommendServer').addEventListener('click', () => setTemporaryCookieAndRedirect('recommendServerKeyGenerated', urls.recommendServer));
+    document.getElementById('watchVideo').addEventListener('click', () => window.open(urls.tutorialVideo, '_blank'));
+  </script>
+  <script>
+  // Show popup only if user hasn't joined
+  window.addEventListener('load', () => {
+    const joined = localStorage.getItem("joinedTelegram");
+    if (!joined) {
+      document.getElementById("telegram-popup").style.display = "flex";
+    }
+  });
+
+  function closePopup() {
+    // Do nothing, popup will return on next visit
+    document.getElementById("telegram-popup").style.display = "none";
+  }
+
+  function joinChannel() {
+    localStorage.setItem("joinedTelegram", "true");
+    // Open Telegram
+    window.open("https://t.me/studyx_1", "_blank");
+    // Hide popup
+    document.getElementById("telegram-popup").style.display = "none";
+  }
+	
+  </script>
+</body>
+  </html>
