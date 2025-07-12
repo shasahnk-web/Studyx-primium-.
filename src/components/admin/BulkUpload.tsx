@@ -1,57 +1,87 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Upload, FileText, AlertCircle } from 'lucide-react';
+import { Upload, FileText, AlertCircle, Loader } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchBatches, type Batch } from '@/services/supabaseService';
 
 interface BulkUploadProps {
   onUpdate: () => void;
 }
 
 const BulkUpload = ({ onUpdate }: BulkUploadProps) => {
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [batchesLoading, setBatchesLoading] = useState(true);
   const [batchData, setBatchData] = useState('');
   const [lectureData, setLectureData] = useState('');
   const [noteData, setNoteData] = useState('');
   const [dppData, setDPPData] = useState('');
+
+  // Load batches on component mount
+  useEffect(() => {
+    loadBatches();
+  }, []);
+
+  const loadBatches = async () => {
+    try {
+      setBatchesLoading(true);
+      console.log('🔄 Loading batches for bulk upload...');
+      const batchesData = await fetchBatches();
+      console.log('✅ Loaded batches for bulk upload:', batchesData.length);
+      setBatches(batchesData);
+    } catch (error) {
+      console.error('❌ Error loading batches:', error);
+      toast.error('Failed to load batches. Please refresh the page.');
+    } finally {
+      setBatchesLoading(false);
+    }
+  };
 
   const batchTemplate = `[
   {
     "name": "JEE Main 2024 Batch",
     "description": "Complete preparation for JEE Main 2024",
     "subjects": ["Physics", "Chemistry", "Mathematics"],
-    "image": "https://example.com/image.jpg",
-    "startDate": "2024-01-01",
-    "endDate": "2024-12-31",
+    "image_url": "https://example.com/image.jpg",
+    "start_date": "2024-01-01",
+    "end_date": "2024-12-31",
     "fee": "15000",
-    "courseId": "pw-courses"
+    "course_id": "pw-courses"
   }
 ]`;
 
   const lectureTemplate = `[
   {
     "title": "Physics Chapter 1 - Kinematics",
-    "videoLink": "https://youtube.com/watch?v=example",
-    "batchId": "batch_id_here"
+    "description": "Introduction to motion and kinematics concepts",
+    "video_url": "https://youtube.com/watch?v=example",
+    "subject": "Physics",
+    "topic": "Kinematics",
+    "batch_id": "select_batch_id_from_dropdown_below"
   }
 ]`;
 
   const noteTemplate = `[
   {
     "title": "Physics Chapter 1 Notes",
-    "pdfLink": "https://example.com/notes.pdf",
-    "batchId": "batch_id_here"
+    "description": "Comprehensive notes on kinematics",
+    "pdf_url": "https://example.com/notes.pdf",
+    "subject": "Physics",
+    "batch_id": "select_batch_id_from_dropdown_below"
   }
 ]`;
 
   const dppTemplate = `[
   {
     "title": "Physics Chapter 1 DPP",
-    "pdfLink": "https://example.com/dpp.pdf",
-    "batchId": "batch_id_here"
+    "description": "Daily practice problems for kinematics",
+    "pdf_url": "https://example.com/dpp.pdf",
+    "subject": "Physics",
+    "batch_id": "select_batch_id_from_dropdown_below"
   }
 ]`;
 
@@ -81,7 +111,7 @@ const BulkUpload = ({ onUpdate }: BulkUploadProps) => {
     }
   };
 
-  const handleBulkLectureUpload = () => {
+  const handleBulkLectureUpload = async () => {
     try {
       const lectures = JSON.parse(lectureData);
       
@@ -89,18 +119,50 @@ const BulkUpload = ({ onUpdate }: BulkUploadProps) => {
         throw new Error('Data must be an array');
       }
 
-      const existingLectures = JSON.parse(localStorage.getItem('studyx_lectures') || '[]');
-      const newLectures = lectures.map(lecture => ({
-        ...lecture,
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9)
-      }));
+      // Validate that all lectures have valid batch_ids
+      for (const lecture of lectures) {
+        if (!lecture.batch_id) {
+          toast.error('All lectures must have a batch_id. Please select from available batches.');
+          return;
+        }
+        
+        const batchExists = batches.find(batch => batch.id === lecture.batch_id);
+        if (!batchExists) {
+          toast.error(`Batch with ID "${lecture.batch_id}" not found. Please use valid batch IDs.`);
+          return;
+        }
+      }
 
-      const updatedLectures = [...existingLectures, ...newLectures];
-      localStorage.setItem('studyx_lectures', JSON.stringify(updatedLectures));
+      // Use Supabase service to create lectures
+      const { createLecture } = await import('@/services/supabaseService');
       
-      setLectureData('');
-      onUpdate();
-      toast.success(`${newLectures.length} lectures uploaded successfully!`);
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const lectureData of lectures) {
+        const batch = batches.find(b => b.id === lectureData.batch_id);
+        const lectureWithCourseId = {
+          ...lectureData,
+          course_id: batch?.course_id || 'pw-courses'
+        };
+
+        const created = await createLecture(lectureWithCourseId);
+        if (created) {
+          successCount++;
+        } else {
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`${successCount} lectures uploaded successfully!`);
+        setLectureData('');
+        onUpdate();
+      }
+      
+      if (errorCount > 0) {
+        toast.error(`${errorCount} lectures failed to upload.`);
+      }
     } catch (error) {
       toast.error('Invalid JSON format. Please check your data.');
       console.error('Lecture upload error:', error);
@@ -159,6 +221,51 @@ const BulkUpload = ({ onUpdate }: BulkUploadProps) => {
     }
   };
 
+  // Available Batches Component
+  const AvailableBatchesList = () => {
+    if (batchesLoading) {
+      return (
+        <div className="flex items-center justify-center p-4">
+          <Loader className="w-4 h-4 animate-spin mr-2" />
+          <span className="text-sm text-muted-foreground">Loading batches...</span>
+        </div>
+      );
+    }
+
+    if (batches.length === 0) {
+      return (
+        <div className="p-4 bg-red-900/20 border border-red-700 rounded-lg">
+          <div className="flex items-start space-x-2">
+            <AlertCircle className="w-5 h-5 text-red-400 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-red-400">No Batches Available</h4>
+              <p className="text-sm text-red-300">Please create batches first before uploading content.</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
+        <h4 className="font-semibold text-blue-400 mb-2">Available Batches ({batches.length}):</h4>
+        <div className="max-h-32 overflow-y-auto">
+          <div className="grid grid-cols-1 gap-1 text-sm">
+            {batches.map(batch => (
+              <div key={batch.id} className="flex justify-between text-blue-300">
+                <span className="font-mono text-xs truncate">{batch.id}</span>
+                <span className="truncate ml-2">{batch.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="text-xs text-blue-300 mt-2">
+          Copy the batch ID from above and use it in your JSON data.
+        </p>
+      </div>
+    );
+  };
+
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Bulk Upload</h2>
@@ -171,14 +278,16 @@ const BulkUpload = ({ onUpdate }: BulkUploadProps) => {
             <ul className="text-sm text-blue-300 space-y-1">
               <li>• Data must be in valid JSON format</li>
               <li>• All required fields must be included</li>
-              <li>• For content uploads, make sure batch IDs exist</li>
+              <li>• For content uploads, use valid batch IDs from the list below</li>
               <li>• Use the provided templates as reference</li>
             </ul>
           </div>
         </div>
       </div>
 
-      <Tabs defaultValue="batches" className="w-full">
+      <AvailableBatchesList />
+
+      <Tabs defaultValue="batches" className="w-full mt-6">
         <TabsList className="grid w-full grid-cols-4 bg-gray-800">
           <TabsTrigger value="batches" className="data-[state=active]:bg-gray-700">
             Batches
@@ -254,7 +363,7 @@ const BulkUpload = ({ onUpdate }: BulkUploadProps) => {
                   value={lectureTemplate}
                   readOnly
                   className="bg-gray-700 border-gray-600 text-white font-mono text-sm"
-                  rows={8}
+                  rows={10}
                 />
               </div>
               
@@ -272,11 +381,11 @@ const BulkUpload = ({ onUpdate }: BulkUploadProps) => {
               
               <Button 
                 onClick={handleBulkLectureUpload}
-                disabled={!lectureData.trim()}
+                disabled={!lectureData.trim() || batchesLoading}
                 className="w-full"
               >
                 <Upload className="w-4 h-4 mr-2" />
-                Upload Lectures
+                {batchesLoading ? 'Loading Batches...' : 'Upload Lectures'}
               </Button>
             </CardContent>
           </Card>

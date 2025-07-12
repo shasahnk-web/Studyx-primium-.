@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +27,7 @@ export function LecturesSection() {
   const [showForm, setShowForm] = useState(false);
   const [editingLecture, setEditingLecture] = useState<Lecture | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [batchesLoading, setBatchesLoading] = useState(true);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -52,6 +52,7 @@ export function LecturesSection() {
 
   const loadData = async () => {
     setIsLoading(true);
+    setBatchesLoading(true);
     try {
       console.log('🔄 Loading lectures and batches data...');
       
@@ -67,11 +68,16 @@ export function LecturesSection() {
       
       setLectures(lecturesData);
       setBatches(batchesData);
+      
+      if (batchesData.length === 0) {
+        console.warn('⚠️ No batches found - lectures cannot be created without batches');
+      }
     } catch (error) {
       console.error('❌ Error loading data:', error);
       toast.error('Failed to load data. Please refresh the page.');
     } finally {
       setIsLoading(false);
+      setBatchesLoading(false);
     }
   };
 
@@ -226,11 +232,31 @@ export function LecturesSection() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-foreground">Lectures Management</h1>
-        <Button onClick={() => setShowForm(true)} className="flex items-center space-x-2">
+        <Button 
+          onClick={() => setShowForm(true)} 
+          className="flex items-center space-x-2"
+          disabled={batchesLoading || batches.length === 0}
+        >
           <Plus className="w-4 h-4" />
           <span>Add Lecture</span>
         </Button>
       </div>
+
+      {/* Show warning if no batches */}
+      {!batchesLoading && batches.length === 0 && (
+        <div className="p-4 bg-yellow-900/20 border border-yellow-700 rounded-lg">
+          <div className="flex items-start space-x-2">
+            <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-yellow-400 mb-2">No Batches Available</h3>
+              <p className="text-sm text-yellow-300">
+                You need to create at least one batch before adding lectures. 
+                Go to the Batches section to create a new batch first.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <Card>
@@ -255,19 +281,32 @@ export function LecturesSection() {
                 </div>
                 <div>
                   <Label htmlFor="batch" className="text-foreground">Batch *</Label>
-                  <Select 
-                    value={formData.batch_id} 
-                    onValueChange={(value) => setFormData({...formData, batch_id: value, subject: ''})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select batch first" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {batches.map(batch => (
-                        <SelectItem key={batch.id} value={batch.id}>{batch.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {batchesLoading ? (
+                    <div className="flex items-center space-x-2 p-3 border rounded-md">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      <span className="text-sm text-muted-foreground">Loading batches...</span>
+                    </div>
+                  ) : batches.length === 0 ? (
+                    <div className="p-3 border border-red-500 rounded-md bg-red-50 dark:bg-red-900/20">
+                      <p className="text-sm text-red-600 dark:text-red-400">No batches available. Create a batch first.</p>
+                    </div>
+                  ) : (
+                    <Select 
+                      value={formData.batch_id} 
+                      onValueChange={(value) => setFormData({...formData, batch_id: value, subject: ''})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select batch" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {batches.map(batch => (
+                          <SelectItem key={batch.id} value={batch.id}>
+                            {batch.name} ({batch.course_id || 'pw-courses'})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </div>
 
@@ -328,7 +367,7 @@ export function LecturesSection() {
               </div>
 
               <div className="flex space-x-2">
-                <Button type="submit" disabled={isLoading}>
+                <Button type="submit" disabled={isLoading || batchesLoading || batches.length === 0}>
                   {isLoading ? 'Saving...' : (editingLecture ? 'Update Lecture' : 'Add Lecture')}
                 </Button>
                 <Button type="button" variant="outline" onClick={resetForm}>
