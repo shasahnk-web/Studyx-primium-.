@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,17 +14,21 @@ import AdminPanel from "./pages/AdminPanel";
 import GatePage from "./pages/GatePage";
 import NotFound from "./pages/NotFound";
 import Homepage from "./pages/Homepage";
+import PreHomepage from "./pages/PreHomepage";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const [gateCompleted, setGateCompleted] = useState(false);
+  const [preHomepageCompleted, setPreHomepageCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user has completed the gate
-    const completed = localStorage.getItem('gateCompleted') === 'true';
-    setGateCompleted(completed);
+    // Check if user has completed the gate and pre-homepage
+    const gateComplete = localStorage.getItem('gateCompleted') === 'true';
+    const preHomepageComplete = localStorage.getItem('preHomepageCompleted') === 'true';
+    setGateCompleted(gateComplete);
+    setPreHomepageCompleted(preHomepageComplete);
     setIsLoading(false);
   }, []);
 
@@ -35,6 +40,8 @@ const App = () => {
     );
   }
 
+  const shouldShowPreHomepage = gateCompleted && !preHomepageCompleted;
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -45,40 +52,78 @@ const App = () => {
             {/* Gate page - always accessible */}
             <Route path="/gate" element={<GatePage />} />
             
-            {/* Protected routes - only accessible after gate completion */}
+            {/* Pre-homepage - shows after gate but before homepage */}
+            <Route 
+              path="/pre-homepage" 
+              element={gateCompleted ? <PreHomepage /> : <Navigate to="/gate" replace />} 
+            />
+            
+            {/* Protected routes - only accessible after gate and pre-homepage completion */}
             <Route 
               path="/home" 
-              element={gateCompleted ? <Index /> : <Navigate to="/gate" replace />} 
+              element={
+                !gateCompleted ? <Navigate to="/gate" replace /> :
+                shouldShowPreHomepage ? <Navigate to="/pre-homepage" replace /> :
+                <Index />
+              } 
             />
             <Route 
               path="/homepage" 
-              element={gateCompleted ? <Homepage /> : <Navigate to="/gate" replace />} 
+              element={
+                !gateCompleted ? <Navigate to="/gate" replace /> :
+                shouldShowPreHomepage ? <Navigate to="/pre-homepage" replace /> :
+                <Homepage />
+              } 
             />
             <Route 
               path="/courses/:courseId" 
-              element={gateCompleted ? <CoursePage /> : <Navigate to="/gate" replace />} 
+              element={
+                !gateCompleted ? <Navigate to="/gate" replace /> :
+                shouldShowPreHomepage ? <Navigate to="/pre-homepage" replace /> :
+                <CoursePage />
+              } 
             />
             <Route 
               path="/batch/:batchId" 
-              element={gateCompleted ? <BatchPage /> : <Navigate to="/gate" replace />} 
+              element={
+                !gateCompleted ? <Navigate to="/gate" replace /> :
+                shouldShowPreHomepage ? <Navigate to="/pre-homepage" replace /> :
+                <BatchPage />
+              } 
             />
             <Route 
               path="/admin" 
-              element={gateCompleted ? <AdminLogin /> : <Navigate to="/gate" replace />} 
+              element={
+                !gateCompleted ? <Navigate to="/gate" replace /> :
+                shouldShowPreHomepage ? <Navigate to="/pre-homepage" replace /> :
+                <AdminLogin />
+              } 
             />
             <Route 
               path="/admin/dashboard" 
-              element={gateCompleted ? <AdminDashboard /> : <Navigate to="/gate" replace />} 
+              element={
+                !gateCompleted ? <Navigate to="/gate" replace /> :
+                shouldShowPreHomepage ? <Navigate to="/pre-homepage" replace /> :
+                <AdminDashboard />
+              } 
             />
             <Route 
               path="/admin/panel" 
-              element={gateCompleted ? <AdminPanel /> : <Navigate to="/gate" replace />} 
+              element={
+                !gateCompleted ? <Navigate to="/gate" replace /> :
+                shouldShowPreHomepage ? <Navigate to="/pre-homepage" replace /> :
+                <AdminPanel />
+              } 
             />
             
-            {/* Root path - redirect based on gate completion */}
+            {/* Root path - redirect based on completion status */}
             <Route 
               path="/" 
-              element={gateCompleted ? <Navigate to="/home" replace /> : <Navigate to="/gate" replace />} 
+              element={
+                !gateCompleted ? <Navigate to="/gate" replace /> :
+                shouldShowPreHomepage ? <Navigate to="/pre-homepage" replace /> :
+                <Navigate to="/home" replace />
+              } 
             />
             
             {/* Catch-all route */}
