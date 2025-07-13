@@ -11,6 +11,7 @@ import BatchPage from "./pages/BatchPage";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminPanel from "./pages/AdminPanel";
+import GatePage from './pages/GatePage'
 import NotFound from "./pages/NotFound";
 import Homepage from "./pages/Homepage";
 import PreHomepage from "./pages/PreHomepage";
