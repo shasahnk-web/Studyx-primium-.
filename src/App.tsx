@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,6 +12,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminPanel from "./pages/AdminPanel";
 import GatePage from "./pages/GatePage";
 import NotFound from "./pages/NotFound";
+import Homepage from "./pages/Homepage";
 
 const queryClient = new QueryClient();
 
@@ -52,7 +52,7 @@ const App = () => {
             />
             <Route 
               path="/homepage" 
-              element={gateCompleted ? <Navigate to="/home" replace /> : <Navigate to="/gate" replace />} 
+              element={gateCompleted ? <Homepage /> : <Navigate to="/gate" replace />} 
             />
             <Route 
               path="/courses/:courseId" 
