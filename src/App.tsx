@@ -51,6 +51,10 @@ const App = () => {
               element={gateCompleted ? <Index /> : <Navigate to="/gate" replace />} 
             />
             <Route 
+              path="/homepage" 
+              element={gateCompleted ? <Navigate to="/home" replace /> : <Navigate to="/gate" replace />} 
+            />
+            <Route 
               path="/courses/:courseId" 
               element={gateCompleted ? <CoursePage /> : <Navigate to="/gate" replace />} 
             />
