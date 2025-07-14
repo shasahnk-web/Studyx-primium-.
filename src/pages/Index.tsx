@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, FileText, Users, Clock, Settings, Download, Video, ExternalLink, Trophy, Star, Award } from 'lucide-react';
+import { BookOpen, FileText, Users, Clock, Settings, Download, Video, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { fetchBatches, fetchNotes, fetchDPPs, type Batch, type Note, type DPP } from '@/services/supabaseService';
 
@@ -12,7 +12,6 @@ const Index = () => {
   const [dpps, setDPPs] = useState<DPP[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from Supabase
   useEffect(() => {
     loadAllData();
   }, []);
@@ -20,27 +19,16 @@ const Index = () => {
   const loadAllData = async () => {
     try {
       setIsLoading(true);
-      
-      console.log('🔄 Loading all data from Supabase...');
-      
-      // Load all data in parallel
       const [batchesData, notesData, dppsData] = await Promise.all([
         fetchBatches(),
         fetchNotes(),
         fetchDPPs()
       ]);
-      
-      console.log('📊 Data loaded:', {
-        batches: batchesData.length,
-        notes: notesData.length,
-        dpps: dppsData.length
-      });
-
       setBatches(batchesData);
       setNotes(notesData);
       setDPPs(dppsData);
     } catch (error) {
-      console.error('❌ Error loading data:', error);
+      console.error('Error loading data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -77,6 +65,17 @@ const Index = () => {
       icon: '📝',
       badge: 'Beta',
       isBeta: true
+    },
+    {
+      id: 'live-lectures',
+      title: 'Live Lectures',
+      subtitle: 'Interactive Sessions',
+      description: 'Watch live classes from top educators',
+      subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
+      gradient: 'from-red-400 to-red-600',
+      icon: '📺',
+      badge: 'Live',
+      link: 'https://studyverse-network.netlify.app/studyverse-pw'
     }
   ];
 
@@ -89,18 +88,14 @@ const Index = () => {
 
   const handleCourseClick = (course: any) => {
     if (course.link) {
-      window.open(course.link, '_blank', 'noopener,noreferrer');
+      window.location.href = course.link;
     } else {
       navigate(`/courses/${course.id}`);
     }
   };
 
   const handleNextTopperClick = () => {
-    window.open('https://studyverse-network.netlify.app/', '_blank', 'noopener,noreferrer');
-  };
-
-  const handleOpenLivePlayer = () => {
-    window.open('http://studyverse-network.netlify.app/studyverse-pw', '_blank', 'noopener,noreferrer');
+    window.open('https://studyverse-network.netlify.app/', '_blank');
   };
 
   const getBatchName = (batchId: string) => {
@@ -121,7 +116,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header with StudyX Premium Logo */}
       <header className="flex items-center justify-between p-4 border-b border-gray-800">
         <div className="flex items-center space-x-4">
           <img 
@@ -143,7 +137,6 @@ const Index = () => {
         </Button>
       </header>
 
-      {/* Hero Section */}
       <section className="text-center py-16 px-4">
         <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
           Study Smart with StudyX Premium
@@ -153,7 +146,6 @@ const Index = () => {
         </p>
       </section>
 
-      {/* Quick Stats */}
       <section className="px-4 pb-8">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-4">
@@ -170,12 +162,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Recent Study Materials Section */}
       {(notes.length > 0 || dpps.length > 0) && (
         <section className="px-4 pb-16">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12 text-white">Your Study Materials</h2>
-            
             <div className="mb-12">
               <h3 className="text-2xl font-bold mb-6 text-white">Recent Materials</h3>
               <div className="grid md:grid-cols-2 gap-4">
@@ -225,7 +215,6 @@ const Index = () => {
         </section>
       )}
 
-      {/* Courses Section with Next Topper */}
       <section className="px-4 pb-16">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-4 text-white">Our Courses</h2>
@@ -276,13 +265,13 @@ const Index = () => {
                   </div>
 
                   <Button className="w-full bg-white text-gray-900 hover:bg-gray-100">
-                    {course.id === 'pw-tests' ? 'Start Practice' : 'Start Learning'}
+                    {course.id === 'pw-tests' ? 'Start Practice' : 
+                     course.id === 'live-lectures' ? 'Watch Live' : 'Start Learning'}
                   </Button>
                 </CardContent>
               </Card>
             ))}
 
-            {/* Next Topper Card */}
             <Card 
               className="bg-gradient-to-br from-yellow-900/30 via-orange-800/20 to-red-900/30 border-yellow-500/50 hover:border-yellow-400/70 transition-all duration-300 cursor-pointer transform hover:scale-105"
               onClick={handleNextTopperClick}
@@ -318,50 +307,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Live Player Section */}
-      <section className="px-4 pb-16">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-4 text-white flex items-center justify-center">
-              <Video className="w-8 h-8 mr-3 text-red-500" />
-              Live Player
-            </h2>
-            <p className="text-gray-400 text-lg">
-              Watch live lectures and interactive sessions
-            </p>
-          </div>
-
-          <Card className="bg-gray-800 border-gray-700 rounded-xl shadow-lg">
-            <CardContent className="p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-xl font-bold text-white flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                  <span>Live Session</span>
-                </h3>
-                <Button 
-                  onClick={handleOpenLivePlayer}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Open in New Tab
-                </Button>
-              </div>
-              
-              <div className="bg-gray-900 rounded-lg p-2">
-                <iframe
-                  src="https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php"
-                  title="Live Lectures Player"
-                  className="w-full h-96 rounded-lg border-0"
-                  allow="fullscreen"
-                  loading="lazy"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Footer */}
       <footer className="bg-gray-800 border-t border-gray-700">
         <div className="max-w-6xl mx-auto px-4 py-12">
           <div className="grid md:grid-cols-4 gap-8">
