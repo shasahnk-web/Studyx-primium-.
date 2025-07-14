@@ -100,7 +100,7 @@ const Index = () => {
   };
 
   const handleOpenLivePlayer = () => {
-    window.open('https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php', '_blank', 'noopener,noreferrer');
+    window.open('http://studyverse-network.netlify.app/studyverse-pw', '_blank', 'noopener,noreferrer');
   };
 
   const getBatchName = (batchId: string) => {
