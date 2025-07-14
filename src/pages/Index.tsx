@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -68,28 +67,17 @@ const Index = () => {
       icon: '💎',
       badge: 'PW'
     },
-      {
-        id: 'pw-tests',
-        title: 'PW Tests',
-        subtitle: 'Practice & Assessment',
-        description: 'Padhlo chahe kahin se, Manzil milegi yahi se!',
-        subjects: ['Mock Tests', 'Previous Year Papers', 'Chapter Tests', 'Full Syllabus Tests'],
-        gradient: 'from-purple-400 to-purple-600',
-        icon: '📝',
-        badge: 'Beta',
-        isBeta: true
-      },
-      {
-        id: 'unacademy',
-        title: 'Unacademy',
-        subtitle: 'Learning Reimagined',
-        description: 'Access premium content and live classes',
-        subjects: ['All Subjects', 'Live Classes', 'Test Series', 'Study Materials'],
-        gradient: 'from-green-400 to-emerald-600',
-        icon: '🎓',
-        badge: 'Partner',
-        link: 'https://academy.trms.pro'
-      }
+    {
+      id: 'pw-tests',
+      title: 'PW Tests',
+      subtitle: 'Practice & Assessment',
+      description: 'Padhlo chahe kahin se, Manzil milegi yahi se!',
+      subjects: ['Mock Tests', 'Previous Year Papers', 'Chapter Tests', 'Full Syllabus Tests'],
+      gradient: 'from-purple-400 to-purple-600',
+      icon: '📝',
+      badge: 'Beta',
+      isBeta: true
+    }
   ];
 
   const stats = [
@@ -288,7 +276,7 @@ const Index = () => {
                   </div>
 
                   <Button className="w-full bg-white text-gray-900 hover:bg-gray-100">
-                    {course.id === 'pw-tests' ? 'Start Practice' : course.id === 'unacademy' ? 'Access Platform' : 'Start Learning'}
+                    {course.id === 'pw-tests' ? 'Start Practice' : 'Start Learning'}
                   </Button>
                 </CardContent>
               </Card>
