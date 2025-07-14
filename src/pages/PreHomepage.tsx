@@ -1,5 +1,4 @@
-
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 declare global {
   interface Window {
@@ -8,12 +7,17 @@ declare global {
 }
 
 const PreHomepage = () => {
+  const [cooldownMessage, setCooldownMessage] = useState('');
+  const [buttonsDisabled, setButtonsDisabled] = useState(false);
+
   useEffect(() => {
+    // Check cooldown on component mount
+    checkCooldown();
+
     // Load particles.js script
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js';
     script.onload = () => {
-      // Initialize particles after script loads
       if (window.particlesJS) {
         window.particlesJS("particles-js", {
           particles: { 
@@ -43,7 +47,6 @@ const PreHomepage = () => {
     document.head.appendChild(fontLink);
 
     return () => {
-      // Cleanup
       if (script.parentNode) {
         script.parentNode.removeChild(script);
       }
@@ -53,14 +56,40 @@ const PreHomepage = () => {
     };
   }, []);
 
+  const checkCooldown = () => {
+    const lastGenerated = localStorage.getItem('lastGenerated');
+    if (!lastGenerated) return false;
+    
+    const now = new Date().getTime();
+    const cooldownPeriod = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    const elapsed = now - parseInt(lastGenerated);
+    
+    if (elapsed < cooldownPeriod) {
+      const remaining = cooldownPeriod - elapsed;
+      const hours = Math.floor(remaining / (1000 * 60 * 60));
+      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+      
+      setCooldownMessage(`You can generate a new link in ${hours} hours and ${Math.round(minutes)} minutes.`);
+      setButtonsDisabled(true);
+      return true;
+    }
+    return false;
+  };
+
   const serverLink = 'https://reel2earn.com/xlPui0Mc';
   const tutorialLink = 'https://t.me/studyx_1';
 
   const redirectToUrl = (url: string) => {
+    if (buttonsDisabled) return;
+    
     const loadingMessage = document.getElementById("loadingMessage");
     if (loadingMessage) {
       loadingMessage.style.display = "block";
     }
+    
+    // Set last generated timestamp
+    localStorage.setItem('lastGenerated', new Date().getTime().toString());
+    
     setTimeout(() => { 
       localStorage.setItem('preHomepageCompleted', 'true');
       window.location.href = url; 
@@ -69,6 +98,36 @@ const PreHomepage = () => {
 
   const handleTutorialVideo = () => {
     window.open(tutorialLink, '_blank');
+  };
+
+  const buttonStyle = (disabled: boolean) => ({
+    width: '100%',
+    padding: '12px',
+    fontSize: '15px',
+    color: disabled ? '#666' : '#fff',
+    border: `1px solid ${disabled ? '#666' : '#00bcd4'}`,
+    background: 'transparent',
+    borderRadius: '8px',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    margin: '8px 0',
+    fontWeight: '600',
+    transition: '0.3s',
+    textTransform: 'uppercase',
+    opacity: disabled ? 0.5 : 1
+  });
+
+  const hoverStyle = (disabled: boolean, e: React.MouseEvent<HTMLButtonElement>) => {
+    if (disabled) return;
+    e.currentTarget.style.background = '#00bcd4';
+    e.currentTarget.style.color = '#000';
+    e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
+  };
+
+  const leaveStyle = (disabled: boolean, e: React.MouseEvent<HTMLButtonElement>) => {
+    if (disabled) return;
+    e.currentTarget.style.background = 'transparent';
+    e.currentTarget.style.color = '#fff';
+    e.currentTarget.style.boxShadow = 'none';
   };
 
   return (
@@ -105,36 +164,16 @@ const PreHomepage = () => {
         
         <p style={{ color: '#d4eaff', marginBottom: '20px', fontSize: '14px' }}>
           Click the button below to generate your key.<br /><br />
-          Validity: 30 hours ⏰
+          Validity: 24 hours ⏰
         </p>
         
         <button
           id="server01"
           onClick={() => redirectToUrl(serverLink)}
-          style={{
-            width: '100%',
-            padding: '12px',
-            fontSize: '15px',
-            color: '#fff',
-            border: '1px solid #00bcd4',
-            background: 'transparent',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            margin: '8px 0',
-            fontWeight: '600',
-            transition: '0.3s',
-            textTransform: 'uppercase'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#00bcd4';
-            e.currentTarget.style.color = '#000';
-            e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = '#fff';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
+          style={buttonStyle(buttonsDisabled)}
+          onMouseEnter={(e) => hoverStyle(buttonsDisabled, e)}
+          onMouseLeave={(e) => leaveStyle(buttonsDisabled, e)}
+          disabled={buttonsDisabled}
         >
           Website Server - 1
         </button>
@@ -142,30 +181,10 @@ const PreHomepage = () => {
         <button
           id="server02"
           onClick={() => redirectToUrl(serverLink)}
-          style={{
-            width: '100%',
-            padding: '12px',
-            fontSize: '15px',
-            color: '#fff',
-            border: '1px solid #00bcd4',
-            background: 'transparent',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            margin: '8px 0',
-            fontWeight: '600',
-            transition: '0.3s',
-            textTransform: 'uppercase'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#00bcd4';
-            e.currentTarget.style.color = '#000';
-            e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = '#fff';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
+          style={buttonStyle(buttonsDisabled)}
+          onMouseEnter={(e) => hoverStyle(buttonsDisabled, e)}
+          onMouseLeave={(e) => leaveStyle(buttonsDisabled, e)}
+          disabled={buttonsDisabled}
         >
           Website Server - 2
         </button>
@@ -173,30 +192,10 @@ const PreHomepage = () => {
         <button
           id="server03"
           onClick={() => redirectToUrl(serverLink)}
-          style={{
-            width: '100%',
-            padding: '12px',
-            fontSize: '15px',
-            color: '#fff',
-            border: '1px solid #00bcd4',
-            background: 'transparent',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            margin: '8px 0',
-            fontWeight: '600',
-            transition: '0.3s',
-            textTransform: 'uppercase'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#00bcd4';
-            e.currentTarget.style.color = '#000';
-            e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = '#fff';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
+          style={buttonStyle(buttonsDisabled)}
+          onMouseEnter={(e) => hoverStyle(buttonsDisabled, e)}
+          onMouseLeave={(e) => leaveStyle(buttonsDisabled, e)}
+          disabled={buttonsDisabled}
         >
           Website Server - 3
         </button>
@@ -204,30 +203,9 @@ const PreHomepage = () => {
         <button
           id="watchVideo"
           onClick={handleTutorialVideo}
-          style={{
-            width: '100%',
-            padding: '12px',
-            fontSize: '15px',
-            color: '#fff',
-            border: '1px solid #00bcd4',
-            background: 'transparent',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            margin: '8px 0',
-            fontWeight: '600',
-            transition: '0.3s',
-            textTransform: 'uppercase'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#00bcd4';
-            e.currentTarget.style.color = '#000';
-            e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = '#fff';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
+          style={buttonStyle(false)}
+          onMouseEnter={(e) => hoverStyle(false, e)}
+          onMouseLeave={(e) => leaveStyle(false, e)}
         >
           TUTORIAL VIDEO [EASY METHOD]
         </button>
@@ -248,6 +226,16 @@ const PreHomepage = () => {
         >
           Generating URL, please wait...
         </p>
+        
+        {cooldownMessage && (
+          <p style={{ 
+            fontSize: '12px',
+            color: '#ff6b6b',
+            marginTop: '5px'
+          }}>
+            {cooldownMessage}
+          </p>
+        )}
       </div>
       
       <style>{`
