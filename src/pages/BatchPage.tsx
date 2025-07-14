@@ -516,4 +516,33 @@ const BatchPage = () => {
                             'DPP',
                             subjectContent.dpps,
                             <FileText className="w-8 h-8" />,
-                
+                'No DPPs available for this subject.',
+                            handleDownload,
+                            'pdf_url'
+                          )}
+                        </TabsContent>
+
+                        <TabsContent value="live" className="mt-6">
+                          {renderContentSection(
+                            'Live Lectures',
+                            subjectContent.liveLectures,
+                            <Video className="w-8 h-8" />,
+                            'No live lectures scheduled for this subject.',
+                            handleLiveLectureClick,
+                            'liveUrl'
+                          )}
+                        </TabsContent>
+                      </Tabs>
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default BatchPage;
