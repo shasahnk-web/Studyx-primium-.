@@ -53,6 +53,21 @@ export interface DPP {
   updated_at: string | null;
 }
 
+export interface LiveLecture {
+  id: string;
+  title: string;
+  description: string | null;
+  meeting_url: string;
+  live_date: string;
+  live_time: string;
+  subject: string | null;
+  topic: string | null;
+  batch_id: string | null;
+  platform: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
 // Validation functions
 const validateLecture = (lecture: Partial<Lecture>): string[] => {
   const errors: string[] = [];
@@ -450,4 +465,112 @@ export const subscribeToBatches = (callback: (batches: Batch[]) => void) => {
     console.log('🔄 Unsubscribing from batches changes...');
     supabase.removeChannel(channel);
   };
+};
+
+// Live Lectures operations
+export const fetchLiveLectures = async (batchId?: string): Promise<LiveLecture[]> => {
+  console.log('🔄 Fetching live lectures from Supabase...', batchId ? `for batch: ${batchId}` : 'all');
+  
+  try {
+    let query = supabase
+      .from('live_lectures')
+      .select('*')
+      .order('live_date', { ascending: true })
+      .order('live_time', { ascending: true });
+
+    if (batchId) {
+      query = query.eq('batch_id', batchId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('❌ Error fetching live lectures:', error);
+      return [];
+    }
+
+    console.log('✅ Successfully fetched live lectures:', data?.length || 0);
+    return data || [];
+  } catch (error) {
+    console.error('❌ Exception fetching live lectures:', error);
+    return [];
+  }
+};
+
+export const createLiveLecture = async (lectureData: Omit<LiveLecture, 'id' | 'created_at' | 'updated_at'>): Promise<LiveLecture | null> => {
+  console.log('🔄 Creating live lecture:', lectureData);
+  
+  try {
+    const { data, error } = await supabase
+      .from('live_lectures')
+      .insert([lectureData])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Error creating live lecture:', error);
+      toast.error('Failed to create live lecture');
+      return null;
+    }
+
+    console.log('✅ Successfully created live lecture:', data);
+    toast.success('Live lecture created successfully');
+    return data;
+  } catch (error) {
+    console.error('❌ Exception creating live lecture:', error);
+    toast.error('Failed to create live lecture');
+    return null;
+  }
+};
+
+export const updateLiveLecture = async (id: string, updates: Partial<LiveLecture>): Promise<LiveLecture | null> => {
+  console.log('🔄 Updating live lecture:', id, updates);
+  
+  try {
+    const { data, error } = await supabase
+      .from('live_lectures')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Error updating live lecture:', error);
+      toast.error('Failed to update live lecture');
+      return null;
+    }
+
+    console.log('✅ Successfully updated live lecture:', data);
+    toast.success('Live lecture updated successfully');
+    return data;
+  } catch (error) {
+    console.error('❌ Exception updating live lecture:', error);
+    toast.error('Failed to update live lecture');
+    return null;
+  }
+};
+
+export const deleteLiveLecture = async (id: string): Promise<boolean> => {
+  console.log('🔄 Deleting live lecture:', id);
+  
+  try {
+    const { error } = await supabase
+      .from('live_lectures')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('❌ Error deleting live lecture:', error);
+      toast.error('Failed to delete live lecture');
+      return false;
+    }
+
+    console.log('✅ Successfully deleted live lecture');
+    toast.success('Live lecture deleted successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Exception deleting live lecture:', error);
+    toast.error('Failed to delete live lecture');
+    return false;
+  }
 };

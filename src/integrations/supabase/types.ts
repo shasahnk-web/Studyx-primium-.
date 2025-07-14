@@ -231,6 +231,59 @@ export type Database = {
         }
         Relationships: []
       }
+      live_lectures: {
+        Row: {
+          batch_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          live_date: string
+          live_time: string
+          meeting_url: string
+          platform: string | null
+          subject: string | null
+          title: string
+          topic: string | null
+          updated_at: string
+        }
+        Insert: {
+          batch_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          live_date: string
+          live_time: string
+          meeting_url: string
+          platform?: string | null
+          subject?: string | null
+          title: string
+          topic?: string | null
+          updated_at?: string
+        }
+        Update: {
+          batch_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          live_date?: string
+          live_time?: string
+          meeting_url?: string
+          platform?: string | null
+          subject?: string | null
+          title?: string
+          topic?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_lectures_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           batch_id: string | null

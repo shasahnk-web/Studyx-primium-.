@@ -68,17 +68,28 @@ const Index = () => {
       icon: '💎',
       badge: 'PW'
     },
-    {
-      id: 'pw-tests',
-      title: 'PW Tests',
-      subtitle: 'Practice & Assessment',
-      description: 'Padhlo chahe kahin se, Manzil milegi yahi se!',
-      subjects: ['Mock Tests', 'Previous Year Papers', 'Chapter Tests', 'Full Syllabus Tests'],
-      gradient: 'from-purple-400 to-purple-600',
-      icon: '📝',
-      badge: 'Beta',
-      isBeta: true
-    }
+      {
+        id: 'pw-tests',
+        title: 'PW Tests',
+        subtitle: 'Practice & Assessment',
+        description: 'Padhlo chahe kahin se, Manzil milegi yahi se!',
+        subjects: ['Mock Tests', 'Previous Year Papers', 'Chapter Tests', 'Full Syllabus Tests'],
+        gradient: 'from-purple-400 to-purple-600',
+        icon: '📝',
+        badge: 'Beta',
+        isBeta: true
+      },
+      {
+        id: 'unacademy',
+        title: 'Unacademy',
+        subtitle: 'Learning Reimagined',
+        description: 'Access premium content and live classes',
+        subjects: ['All Subjects', 'Live Classes', 'Test Series', 'Study Materials'],
+        gradient: 'from-green-400 to-emerald-600',
+        icon: '🎓',
+        badge: 'Partner',
+        link: 'https://academy.trms.pro'
+      }
   ];
 
   const stats = [
@@ -88,8 +99,12 @@ const Index = () => {
     { number: '24/7', label: 'Expert Support', icon: Clock, color: 'text-orange-400' }
   ];
 
-  const handleCourseClick = (courseId: string) => {
-    navigate(`/courses/${courseId}`);
+  const handleCourseClick = (course: any) => {
+    if (course.link) {
+      window.open(course.link, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(`/courses/${course.id}`);
+    }
   };
 
   const handleNextTopperClick = () => {
@@ -235,7 +250,7 @@ const Index = () => {
               <Card 
                 key={course.id}
                 className={`bg-gradient-to-br ${course.gradient} border-0 cursor-pointer transform hover:scale-105 transition-all duration-300`}
-                onClick={() => handleCourseClick(course.id)}
+                onClick={() => handleCourseClick(course)}
               >
                 <CardContent className="p-6 text-white relative">
                   <div className="absolute top-4 right-4">
@@ -273,7 +288,7 @@ const Index = () => {
                   </div>
 
                   <Button className="w-full bg-white text-gray-900 hover:bg-gray-100">
-                    {course.id === 'pw-tests' ? 'Start Practice' : 'Start Learning'}
+                    {course.id === 'pw-tests' ? 'Start Practice' : course.id === 'unacademy' ? 'Access Platform' : 'Start Learning'}
                   </Button>
                 </CardContent>
               </Card>

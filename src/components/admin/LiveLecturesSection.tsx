@@ -10,9 +10,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Edit, Trash2, Calendar, Clock, Upload, GraduationCap, AlertCircle, Loader } from 'lucide-react';
 import { toast } from 'sonner';
-import { fetchBatches, type Batch } from '@/services/supabaseService';
+import { fetchBatches, type Batch, fetchLiveLectures, createLiveLecture, updateLiveLecture, deleteLiveLecture, type LiveLecture } from '@/services/supabaseService';
 
-interface LiveLecture {
+const subjects = ['Maths', 'Chemistry', 'Biology', 'Physics', 'Hindi', 'English', 'IT', 'Sanskrit', 'SST'];
+const platforms = ['Zoom', 'Google Meet', 'YouTube Live', 'Microsoft Teams', 'Other'];
+const grades = ['Class 9', 'Class 10', 'Class 11', 'Class 12', 'JEE', 'NEET'];
+
+// Local interface for UI compatibility
+interface UILiveLecture {
   id: string;
   title: string;
   description: string;
@@ -26,17 +31,13 @@ interface LiveLecture {
   createdAt: string;
 }
 
-const subjects = ['Maths', 'Chemistry', 'Biology', 'Physics', 'Hindi', 'English', 'IT', 'Sanskrit', 'SST'];
-const platforms = ['Zoom', 'Google Meet', 'YouTube Live', 'Microsoft Teams', 'Other'];
-const grades = ['Class 9', 'Class 10', 'Class 11', 'Class 12', 'JEE', 'NEET'];
-
 export function LiveLecturesSection() {
-  const [liveLectures, setLiveLectures] = useState<LiveLecture[]>([]);
+  const [liveLectures, setLiveLectures] = useState<UILiveLecture[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [loadingBatches, setLoadingBatches] = useState(true);
   const [batchError, setBatchError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [editingLecture, setEditingLecture] = useState<LiveLecture | null>(null);
+  const [editingLecture, setEditingLecture] = useState<UILiveLecture | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -56,7 +57,7 @@ export function LiveLecturesSection() {
   const [selectedBatch, setSelectedBatch] = useState('');
 
   useEffect(() => {
-    loadLiveLectures();
+    loadLiveLecturesFromSupabase();
     loadBatchesFromSupabase();
   }, []);
 
@@ -84,12 +85,35 @@ export function LiveLecturesSection() {
     }
   };
 
-  const loadLiveLectures = () => {
-    const savedLectures = JSON.parse(localStorage.getItem('studyx_live_lectures') || '[]');
-    setLiveLectures(savedLectures);
+  const loadLiveLecturesFromSupabase = async () => {
+    try {
+      console.log('🔄 Loading live lectures from Supabase...');
+      const liveLecturesData = await fetchLiveLectures();
+      
+      // Transform data to match existing interface
+      const transformedLectures: UILiveLecture[] = liveLecturesData.map(lecture => ({
+        id: lecture.id,
+        title: lecture.title,
+        description: lecture.description || '',
+        meetingUrl: lecture.meeting_url,
+        date: lecture.live_date,
+        time: lecture.live_time,
+        subject: lecture.subject || '',
+        topic: lecture.topic || '',
+        batchId: lecture.batch_id || '',
+        platform: lecture.platform || 'YouTube Live',
+        createdAt: lecture.created_at || new Date().toISOString(),
+      }));
+      
+      setLiveLectures(transformedLectures);
+      console.log('✅ Loaded live lectures:', transformedLectures.length);
+    } catch (error) {
+      console.error('❌ Error loading live lectures:', error);
+      toast.error('Failed to load live lectures');
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.title || !formData.meetingUrl || !formData.date || !formData.time || !formData.subject || !formData.batchId) {
@@ -104,30 +128,35 @@ export function LiveLecturesSection() {
       return;
     }
 
-    const newLecture: LiveLecture = {
-      id: editingLecture ? editingLecture.id : Date.now().toString(),
-      ...formData,
-      createdAt: editingLecture ? editingLecture.createdAt : new Date().toISOString(),
-    };
+    try {
+      const lectureData = {
+        title: formData.title,
+        description: formData.description,
+        meeting_url: formData.meetingUrl,
+        live_date: formData.date,
+        live_time: formData.time,
+        subject: formData.subject,
+        topic: formData.topic,
+        batch_id: formData.batchId,
+        platform: formData.platform,
+      };
 
-    let updatedLectures;
-    if (editingLecture) {
-      updatedLectures = liveLectures.map(lecture => 
-        lecture.id === editingLecture.id ? newLecture : lecture
-      );
-      toast.success('Live lecture updated successfully');
-    } else {
-      updatedLectures = [...liveLectures, newLecture];
-      toast.success('Live lecture added successfully');
+      if (editingLecture) {
+        await updateLiveLecture(editingLecture.id, lectureData);
+      } else {
+        await createLiveLecture(lectureData);
+      }
+
+      // Reload data
+      await loadLiveLecturesFromSupabase();
+      resetForm();
+    } catch (error) {
+      console.error('❌ Error saving live lecture:', error);
+      toast.error('Failed to save live lecture');
     }
-
-    setLiveLectures(updatedLectures);
-    localStorage.setItem('studyx_live_lectures', JSON.stringify(updatedLectures));
-    
-    resetForm();
   };
 
-  const handleBulkUpload = () => {
+  const handleBulkUpload = async () => {
     if (!bulkData.trim()) {
       toast.error('Please enter lecture data');
       return;
@@ -147,7 +176,7 @@ export function LiveLecturesSection() {
 
     try {
       const lines = bulkData.trim().split('\n');
-      const newLectures: LiveLecture[] = [];
+      const newLectures = [];
       
       let currentTitle = '';
       let currentLinks: string[] = [];
@@ -160,22 +189,24 @@ export function LiveLecturesSection() {
         if (!trimmedLine.startsWith('http')) {
           // If we have accumulated links, process them
           if (currentTitle && currentLinks.length > 0) {
-            currentLinks.forEach((link, index) => {
-              const lecture: LiveLecture = {
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                title: `${currentTitle} - Lecture ${index + 1}`,
+            for (let i = 0; i < currentLinks.length; i++) {
+              const lectureData = {
+                title: `${currentTitle} - Lecture ${i + 1}`,
                 description: `Live lecture for ${currentTitle}`,
-                meetingUrl: link,
-                date: new Date().toISOString().split('T')[0],
-                time: '10:00',
+                meeting_url: currentLinks[i],
+                live_date: new Date().toISOString().split('T')[0],
+                live_time: '10:00',
                 subject: defaultSubject || 'General',
                 topic: currentTitle,
-                batchId: selectedBatch,
+                batch_id: selectedBatch,
                 platform: 'YouTube Live',
-                createdAt: new Date().toISOString(),
               };
-              newLectures.push(lecture);
-            });
+              
+              const created = await createLiveLecture(lectureData);
+              if (created) {
+                newLectures.push(created);
+              }
+            }
           }
           
           // Set new title and reset links
@@ -189,22 +220,24 @@ export function LiveLecturesSection() {
       
       // Process remaining links
       if (currentTitle && currentLinks.length > 0) {
-        currentLinks.forEach((link, index) => {
-          const lecture: LiveLecture = {
-            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-            title: `${currentTitle} - Lecture ${index + 1}`,
+        for (let i = 0; i < currentLinks.length; i++) {
+          const lectureData = {
+            title: `${currentTitle} - Lecture ${i + 1}`,
             description: `Live lecture for ${currentTitle}`,
-            meetingUrl: link,
-            date: new Date().toISOString().split('T')[0],
-            time: '10:00',
+            meeting_url: currentLinks[i],
+            live_date: new Date().toISOString().split('T')[0],
+            live_time: '10:00',
             subject: defaultSubject || 'General',
             topic: currentTitle,
-            batchId: selectedBatch,
+            batch_id: selectedBatch,
             platform: 'YouTube Live',
-            createdAt: new Date().toISOString(),
           };
-          newLectures.push(lecture);
-        });
+          
+          const created = await createLiveLecture(lectureData);
+          if (created) {
+            newLectures.push(created);
+          }
+        }
       }
 
       if (newLectures.length === 0) {
@@ -212,9 +245,8 @@ export function LiveLecturesSection() {
         return;
       }
 
-      const updatedLectures = [...liveLectures, ...newLectures];
-      setLiveLectures(updatedLectures);
-      localStorage.setItem('studyx_live_lectures', JSON.stringify(updatedLectures));
+      // Reload data
+      await loadLiveLecturesFromSupabase();
       
       setBulkData('');
       setSelectedGrade('');
@@ -244,7 +276,7 @@ export function LiveLecturesSection() {
     setEditingLecture(null);
   };
 
-  const handleEdit = (lecture: LiveLecture) => {
+  const handleEdit = (lecture: UILiveLecture) => {
     setFormData({
       title: lecture.title,
       description: lecture.description,
@@ -260,12 +292,15 @@ export function LiveLecturesSection() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this live lecture?')) {
-      const updatedLectures = liveLectures.filter(lecture => lecture.id !== id);
-      setLiveLectures(updatedLectures);
-      localStorage.setItem('studyx_live_lectures', JSON.stringify(updatedLectures));
-      toast.success('Live lecture deleted successfully');
+      try {
+        await deleteLiveLecture(id);
+        await loadLiveLecturesFromSupabase(); // Reload data
+      } catch (error) {
+        console.error('❌ Error deleting live lecture:', error);
+        toast.error('Failed to delete live lecture');
+      }
     }
   };
 
