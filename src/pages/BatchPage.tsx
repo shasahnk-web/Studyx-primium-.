@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -144,7 +143,6 @@ const BatchPage = () => {
     }
   };
 
-  // Enhanced subject matching with comprehensive debugging
   const normalizeSubjectName = (subject: string) => {
     return subject.toLowerCase().trim();
   };
@@ -191,7 +189,12 @@ const BatchPage = () => {
       'social science': ['sst', 'social studies'],
       'sst': ['social science', 'social studies'],
       'information technology': ['it', 'computer'],
-      'it': ['information technology', 'computer']
+      'it': ['information technology', 'computer'],
+      'business studies': ['business', 'bst', 'business studies'],
+      'economics': ['eco', 'economy'],
+      'hindi elective': ['hindi elect', 'hindi-elective', 'hindi elec'],
+      'hindi core': ['hindi', 'hindi-c', 'hindi core'],
+      'applied maths': ['applied math', 'applied mathematics', 'app maths']
     };
     
     for (const batchSubject of batchSubjects) {
@@ -513,33 +516,4 @@ const BatchPage = () => {
                             'DPP',
                             subjectContent.dpps,
                             <FileText className="w-8 h-8" />,
-                            'No DPPs available for this subject.',
-                            handleDownload,
-                            'pdf_url'
-                          )}
-                        </TabsContent>
-
-                        <TabsContent value="live" className="mt-6">
-                          {renderContentSection(
-                            'Live Lectures',
-                            subjectContent.liveLectures,
-                            <Video className="w-8 h-8" />,
-                            'No live lectures scheduled for this subject.',
-                            handleLiveLectureClick,
-                            'liveUrl'
-                          )}
-                        </TabsContent>
-                      </Tabs>
-                    </AccordionContent>
-                  </AccordionItem>
-                );
-              })}
-            </Accordion>
-          )}
-        </div>
-      </section>
-    </div>
-  );
-};
-
-export default BatchPage;
+                
