@@ -1,6 +1,5 @@
 
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 declare global {
   interface Window {
@@ -9,8 +8,6 @@ declare global {
 }
 
 const PreHomepage = () => {
-  const navigate = useNavigate();
-
   useEffect(() => {
     // Load particles.js script
     const script = document.createElement('script');
@@ -19,20 +16,20 @@ const PreHomepage = () => {
       // Initialize particles after script loads
       if (window.particlesJS) {
         window.particlesJS("particles-js", {
-          particles: {
-            number: { value: 100, density: { enable: true, value_area: 800 } },
-            color: { value: "#00bcd4" },
+          particles: { 
+            number: { value: 100, density: { enable: true, value_area: 800 }},
+            color: { value: "#00bcd4" }, 
             shape: { type: "circle" },
-            opacity: { value: 0.5, anim: { enable: true, speed: 1, opacity_min: 0.1 } },
+            opacity: { value: 0.5, anim: { enable: true, speed: 1, opacity_min: 0.1 }},
             size: { value: 2.5, random: true },
             line_linked: { enable: true, distance: 140, color: "#00bcd4", opacity: 0.3, width: 1 },
             move: { enable: true, speed: 1.5, out_mode: "out" }
           },
-          interactivity: {
+          interactivity: { 
             detect_on: "canvas",
-            events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" } },
-            modes: { grab: { distance: 120, line_linked: { opacity: 1 } } }
-          },
+            events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" }},
+            modes: { grab: { distance: 120, line_linked: { opacity: 1 }}}
+          }, 
           retina_detect: true
         });
       }
@@ -56,38 +53,22 @@ const PreHomepage = () => {
     };
   }, []);
 
-  const urls = {
-    server02: 'https://shortner.in/yMrUgz',
-    server03: 'https://shortner.in/yMrUgz',
-    recommendServer: 'https://shortner.in/yMrUgz',
-    tutorialVideo: 'https://t.me/studyx_1'
-  };
+  const serverLink = 'https://reel2earn.com/xlPui0Mc';
+  const tutorialLink = 'https://t.me/studyx_1';
 
   const redirectToUrl = (url: string) => {
-    if (!url) {
-      alert('Invalid URL!');
-      return;
-    }
-    
     const loadingMessage = document.getElementById("loadingMessage");
     if (loadingMessage) {
       loadingMessage.style.display = "block";
     }
-    
-    setTimeout(() => {
-      // Mark as completed and redirect to homepage
+    setTimeout(() => { 
       localStorage.setItem('preHomepageCompleted', 'true');
-      window.location.href = url;
-    }, 2000);
+      window.location.href = url; 
+    }, 1500);
   };
 
   const handleTutorialVideo = () => {
-    window.open(urls.tutorialVideo, '_blank');
-    // After tutorial, redirect to homepage
-    setTimeout(() => {
-      localStorage.setItem('preHomepageCompleted', 'true');
-      navigate('/homepage');
-    }, 1000);
+    window.open(tutorialLink, '_blank');
   };
 
   return (
@@ -113,40 +94,109 @@ const PreHomepage = () => {
         }}
       >
         <h2 
-          className="text-2xl mb-4"
           style={{ 
             color: '#a3f7ff', 
-            textShadow: '0 0 10px rgba(0,234,255,0.5)' 
+            textShadow: '0 0 10px rgba(0,234,255,0.5)',
+            marginBottom: '20px'
           }}
         >
           Generate Your Access Key
         </h2>
         
-        <p className="mb-5" style={{ color: '#d4eaff' }}>
-          Click below to generate your key.<br /><br />
+        <p style={{ color: '#d4eaff', marginBottom: '20px', fontSize: '14px' }}>
+          Click the button below to generate your key.<br /><br />
           Validity: 30 hours ⏰
         </p>
         
         <button
-          id="server02"
-          onClick={() => redirectToUrl(urls.server02)}
-          className="w-full p-3 text-white border border-[#00bcd4] bg-transparent rounded-lg cursor-pointer font-semibold my-2 transition-all duration-300 hover:bg-[#00bcd4] hover:text-black hover:shadow-[0_0_12px_rgba(0,188,212,0.6)]"
+          id="server01"
+          onClick={() => redirectToUrl(serverLink)}
+          style={{
+            width: '100%',
+            padding: '12px',
+            fontSize: '15px',
+            color: '#fff',
+            border: '1px solid #00bcd4',
+            background: 'transparent',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            margin: '8px 0',
+            fontWeight: '600',
+            transition: '0.3s',
+            textTransform: 'uppercase'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#00bcd4';
+            e.currentTarget.style.color = '#000';
+            e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = '#fff';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
         >
           Website Server - 1
         </button>
         
         <button
-          id="server03Url"
-          onClick={() => redirectToUrl(urls.server03)}
-          className="w-full p-3 text-white border border-[#00bcd4] bg-transparent rounded-lg cursor-pointer font-semibold my-2 transition-all duration-300 hover:bg-[#00bcd4] hover:text-black hover:shadow-[0_0_12px_rgba(0,188,212,0.6)]"
+          id="server02"
+          onClick={() => redirectToUrl(serverLink)}
+          style={{
+            width: '100%',
+            padding: '12px',
+            fontSize: '15px',
+            color: '#fff',
+            border: '1px solid #00bcd4',
+            background: 'transparent',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            margin: '8px 0',
+            fontWeight: '600',
+            transition: '0.3s',
+            textTransform: 'uppercase'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#00bcd4';
+            e.currentTarget.style.color = '#000';
+            e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = '#fff';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
         >
           Website Server - 2
         </button>
         
         <button
-          id="recommendServer"
-          onClick={() => redirectToUrl(urls.recommendServer)}
-          className="w-full p-3 text-white border border-[#00bcd4] bg-transparent rounded-lg cursor-pointer font-semibold my-2 transition-all duration-300 hover:bg-[#00bcd4] hover:text-black hover:shadow-[0_0_12px_rgba(0,188,212,0.6)]"
+          id="server03"
+          onClick={() => redirectToUrl(serverLink)}
+          style={{
+            width: '100%',
+            padding: '12px',
+            fontSize: '15px',
+            color: '#fff',
+            border: '1px solid #00bcd4',
+            background: 'transparent',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            margin: '8px 0',
+            fontWeight: '600',
+            transition: '0.3s',
+            textTransform: 'uppercase'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#00bcd4';
+            e.currentTarget.style.color = '#000';
+            e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = '#fff';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
         >
           Website Server - 3
         </button>
@@ -154,20 +204,45 @@ const PreHomepage = () => {
         <button
           id="watchVideo"
           onClick={handleTutorialVideo}
-          className="w-full p-3 text-white border border-[#00bcd4] bg-transparent rounded-lg cursor-pointer font-semibold my-2 transition-all duration-300 hover:bg-[#00bcd4] hover:text-black hover:shadow-[0_0_12px_rgba(0,188,212,0.6)]"
+          style={{
+            width: '100%',
+            padding: '12px',
+            fontSize: '15px',
+            color: '#fff',
+            border: '1px solid #00bcd4',
+            background: 'transparent',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            margin: '8px 0',
+            fontWeight: '600',
+            transition: '0.3s',
+            textTransform: 'uppercase'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#00bcd4';
+            e.currentTarget.style.color = '#000';
+            e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = '#fff';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
         >
-          TUTORIAL VIDEO
+          TUTORIAL VIDEO [EASY METHOD]
         </button>
         
-        <p className="text-sm" style={{ color: '#d4eaff' }}>
-          <strong>Watch tutorial first</strong> to avoid problems.
+        <p style={{ color: '#d4eaff', fontSize: '14px', marginBottom: '20px' }}>
+          <strong>Watch TUTORIAL Video FIRST</strong> so you don't face any problems.
         </p>
         
         <p 
-          className="text-xs mt-2 hidden animate-pulse" 
           id="loadingMessage"
           style={{ 
+            fontSize: '13px',
             color: '#ffcb6b',
+            marginTop: '10px',
+            display: 'none',
             animation: 'flicker 1.5s infinite alternate'
           }}
         >
