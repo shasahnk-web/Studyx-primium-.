@@ -31,7 +31,7 @@ interface LiveLecture {
 }
 
 const BatchPage = () => {
-  const { batchId } = useParams();
+  const { batchId } = useParams<{ batchId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [batch, setBatch] = useState<Batch | null>(null);
@@ -51,8 +51,6 @@ const BatchPage = () => {
       setIsLoading(true);
       setError(null);
 
-      console.log('🔄 Loading batch data for ID:', batchId);
-
       if (!batchId) {
         setError('No batch ID provided');
         return;
@@ -62,17 +60,12 @@ const BatchPage = () => {
       const allBatches = await fetchBatches();
       const currentBatch = allBatches.find((b: Batch) => b.id === batchId);
       
-      console.log('📊 All batches loaded:', allBatches.length);
-      console.log('🎯 Current batch found:', currentBatch ? 'Yes' : 'No');
-      
       if (!currentBatch) {
-        console.error('❌ Batch not found with ID:', batchId);
         setError('Batch not found');
         setBatch(null);
         return;
       }
 
-      console.log('✅ Batch details:', currentBatch);
       setBatch(currentBatch);
 
       // Load content for this batch in parallel
@@ -81,20 +74,14 @@ const BatchPage = () => {
         fetchNotes(batchId),
         fetchDPPs(batchId)
       ]);
-      
-      console.log('📚 Content loaded:', {
-        lectures: lecturesData.length,
-        notes: notesData.length,
-        dpps: dppsData.length
-      });
 
       setLectures(lecturesData);
       setNotes(notesData);
       setDPPs(dppsData);
-      setLiveLectures([]); // No live lectures for now
+      setLiveLectures([]);
 
     } catch (error) {
-      console.error('❌ Error loading batch data:', error);
+      console.error('Error loading batch data:', error);
       setError('Failed to load batch data. Please try refreshing the page.');
     } finally {
       setIsLoading(false);
@@ -103,10 +90,8 @@ const BatchPage = () => {
 
   const handleLectureClick = (videoUrl: string) => {
     if (videoUrl) {
-      console.log('🎥 Opening video URL:', videoUrl);
       window.open(videoUrl, '_blank');
     } else {
-      console.warn('⚠️ No video URL provided');
       toast({
         title: "Error",
         description: "Video URL not available",
@@ -117,10 +102,8 @@ const BatchPage = () => {
 
   const handleDownload = (url: string) => {
     if (url) {
-      console.log('📥 Opening download URL:', url);
       window.open(url, '_blank');
     } else {
-      console.warn('⚠️ No download URL provided');
       toast({
         title: "Error",
         description: "Download URL not available",
@@ -131,10 +114,8 @@ const BatchPage = () => {
 
   const handleLiveLectureClick = (liveUrl: string) => {
     if (liveUrl) {
-      console.log('📡 Opening live lecture URL:', liveUrl);
       window.open(liveUrl, '_blank');
     } else {
-      console.warn('⚠️ No live lecture URL provided');
       toast({
         title: "Error",
         description: "Live lecture URL not available",
@@ -147,38 +128,27 @@ const BatchPage = () => {
     return subject.toLowerCase().trim();
   };
 
-  const findMatchingBatchSubject = (lectureSubject: string, batchSubjects: string[]) => {
+  const findMatchingBatchSubject = (lectureSubject: string, batchSubjects: string[] = []) => {
     const normalizedLectureSubject = normalizeSubjectName(lectureSubject);
-    
-    console.log(`🔍 Matching subject "${lectureSubject}" against batch subjects:`, batchSubjects);
     
     // Direct match first
     const directMatch = batchSubjects.find(batchSubject => 
       normalizeSubjectName(batchSubject) === normalizedLectureSubject
     );
     
-    if (directMatch) {
-      console.log(`✅ Direct match found: ${directMatch}`);
-      return directMatch;
-    }
+    if (directMatch) return directMatch;
     
     // Partial match for common variations
     const partialMatch = batchSubjects.find(batchSubject => {
       const normalizedBatchSubject = normalizeSubjectName(batchSubject);
-      const matches = normalizedBatchSubject.includes(normalizedLectureSubject) || 
-                     normalizedLectureSubject.includes(normalizedBatchSubject);
-      
-      if (matches) {
-        console.log(`🔄 Partial match found: ${batchSubject} matches ${lectureSubject}`);
-      }
-      
-      return matches;
+      return normalizedBatchSubject.includes(normalizedLectureSubject) || 
+             normalizedLectureSubject.includes(normalizedBatchSubject);
     });
     
     if (partialMatch) return partialMatch;
     
     // Subject mapping for common variations
-    const subjectMappings: { [key: string]: string[] } = {
+    const subjectMappings: Record<string, string[]> = {
       'mathematics': ['maths', 'math'],
       'maths': ['mathematics', 'math'],
       'physics': ['phy'],
@@ -203,66 +173,57 @@ const BatchPage = () => {
       // Check if batch subject maps to lecture subject
       const mappings = subjectMappings[normalizedBatchSubject] || [];
       if (mappings.includes(normalizedLectureSubject)) {
-        console.log(`🗂️ Mapping match found: ${batchSubject} maps to ${lectureSubject}`);
         return batchSubject;
       }
       
       // Check reverse mapping
       for (const [key, values] of Object.entries(subjectMappings)) {
         if (values.includes(normalizedBatchSubject) && key === normalizedLectureSubject) {
-          console.log(`🔄 Reverse mapping match found: ${batchSubject} reverse maps to ${lectureSubject}`);
           return batchSubject;
         }
       }
     }
     
-    console.log(`❓ No match found for subject: ${lectureSubject}, using original`);
-    return lectureSubject; // Return original if no match found
+    return lectureSubject;
   };
 
   const getContentBySubject = (subject: string) => {
-    console.log(`📋 Getting content for subject: "${subject}"`);
-    
     const subjectLectures = lectures.filter(item => {
-      const matchingSubject = findMatchingBatchSubject(item.subject || '', batch?.subjects || []);
-      const matches = matchingSubject === subject;
-      console.log(`📚 Lecture "${item.title}" (${item.subject}) -> ${matchingSubject} -> matches "${subject}": ${matches}`);
-      return matches;
+      const matchingSubject = findMatchingBatchSubject(item.subject || '', batch?.subjects);
+      return matchingSubject === subject;
     });
     
     const subjectNotes = notes.filter(item => {
-      const matchingSubject = findMatchingBatchSubject(item.subject || '', batch?.subjects || []);
+      const matchingSubject = findMatchingBatchSubject(item.subject || '', batch?.subjects);
       return matchingSubject === subject;
     });
     
     const subjectDpps = dpps.filter(item => {
-      const matchingSubject = findMatchingBatchSubject(item.subject || '', batch?.subjects || []);
+      const matchingSubject = findMatchingBatchSubject(item.subject || '', batch?.subjects);
       return matchingSubject === subject;
     });
     
     const subjectLiveLectures = liveLectures.filter(item => {
-      const matchingSubject = findMatchingBatchSubject(item.subject, batch?.subjects || []);
+      const matchingSubject = findMatchingBatchSubject(item.subject, batch?.subjects);
       return matchingSubject === subject;
     });
 
-    const result = {
+    return {
       lectures: subjectLectures,
       notes: subjectNotes,
       dpps: subjectDpps,
       liveLectures: subjectLiveLectures
     };
-
-    console.log(`📊 Content summary for "${subject}":`, {
-      lectures: result.lectures.length,
-      notes: result.notes.length,
-      dpps: result.dpps.length,
-      liveLectures: result.liveLectures.length
-    });
-
-    return result;
   };
 
-  const renderContentSection = (title: string, items: any[], icon: any, emptyMessage: string, onItemClick: (url: string) => void, urlKey: string) => {
+  const renderContentSection = (
+    title: string,
+    items: Array<{ id: string; title: string; description?: string; topic?: string; scheduledDate?: string; scheduledTime?: string; status?: string; video_url?: string; pdf_url?: string; liveUrl?: string }>,
+    icon: React.ReactNode,
+    emptyMessage: string,
+    onItemClick: (url: string) => void,
+    urlKey: 'video_url' | 'pdf_url' | 'liveUrl'
+  ) => {
     if (items.length === 0) {
       return (
         <div className="text-center py-8">
@@ -288,7 +249,7 @@ const BatchPage = () => {
                     {item.topic && (
                       <p className="text-sm text-gray-400">Topic: {item.topic}</p>
                     )}
-                    {item.scheduledDate && (
+                    {item.scheduledDate && item.scheduledTime && (
                       <p className="text-sm text-gray-400">
                         Scheduled: {new Date(item.scheduledDate).toLocaleDateString()} at {item.scheduledTime}
                       </p>
@@ -305,7 +266,7 @@ const BatchPage = () => {
                   </div>
                 </div>
                 <Button 
-                  onClick={() => onItemClick(item[urlKey])}
+                  onClick={() => onItemClick(item[urlKey] as string)}
                   className={`flex-shrink-0 ml-4 ${
                     title === 'Live Lectures' ? 'bg-red-600 hover:bg-red-700' :
                     title === 'Lectures' ? 'bg-blue-600 hover:bg-blue-700' :
@@ -516,7 +477,7 @@ const BatchPage = () => {
                             'DPP',
                             subjectContent.dpps,
                             <FileText className="w-8 h-8" />,
-                'No DPPs available for this subject.',
+                            'No DPPs available for this subject.',
                             handleDownload,
                             'pdf_url'
                           )}
