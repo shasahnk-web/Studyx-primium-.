@@ -8,13 +8,46 @@ declare global {
 
 const PreHomepage = () => {
   const [cooldownMessage, setCooldownMessage] = useState('');
-  const [buttonsDisabled, setButtonsDisabled] = useState(false);
+  const [accessExpired, setAccessExpired] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Check cooldown on component mount
-    checkCooldown();
+    checkAccessValidity();
+    initializeParticles();
+    loadGoogleFonts();
+  }, []);
 
-    // Load particles.js script
+  const checkAccessValidity = () => {
+    const accessTime = localStorage.getItem('accessTime');
+    if (!accessTime) {
+      // No previous access, allow generation
+      return;
+    }
+
+    const now = new Date().getTime();
+    const accessDuration = 24 * 60 * 60 * 1000; // 24 hours
+    const elapsed = now - parseInt(accessTime);
+
+    if (elapsed < accessDuration) {
+      // Still within 24 hour access period
+      const remaining = accessDuration - elapsed;
+      const hours = Math.floor(remaining / (1000 * 60 * 60));
+      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+      
+      setCooldownMessage(`Your current access expires in ${hours}h ${Math.round(minutes)}m`);
+      setTimeout(() => {
+        // Automatically expire access when time is up
+        setAccessExpired(true);
+        setCooldownMessage('Your access has expired. Please generate a new key.');
+      }, remaining);
+    } else {
+      // Access expired
+      setAccessExpired(true);
+      setCooldownMessage('Your access has expired. Please generate a new key.');
+    }
+  };
+
+  const initializeParticles = () => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js';
     script.onload = () => {
@@ -39,65 +72,39 @@ const PreHomepage = () => {
       }
     };
     document.head.appendChild(script);
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  };
 
-    // Load Google Fonts
+  const loadGoogleFonts = () => {
     const fontLink = document.createElement('link');
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap';
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
-
     return () => {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-      if (fontLink.parentNode) {
-        fontLink.parentNode.removeChild(fontLink);
-      }
+      if (fontLink.parentNode) fontLink.parentNode.removeChild(fontLink);
     };
-  }, []);
-
-  const checkCooldown = () => {
-    const lastGenerated = localStorage.getItem('lastGenerated');
-    if (!lastGenerated) return false;
-    
-    const now = new Date().getTime();
-    const cooldownPeriod = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-    const elapsed = now - parseInt(lastGenerated);
-    
-    if (elapsed < cooldownPeriod) {
-      const remaining = cooldownPeriod - elapsed;
-      const hours = Math.floor(remaining / (1000 * 60 * 60));
-      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-      
-      setCooldownMessage(`You can generate a new link in ${hours} hours and ${Math.round(minutes)} minutes.`);
-      setButtonsDisabled(true);
-      return true;
-    }
-    return false;
   };
 
-  const serverLink = 'https://reel2earn.com/xlPui0Mc';
-  const tutorialLink = 'https://t.me/studyx_1';
-
-  const redirectToUrl = (url: string) => {
-    if (buttonsDisabled) return;
-    
-    const loadingMessage = document.getElementById("loadingMessage");
-    if (loadingMessage) {
-      loadingMessage.style.display = "block";
+  const handleGenerateKey = () => {
+    if (accessExpired || !localStorage.getItem('accessTime')) {
+      setLoading(true);
+      localStorage.setItem('accessTime', new Date().getTime().toString());
+      
+      setTimeout(() => {
+        setLoading(false);
+        setAccessExpired(false);
+        window.location.href = 'https://reel2earn.com/xlPui0Mc';
+      }, 1500);
+    } else {
+      // Direct access if within 24 hours
+      window.location.href = 'https://reel2earn.com/xlPui0Mc';
     }
-    
-    // Set last generated timestamp
-    localStorage.setItem('lastGenerated', new Date().getTime().toString());
-    
-    setTimeout(() => { 
-      localStorage.setItem('preHomepageCompleted', 'true');
-      window.location.href = url; 
-    }, 1500);
   };
 
   const handleTutorialVideo = () => {
-    window.open(tutorialLink, '_blank');
+    window.open('https://t.me/studyx_1', '_blank');
   };
 
   const buttonStyle = (disabled: boolean) => ({
@@ -106,24 +113,24 @@ const PreHomepage = () => {
     fontSize: '15px',
     color: disabled ? '#666' : '#fff',
     border: `1px solid ${disabled ? '#666' : '#00bcd4'}`,
-    background: 'transparent',
+    background: disabled ? 'transparent' : 'transparent',
     borderRadius: '8px',
     cursor: disabled ? 'not-allowed' : 'pointer',
     margin: '8px 0',
     fontWeight: '600',
     transition: '0.3s',
     textTransform: 'uppercase',
-    opacity: disabled ? 0.5 : 1
+    opacity: disabled ? 0.6 : 1
   });
 
-  const hoverStyle = (disabled: boolean, e: React.MouseEvent<HTMLButtonElement>) => {
+  const hoverStyle = (e: React.MouseEvent<HTMLButtonElement>, disabled: boolean) => {
     if (disabled) return;
     e.currentTarget.style.background = '#00bcd4';
     e.currentTarget.style.color = '#000';
     e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
   };
 
-  const leaveStyle = (disabled: boolean, e: React.MouseEvent<HTMLButtonElement>) => {
+  const leaveStyle = (e: React.MouseEvent<HTMLButtonElement>, disabled: boolean) => {
     if (disabled) return;
     e.currentTarget.style.background = 'transparent';
     e.currentTarget.style.color = '#fff';
@@ -131,113 +138,120 @@ const PreHomepage = () => {
   };
 
   return (
-    <div 
-      className="fixed inset-0 text-white overflow-hidden flex justify-center items-center relative"
-      style={{ 
-        fontFamily: 'Poppins, sans-serif',
-        background: '#0a0f1d'
-      }}
-    >
-      <div id="particles-js" className="absolute w-full h-full -z-10"></div>
+    <div style={{ 
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      color: '#fff',
+      overflow: 'hidden',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      fontFamily: 'Poppins, sans-serif',
+      background: '#0a0f1d'
+    }}>
+      <div id="particles-js" style={{
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        zIndex: -1
+      }}></div>
       
-      <div 
-        className="text-center"
-        style={{
-          background: 'rgba(255,255,255,0.07)',
-          borderRadius: '15px',
-          padding: '30px',
-          width: '400px',
-          boxShadow: '0 0 15px rgba(0,174,255,0.3)',
-          border: '1px solid rgba(0,174,255,0.2)',
-          backdropFilter: 'blur(8px)'
-        }}
-      >
-        <h2 
-          style={{ 
-            color: '#a3f7ff', 
-            textShadow: '0 0 10px rgba(0,234,255,0.5)',
-            marginBottom: '20px'
-          }}
-        >
-          Generate Your Access Key
+      <div style={{
+        background: 'rgba(255,255,255,0.07)',
+        borderRadius: '15px',
+        padding: '30px',
+        width: '400px',
+        textAlign: 'center',
+        boxShadow: '0 0 15px rgba(0,174,255,0.3)',
+        border: '1px solid rgba(0,174,255,0.2)',
+        backdropFilter: 'blur(8px)'
+      }}>
+        <h2 style={{ 
+          color: '#a3f7ff', 
+          textShadow: '0 0 10px rgba(0,234,255,0.5)',
+          marginBottom: '20px',
+          fontSize: '24px'
+        }}>
+          {accessExpired ? 'Access Expired' : 'Generate Your Access Key'}
         </h2>
         
-        <p style={{ color: '#d4eaff', marginBottom: '20px', fontSize: '14px' }}>
-          Click the button below to generate your key.<br /><br />
-          Validity: 24 hours ⏰
+        <p style={{ 
+          color: '#d4eaff', 
+          marginBottom: '20px', 
+          fontSize: '14px' 
+        }}>
+          {accessExpired 
+            ? 'Your 24-hour access period has ended.'
+            : 'Click below to generate your 24-hour access key.'}
         </p>
-        
-        <button
-          id="server01"
-          onClick={() => redirectToUrl(serverLink)}
-          style={buttonStyle(buttonsDisabled)}
-          onMouseEnter={(e) => hoverStyle(buttonsDisabled, e)}
-          onMouseLeave={(e) => leaveStyle(buttonsDisabled, e)}
-          disabled={buttonsDisabled}
-        >
-          Website Server - 1
-        </button>
-        
-        <button
-          id="server02"
-          onClick={() => redirectToUrl(serverLink)}
-          style={buttonStyle(buttonsDisabled)}
-          onMouseEnter={(e) => hoverStyle(buttonsDisabled, e)}
-          onMouseLeave={(e) => leaveStyle(buttonsDisabled, e)}
-          disabled={buttonsDisabled}
-        >
-          Website Server - 2
-        </button>
-        
-        <button
-          id="server03"
-          onClick={() => redirectToUrl(serverLink)}
-          style={buttonStyle(buttonsDisabled)}
-          onMouseEnter={(e) => hoverStyle(buttonsDisabled, e)}
-          onMouseLeave={(e) => leaveStyle(buttonsDisabled, e)}
-          disabled={buttonsDisabled}
-        >
-          Website Server - 3
-        </button>
-        
-        <button
-          id="watchVideo"
-          onClick={handleTutorialVideo}
-          style={buttonStyle(false)}
-          onMouseEnter={(e) => hoverStyle(false, e)}
-          onMouseLeave={(e) => leaveStyle(false, e)}
-        >
-          TUTORIAL VIDEO [EASY METHOD]
-        </button>
-        
-        <p style={{ color: '#d4eaff', fontSize: '14px', marginBottom: '20px' }}>
-          <strong>Watch TUTORIAL Video FIRST</strong> so you don't face any problems.
-        </p>
-        
-        <p 
-          id="loadingMessage"
-          style={{ 
-            fontSize: '13px',
-            color: '#ffcb6b',
-            marginTop: '10px',
-            display: 'none',
-            animation: 'flicker 1.5s infinite alternate'
-          }}
-        >
-          Generating URL, please wait...
-        </p>
-        
+
+        {!accessExpired && !localStorage.getItem('accessTime') && (
+          <>
+            <button
+              onClick={handleGenerateKey}
+              style={buttonStyle(false)}
+              onMouseEnter={(e) => hoverStyle(e, false)}
+              onMouseLeave={(e) => leaveStyle(e, false)}
+              disabled={loading}
+            >
+              {loading ? 'Generating...' : 'Generate Access Key'}
+            </button>
+            
+            <p style={{ 
+              color: '#ffcb6b',
+              fontSize: '13px',
+              marginTop: '10px',
+              display: loading ? 'block' : 'none',
+              animation: 'flicker 1.5s infinite alternate'
+            }}>
+              Generating your access key...
+            </p>
+          </>
+        )}
+
+        {(accessExpired || localStorage.getItem('accessTime')) && (
+          <button
+            onClick={handleGenerateKey}
+            style={buttonStyle(false)}
+            onMouseEnter={(e) => hoverStyle(e, false)}
+            onMouseLeave={(e) => leaveStyle(e, false)}
+            disabled={loading}
+          >
+            {accessExpired ? 'Generate New Key' : 'Access Website'}
+          </button>
+        )}
+
         {cooldownMessage && (
           <p style={{ 
+            color: accessExpired ? '#ff6b6b' : '#ffcb6b',
             fontSize: '12px',
-            color: '#ff6b6b',
-            marginTop: '5px'
+            marginTop: '10px'
           }}>
             {cooldownMessage}
           </p>
         )}
+
+        <button
+          onClick={handleTutorialVideo}
+          style={buttonStyle(false)}
+          onMouseEnter={(e) => hoverStyle(e, false)}
+          onMouseLeave={(e) => leaveStyle(e, false)}
+        >
+          TUTORIAL VIDEO [EASY METHOD]
+        </button>
+
+        <p style={{ 
+          color: '#d4eaff', 
+          fontSize: '14px', 
+          marginTop: '20px' 
+        }}>
+          <strong>Watch TUTORIAL Video FIRST</strong> to avoid any issues.
+        </p>
       </div>
-      
+
       <style>{`
         @keyframes flicker {
           from { opacity: 0.6; }
