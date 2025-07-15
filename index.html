@@ -1,13 +1,194 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Educational Platform</title>
-  </head>
-  <body>
+<head>
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Educational Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/favicon.ico">
+  <style>
+    /* General Styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #0a0f1d;
+      overflow: hidden;
+      position: relative;
+      color: #ffffff;
+    }
+
+    /* Particle Background */
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    /* Cyberpunk-Themed Box */
+    .container {
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 15px;
+      padding: 30px;
+      width: 400px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0, 174, 255, 0.3);
+      border: 1px solid rgba(0, 174, 255, 0.2);
+      backdrop-filter: blur(8px);
+    }
+
+    h2 {
+      font-size: 24px;
+      color: #a3f7ff;
+      text-shadow: 0 0 10px rgba(0, 234, 255, 0.5);
+    }
+
+    p {
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: #d4eaff;
+    }
+
+    /* Buttons */
+    .button {
+      display: inline-block;
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      color: #ffffff;
+      border: 1px solid #00bcd4;
+      background: transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 8px 0;
+      font-weight: 600;
+      transition: 0.3s;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .button:hover {
+      background: #00bcd4;
+      color: #000;
+      box-shadow: 0 0 12px rgba(0, 188, 212, 0.6);
+    }
+
+    /* Key Generation Animation */
+    .loading {
+      font-size: 13px;
+      color: #ffcb6b;
+      margin-top: 10px;
+      display: none;
+      animation: flicker 1.5s infinite alternate;
+    }
+
+    /* Subtle Glow */
+    @keyframes flicker {
+      from {
+        opacity: 0.6;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* Homepage Content (hidden by default) */
+    #homepage {
+      display: none;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <!-- Key Generation Page (shown by default) -->
+  <div id="key-generation-page">
+    <div id="particles-js"></div>
+    <div class="container">
+      <h2>Generate Your Access Key</h2>
+      <p>Click the button below to generate your key.<br><br>Validity: 24 hours ⏰</p>
+      <button id="generateKey" class="button">GENERATE ACCESS KEY</button>
+      <button id="watchVideo" class="button">TUTORIAL VIDEO [EASY METHOD]</button>
+      <p>Please do <strong>Watch TUTORIAL Video FIRST</strong>, so that you not face any Problem.</p>
+      <p class="loading" id="loadingMessage">Generating URL, please wait...</p>
+    </div>
+  </div>
+
+  <!-- Homepage Content (hidden until access is granted) -->
+  <div id="homepage">
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  </div>
+
+  <script>
+    /* Particles.js Configuration */
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 100, density: { enable: true, value_area: 800 } },
+        color: { value: "#00bcd4" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5, anim: { enable: true, speed: 1, opacity_min: 0.1 } },
+        size: { value: 2.5, random: true },
+        line_linked: { enable: true, distance: 140, color: "#00bcd4", opacity: 0.3, width: 1 },
+        move: { enable: true, speed: 1.5, out_mode: "out" }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" } },
+        modes: { grab: { distance: 120, line_linked: { opacity: 1 } } }
+      },
+      retina_detect: true
+    });
+
+    // Check if user has valid access
+    function checkAccess() {
+      const accessCookie = document.cookie.split('; ').find(row => row.startsWith('siteAccess='));
+      if (accessCookie) {
+        const expiryTime = parseInt(accessCookie.split('=')[1]);
+        if (Date.now() < expiryTime) {
+          // Valid access, show homepage
+          document.getElementById('key-generation-page').style.display = 'none';
+          document.getElementById('homepage').style.display = 'block';
+          // Load your React app
+          const script = document.createElement('script');
+          script.type = 'module';
+          script.src = '/src/main.tsx';
+          document.body.appendChild(script);
+        }
+      }
+    }
+
+    // Generate key and grant access
+    document.getElementById('generateKey').addEventListener('click', function() {
+      document.getElementById("loadingMessage").style.display = "block";
+      
+      setTimeout(() => {
+        // Set cookie with 24 hour expiry (in milliseconds)
+        const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
+        document.cookie = `siteAccess=${expiryTime}; path=/; max-age=${24 * 60 * 60}`;
+        
+        // Redirect to homepage
+        checkAccess();
+      }, 2000);
+    });
+
+    // Tutorial video link
+    document.getElementById('watchVideo').addEventListener('click', () => {
+      window.open('https://t.me/studyx_1', '_blank');
+    });
+
+    // Check access on page load
+    window.addEventListener('load', checkAccess);
+  </script>
+</body>
 </html>
