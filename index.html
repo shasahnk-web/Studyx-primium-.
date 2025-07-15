@@ -103,7 +103,7 @@
       }
     }
 
-    /* Homepage Content (hidden by default) */
+    /* Homepage Content */
     #homepage {
       display: none;
       width: 100%;
@@ -112,7 +112,7 @@
   </style>
 </head>
 <body>
-  <!-- Key Generation Page (shown by default) -->
+  <!-- Key Generation Page -->
   <div id="key-generation-page">
     <div id="particles-js"></div>
     <div class="container">
@@ -125,7 +125,7 @@
     </div>
   </div>
 
-  <!-- Homepage Content (hidden until access is granted) -->
+  <!-- Homepage Content -->
   <div id="homepage">
     <div id="root"></div>
   </div>
@@ -150,34 +150,60 @@
       retina_detect: true
     });
 
-    // Server URL to redirect to
+    // Configuration
     const SERVER_URL = "https://reel2earn.com/xlPui0Mc";
+    const RETURN_PARAM = "access_granted";
+    const COOKIE_NAME = "siteAccess";
+    const ACCESS_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-    // Check if user has valid access
-    function checkAccess() {
-      const accessCookie = document.cookie.split('; ').find(row => row.startsWith('siteAccess='));
-      if (accessCookie) {
-        const expiryTime = parseInt(accessCookie.split('=')[1]);
-        if (Date.now() < expiryTime) {
-          // Valid access, redirect to server URL
-          window.location.href = SERVER_URL;
-          return true;
-        }
+    // Check URL for return parameter
+    function checkReturnFromServer() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has(RETURN_PARAM)) {
+        grantAccess();
+        // Clean the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return true;
       }
       return false;
     }
 
-    // Generate key and grant access
+    // Grant access to homepage
+    function grantAccess() {
+      const expiryTime = Date.now() + ACCESS_DURATION;
+      document.cookie = `${COOKIE_NAME}=${expiryTime}; path=/; max-age=${24 * 60 * 60}`;
+      showHomepage();
+    }
+
+    // Check if access is valid
+    function hasValidAccess() {
+      const accessCookie = document.cookie.split('; ').find(row => row.startsWith(`${COOKIE_NAME}=`));
+      if (accessCookie) {
+        const expiryTime = parseInt(accessCookie.split('=')[1]);
+        return Date.now() < expiryTime;
+      }
+      return false;
+    }
+
+    // Show homepage and load app
+    function showHomepage() {
+      document.getElementById('key-generation-page').style.display = 'none';
+      document.getElementById('homepage').style.display = 'block';
+      
+      // Load your React app
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.src = '/src/main.tsx';
+      document.body.appendChild(script);
+    }
+
+    // Generate key and redirect to server
     document.getElementById('generateKey').addEventListener('click', function() {
       document.getElementById("loadingMessage").style.display = "block";
       
       setTimeout(() => {
-        // Set cookie with 24 hour expiry (in milliseconds)
-        const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
-        document.cookie = `siteAccess=${expiryTime}; path=/; max-age=${24 * 60 * 60}`;
-        
-        // Redirect to server URL
-        window.location.href = SERVER_URL;
+        // Redirect to server with return parameter
+        window.location.href = `${SERVER_URL}?return=${encodeURIComponent(window.location.origin + window.location.pathname + `?${RETURN_PARAM}=1`)}`;
       }, 2000);
     });
 
@@ -186,13 +212,10 @@
       window.open('https://t.me/studyx_1', '_blank');
     });
 
-    // Check access on page load - if valid, redirect immediately
+    // Initial check
     window.addEventListener('load', function() {
-      if (checkAccess()) {
-        document.getElementById("loadingMessage").style.display = "block";
-        setTimeout(() => {
-          window.location.href = SERVER_URL;
-        }, 500);
+      if (checkReturnFromServer() || hasValidAccess()) {
+        showHomepage();
       }
     });
   </script>
