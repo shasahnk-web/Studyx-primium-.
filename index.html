@@ -11,3 +11,331 @@
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
+DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate Key</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  <style>
+    /* General Styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #0a0f1d; /* Dark grayish-blue */
+      overflow: hidden;
+      position: relative;
+      color: #ffffff;
+    }
+
+    /* Particle Background */
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    /* Cyberpunk-Themed Box */
+    .container {
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 15px;
+      padding: 30px;
+      width: 400px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0, 174, 255, 0.3);
+      border: 1px solid rgba(0, 174, 255, 0.2);
+      backdrop-filter: blur(8px);
+    }
+
+    h2 {
+      font-size: 24px;
+      color: #a3f7ff;
+      text-shadow: 0 0 10px rgba(0, 234, 255, 0.5);
+    }
+
+    p {
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: #d4eaff;
+    }
+
+    /* Buttons */
+    .button {
+      display: inline-block;
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      color: #ffffff;
+      border: 1px solid #00bcd4;
+      background: transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 8px 0;
+      font-weight: 600;
+      transition: 0.3s;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .button:hover {
+      background: #00bcd4;
+      color: #000;
+      box-shadow: 0 0 12px rgba(0, 188, 212, 0.6);
+    }
+
+    /* Key Generation Animation */
+    .loading {
+      font-size: 13px;
+      color: #ffcb6b;
+      margin-top: 10px;
+      display: none;
+      animation: flicker 1.5s infinite alternate;
+    }
+
+    /* Subtle Glow */
+    @keyframes flicker {
+      from {
+        opacity: 0.6;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+  
+<style>
+.tiny-footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #111;
+  color: #fff;
+  text-align: center;
+  font-size: 10px;
+  padding: 4px 0;
+  z-index: 1000;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.tiny-footer:hover {
+  box-shadow: 0 0 8px #0ff, 0 0 12px #0ff;
+  color: #0ff;
+}
+	
+.telegram-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(10, 10, 10, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: shake 1s ease-in-out infinite alternate;
+}
+
+/* Popup Box */
+.popup-content {
+  background-color: #111827;
+  color: #f9f9f9;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(0, 153, 255, 0.7);
+  animation: glow 2s infinite ease-in-out;
+  position: relative;
+}
+
+/* Popup Header */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.popup-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.close-btn {
+  font-size: 28px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Text */
+.popup-content h2 {
+  margin: 10px 0 5px;
+  font-size: 1.4rem;
+}
+
+.popup-content p {
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+/* Join Button */
+.join-btn {
+  background-color: #0088cc;
+  color: white;
+  padding: 12px 22px;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  display: inline-block;
+  transition: background 0.3s ease;
+}
+
+.join-btn:hover {
+  background-color: #0077b6;
+}
+
+/* Glow Animation */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 15px #00bfff;
+  }
+  100% {
+    box-shadow: 0 0 30px #00bfff;
+  }
+}
+
+/* Shake Animation */
+@keyframes shake {
+  0% {
+    transform: translateY(0px);
+  }
+  100% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Floating Telegram Button */
+.floating-telegram {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #0088cc;
+  padding: 12px;
+  border-radius: 50%;
+  z-index: 9999;
+  box-shadow: 0 0 15px rgba(0, 136, 204, 0.6);
+  animation: glow 2s infinite ease-in-out;
+}
+.floating-telegram img {
+  width: 26px;
+  height: 26px;
+}
+</style>
+</head>
+<body>
+<!--  <div id="telegram-popup" class="telegram-popup">
+  <div class="popup-content">
+    <div class="popup-header">
+<span class="close-btn" onclick="closePopup()">×</span>
+    </div>
+<h2>🚨 Notice 🚨</h2>
+	  <p><u>Read Carefully</u></p>
+    <p>Join the channel below to never miss any update. 🚨</p>
+    <a href="https://t.me/studyx_1" class="join-btn" onclick="joinChannel()">Join Channel</a>
+  </div>
+</div> -->
+  <div id="particles-js"></div>
+  <div class="container">
+    <h2>Generate Your Access Key</h2>
+    <p>Click the button below to generate your key.<br><br>Validity: 24 hours ⏰</p>
+    <button id="server02" class="button">Website Server - 1</button>
+    <button id="server03Url" class="button">Website Server - 2</button><br> 
+    <button id="recommendServer" class="button">Website Server - 3</button><br>
+    <button id="watchVideo" class="button">TUTORIAL VIDEO [EASY METHOD]</button>
+    <p>Please do <strong>Watch TUTORIAL Video FIRST</strong>, so that you not face any Problem.</p>
+    <p class="loading" id="loadingMessage">Generating URL, please wait...</p>
+  </div>
+
+  <script>
+    /* Particles.js Configuration */
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 100, density: { enable: true, value_area: 800 } },
+        color: { value: "#00bcd4" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5, anim: { enable: true, speed: 1, opacity_min: 0.1 } },
+        size: { value: 2.5, random: true },
+        line_linked: { enable: true, distance: 140, color: "#00bcd4", opacity: 0.3, width: 1 },
+        move: { enable: true, speed: 1.5, out_mode: "out" }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" } },
+        modes: { grab: { distance: 120, line_linked: { opacity: 1 } } }
+      },
+      retina_detect: true
+    });
+
+    /* JavaScript Logic */
+    const urls = {
+      server02: 'https://reel2earn.com/xlPui0Mc',
+      server03: 'https://reel2earn.com/xlPui0Mc',
+      recommendServer: 'https://reel2earn.com/xlPui0Mc',
+    };
+
+    function setTemporaryCookieAndRedirect(cookieName, url) {
+      if (!url) return alert('Invalid URL!');
+      document.getElementById("loadingMessage").style.display = "block";
+      setTimeout(() => {
+        document.cookie = `${cookieName}=true; path=/; max-age=${24 * 60 * 60}`; // Changed to 24 hours
+        window.location.href = url;
+      }, 2000);
+    }
+
+    document.getElementById('server02').addEventListener('click', () => setTemporaryCookieAndRedirect('server02KeyGenerated', urls.server02));
+    document.getElementById('server03Url').addEventListener('click', () => setTemporaryCookieAndRedirect('server03KeyGenerated', urls.server03));
+    document.getElementById('recommendServer').addEventListener('click', () => setTemporaryCookieAndRedirect('recommendServerKeyGenerated', urls.recommendServer));
+    document.getElementById('watchVideo').addEventListener('click', () => window.open(urls.tutorialVideo, '_blank'));
+  </script>
+  <script>
+  // Show popup only if user hasn't joined
+  window.addEventListener('load', () => {
+    const joined = localStorage.getItem("joinedTelegram");
+    if (!joined) {
+      document.getElementById("telegram-popup").style.display = "flex";
+    }
+  });
+
+  function closePopup() {
+    // Do nothing, popup will return on next visit
+    document.getElementById("telegram-popup").style.display = "none";
+  }
+
+  function joinChannel() {
+    localStorage.setItem("joinedTelegram", "true");
+    // Open Telegram
+    window.open("https://t.me/studyx_1", "_blank");
+    // Hide popup
+    document.getElementById("telegram-popup").style.display = "none";
+  }
+	
+  </script>
+</body>
+  </html>
