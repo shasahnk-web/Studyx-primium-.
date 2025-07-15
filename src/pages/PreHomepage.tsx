@@ -7,23 +7,11 @@ declare global {
 }
 
 const PreHomepage = () => {
-  const [cooldownMessage, setCooldownMessage] = useState('');
-  const [buttonsDisabled, setButtonsDisabled] = useState(false);
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [showTelegramPopup, setShowTelegramPopup] = useState(false);
+  const serverLink = 'https://reel2earn.com/xlPui0Mc';
+  const tutorialLink = 'https://t.me/studyx_1';
 
   useEffect(() => {
-    // Check if user just returned from redirection
-    const justReturned = sessionStorage.getItem('justReturned');
-    if (justReturned === 'true') {
-      // User came back without completing the flow
-      sessionStorage.removeItem('justReturned');
-      setButtonsDisabled(true);
-      startCooldownTimer();
-    } else {
-      // Normal cooldown check
-      checkCooldown();
-    }
-
     // Load particles.js script
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js';
@@ -56,6 +44,12 @@ const PreHomepage = () => {
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
+    // Check if user has joined Telegram
+    const joined = localStorage.getItem("joinedTelegram");
+    if (!joined) {
+      setShowTelegramPopup(true);
+    }
+
     return () => {
       if (script.parentNode) {
         script.parentNode.removeChild(script);
@@ -66,113 +60,29 @@ const PreHomepage = () => {
     };
   }, []);
 
-  const checkCooldown = () => {
-    const lastGenerated = localStorage.getItem('lastGenerated');
-    if (!lastGenerated) return false;
-    
-    const now = new Date().getTime();
-    const cooldownPeriod = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-    const elapsed = now - parseInt(lastGenerated);
-    
-    if (elapsed < cooldownPeriod) {
-      startCooldownTimer(cooldownPeriod - elapsed);
-      return true;
-    }
-    return false;
-  };
-
-  const startCooldownTimer = (initialRemaining?: number) => {
-    setButtonsDisabled(true);
-    
-    const cooldownPeriod = 24 * 60 * 60 * 1000; // 24 hours
-    let remaining = initialRemaining || cooldownPeriod;
-    
-    const updateTimer = () => {
-      const hours = Math.floor(remaining / (1000 * 60 * 60));
-      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-      
-      setCooldownMessage(`You can generate a new link in ${hours} hours and ${Math.round(minutes)} minutes.`);
-      
-      if (remaining <= 0) {
-        setButtonsDisabled(false);
-        setCooldownMessage('');
-        localStorage.removeItem('lastGenerated');
-        return;
-      }
-      
-      remaining -= 1000;
-      setTimeout(updateTimer, 1000);
-    };
-    
-    updateTimer();
-  };
-
-  const serverLink = 'https://reel2earn.com/xlPui0Mc';
-  const tutorialLink = 'https://t.me/studyx_1';
-
   const redirectToUrl = (url: string) => {
-    if (buttonsDisabled || isRedirecting) return;
-    
-    setIsRedirecting(true);
     const loadingMessage = document.getElementById("loadingMessage");
     if (loadingMessage) {
       loadingMessage.style.display = "block";
     }
-    
-    // Mark that we're about to redirect
-    sessionStorage.setItem('justRedirected', 'true');
-    
-    // Open in new tab to prevent back navigation
-    const newWindow = window.open(url, '_blank');
-    
-    if (newWindow) {
-      // Successfully opened new tab
-      localStorage.setItem('lastGenerated', new Date().getTime().toString());
+    setTimeout(() => { 
       localStorage.setItem('preHomepageCompleted', 'true');
-      startCooldownTimer();
-    } else {
-      // Popup blocked or other error
-      alert('Please allow popups to continue');
-      setIsRedirecting(false);
-      if (loadingMessage) {
-        loadingMessage.style.display = "none";
-      }
-      sessionStorage.removeItem('justRedirected');
-    }
+      window.location.href = url; 
+    }, 1500);
   };
 
   const handleTutorialVideo = () => {
     window.open(tutorialLink, '_blank');
   };
 
-  const buttonStyle = (disabled: boolean) => ({
-    width: '100%',
-    padding: '12px',
-    fontSize: '15px',
-    color: disabled ? '#666' : '#fff',
-    border: `1px solid ${disabled ? '#666' : '#00bcd4'}`,
-    background: 'transparent',
-    borderRadius: '8px',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    margin: '8px 0',
-    fontWeight: '600',
-    transition: '0.3s',
-    textTransform: 'uppercase',
-    opacity: disabled ? 0.5 : 1
-  });
-
-  const hoverStyle = (disabled: boolean, e: React.MouseEvent<HTMLButtonElement>) => {
-    if (disabled) return;
-    e.currentTarget.style.background = '#00bcd4';
-    e.currentTarget.style.color = '#000';
-    e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
+  const closePopup = () => {
+    setShowTelegramPopup(false);
   };
 
-  const leaveStyle = (disabled: boolean, e: React.MouseEvent<HTMLButtonElement>) => {
-    if (disabled) return;
-    e.currentTarget.style.background = 'transparent';
-    e.currentTarget.style.color = '#fff';
-    e.currentTarget.style.boxShadow = 'none';
+  const joinChannel = () => {
+    localStorage.setItem("joinedTelegram", "true");
+    window.open(tutorialLink, "_blank");
+    setShowTelegramPopup(false);
   };
 
   return (
@@ -184,14 +94,29 @@ const PreHomepage = () => {
       }}
     >
       <div id="particles-js" className="absolute w-full h-full -z-10"></div>
-      
+
+      {showTelegramPopup && (
+        <div className="telegram-popup">
+          <div className="popup-content">
+            <div className="popup-header">
+              <span className="close-btn" onClick={closePopup}>×</span>
+            </div>
+            <h2>🚨 Notice 🚨</h2>
+            <p><u>Read Carefully</u></p>
+            <p>Join the channel below to never miss any update. 🚨</p>
+            <a href={tutorialLink} className="join-btn" onClick={joinChannel}>Join Channel</a>
+          </div>
+        </div>
+      )}
+
       <div 
-        className="text-center"
+        className="container"
         style={{
           background: 'rgba(255,255,255,0.07)',
           borderRadius: '15px',
           padding: '30px',
           width: '400px',
+          textAlign: 'center',
           boxShadow: '0 0 15px rgba(0,174,255,0.3)',
           border: '1px solid rgba(0,174,255,0.2)',
           backdropFilter: 'blur(8px)'
@@ -201,92 +126,157 @@ const PreHomepage = () => {
           style={{ 
             color: '#a3f7ff', 
             textShadow: '0 0 10px rgba(0,234,255,0.5)',
-            marginBottom: '20px'
+            fontSize: '24px'
           }}
         >
           Generate Your Access Key
         </h2>
         
-        <p style={{ color: '#d4eaff', marginBottom: '20px', fontSize: '14px' }}>
+        <p style={{ color: '#d4eaff', fontSize: '14px', marginBottom: '20px' }}>
           Click the button below to generate your key.<br /><br />
           Validity: 24 hours ⏰
         </p>
         
         <button
-          id="server01"
+          className="button"
           onClick={() => redirectToUrl(serverLink)}
-          style={buttonStyle(buttonsDisabled)}
-          onMouseEnter={(e) => hoverStyle(buttonsDisabled, e)}
-          onMouseLeave={(e) => leaveStyle(buttonsDisabled, e)}
-          disabled={buttonsDisabled}
         >
           Website Server - 1
         </button>
         
         <button
-          id="server02"
+          className="button"
           onClick={() => redirectToUrl(serverLink)}
-          style={buttonStyle(buttonsDisabled)}
-          onMouseEnter={(e) => hoverStyle(buttonsDisabled, e)}
-          onMouseLeave={(e) => leaveStyle(buttonsDisabled, e)}
-          disabled={buttonsDisabled}
         >
           Website Server - 2
         </button>
         
         <button
-          id="server03"
+          className="button"
           onClick={() => redirectToUrl(serverLink)}
-          style={buttonStyle(buttonsDisabled)}
-          onMouseEnter={(e) => hoverStyle(buttonsDisabled, e)}
-          onMouseLeave={(e) => leaveStyle(buttonsDisabled, e)}
-          disabled={buttonsDisabled}
         >
           Website Server - 3
         </button>
         
         <button
-          id="watchVideo"
+          className="button"
           onClick={handleTutorialVideo}
-          style={buttonStyle(false)}
-          onMouseEnter={(e) => hoverStyle(false, e)}
-          onMouseLeave={(e) => leaveStyle(false, e)}
         >
           TUTORIAL VIDEO [EASY METHOD]
         </button>
         
         <p style={{ color: '#d4eaff', fontSize: '14px', marginBottom: '20px' }}>
-          <strong>Watch TUTORIAL Video FIRST</strong> so you don't face any problems.
+          Please do <strong>Watch TUTORIAL Video FIRST</strong>, so that you not face any Problem.
         </p>
         
         <p 
+          className="loading"
           id="loadingMessage"
-          style={{ 
-            fontSize: '13px',
-            color: '#ffcb6b',
-            marginTop: '10px',
-            display: 'none',
-            animation: 'flicker 1.5s infinite alternate'
-          }}
         >
           Generating URL, please wait...
         </p>
-        
-        {cooldownMessage && (
-          <p style={{ 
-            fontSize: '12px',
-            color: '#ff6b6b',
-            marginTop: '5px'
-          }}>
-            {cooldownMessage}
-          </p>
-        )}
       </div>
-      
-      <style>{`
+
+      <style jsx>{`
+        .button {
+          display: inline-block;
+          width: 100%;
+          padding: 12px;
+          font-size: 15px;
+          color: #ffffff;
+          border: 1px solid #00bcd4;
+          background: transparent;
+          border-radius: 8px;
+          cursor: pointer;
+          margin: 8px 0;
+          font-weight: 600;
+          transition: 0.3s;
+          text-transform: uppercase;
+        }
+        
+        .button:hover {
+          background: #00bcd4;
+          color: #000;
+          box-shadow: 0 0 12px rgba(0, 188, 212, 0.6);
+        }
+        
+        .loading {
+          font-size: 13px;
+          color: #ffcb6b;
+          margin-top: 10px;
+          display: none;
+          animation: flicker 1.5s infinite alternate;
+        }
+        
         @keyframes flicker {
           from { opacity: 0.6; }
           to { opacity: 1; }
+        }
+        
+        .telegram-popup {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(10, 10, 10, 0.85);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          animation: shake 1s ease-in-out infinite alternate;
+        }
+        
+        .popup-content {
+          background-color: #111827;
+          color: #f9f9f9;
+          padding: 30px;
+          border-radius: 12px;
+          width: 90%;
+          max-width: 400px;
+          text-align: center;
+          box-shadow: 0 0 30px rgba(0, 153, 255, 0.7);
+          animation: glow 2s infinite ease-in-out;
+          position: relative;
+        }
+        
+        .popup-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+        }
+        
+        .close-btn {
+          font-size: 28px;
+          color: #fff;
+          cursor: pointer;
+          font-weight: bold;
+        }
+        
+        .join-btn {
+          background-color: #0088cc;
+          color: white;
+          padding: 12px 22px;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: bold;
+          display: inline-block;
+          transition: background 0.3s ease;
+        }
+        
+        .join-btn:hover {
+          background-color: #0077b6;
+        }
+        
+        @keyframes glow {
+          0% { box-shadow: 0 0 15px #00bfff; }
+          100% { box-shadow: 0 0 30px #00bfff; }
+        }
+        
+        @keyframes shake {
+          0% { transform: translateY(0px); }
+          100% { transform: translateY(-4px); }
         }
       `}</style>
     </div>
