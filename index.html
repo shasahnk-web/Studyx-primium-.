@@ -20,7 +20,7 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: #0a0f1d; /* Dark grayish-blue */
+      background: #0a0f1d;
       overflow: hidden;
       position: relative;
       color: #ffffff;
@@ -92,168 +92,22 @@
       animation: flicker 1.5s infinite alternate;
     }
 
-    /* Subtle Glow */
     @keyframes flicker {
-      from {
-        opacity: 0.6;
-      }
-      to {
-        opacity: 1;
-      }
+      from { opacity: 0.6; }
+      to { opacity: 1; }
     }
     
-    .tiny-footer {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: #111;
-      color: #fff;
-      text-align: center;
-      font-size: 10px;
-      padding: 4px 0;
-      z-index: 1000;
-      letter-spacing: 0.5px;
-      transition: all 0.3s ease;
-    }
-
-    .tiny-footer:hover {
-      box-shadow: 0 0 8px #0ff, 0 0 12px #0ff;
-      color: #0ff;
-    }
-    
-    .telegram-popup {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(10, 10, 10, 0.85);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      animation: shake 1s ease-in-out infinite alternate;
-    }
-
-    /* Popup Box */
-    .popup-content {
-      background-color: #111827;
-      color: #f9f9f9;
-      padding: 30px;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-      box-shadow: 0 0 30px rgba(0, 153, 255, 0.7);
-      animation: glow 2s infinite ease-in-out;
-      position: relative;
-    }
-
-    /* Popup Header */
-    .popup-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .popup-icon {
-      width: 36px;
-      height: 36px;
-    }
-
-    .close-btn {
-      font-size: 28px;
-      color: #fff;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    /* Text */
-    .popup-content h2 {
-      margin: 10px 0 5px;
-      font-size: 1.4rem;
-    }
-
-    .popup-content p {
-      font-size: 0.95rem;
-      margin-bottom: 20px;
-    }
-
-    /* Join Button */
-    .join-btn {
-      background-color: #0088cc;
-      color: white;
-      padding: 12px 22px;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: bold;
-      display: inline-block;
-      transition: background 0.3s ease;
-    }
-
-    .join-btn:hover {
-      background-color: #0077b6;
-    }
-
-    /* Glow Animation */
-    @keyframes glow {
-      0% {
-        box-shadow: 0 0 15px #00bfff;
-      }
-      100% {
-        box-shadow: 0 0 30px #00bfff;
-      }
-    }
-
-    /* Shake Animation */
-    @keyframes shake {
-      0% {
-        transform: translateY(0px);
-      }
-      100% {
-        transform: translateY(-4px);
-      }
-    }
-
-    /* Floating Telegram Button */
-    .floating-telegram {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #0088cc;
-      padding: 12px;
-      border-radius: 50%;
-      z-index: 9999;
-      box-shadow: 0 0 15px rgba(0, 136, 204, 0.6);
-      animation: glow 2s infinite ease-in-out;
-    }
-    .floating-telegram img {
-      width: 26px;
-      height: 26px;
-    }
-    
-    /* Homepage styles (hidden initially) */
+    /* Homepage container */
     #homepage {
       display: none;
+      width: 100%;
+      height: 100%;
     }
   </style>
 </head>
 <body>
   <!-- Key Generation Page (shown first) -->
   <div id="key-generation-page">
-    <!-- <div id="telegram-popup" class="telegram-popup">
-      <div class="popup-content">
-        <div class="popup-header">
-          <span class="close-btn" onclick="closePopup()">×</span>
-        </div>
-        <h2>🚨 Notice 🚨</h2>
-        <p><u>Read Carefully</u></p>
-        <p>Join the channel below to never miss any update. 🚨</p>
-        <a href="https://t.me/studyx_1" class="join-btn" onclick="joinChannel()">Join Channel</a>
-      </div>
-    </div> -->
-    
     <div id="particles-js"></div>
     <div class="container">
       <h2>Generate Your Access Key</h2>
@@ -263,7 +117,7 @@
       <button id="recommendServer" class="button">Website Server - 3</button><br>
       <button id="watchVideo" class="button">TUTORIAL VIDEO [EASY METHOD]</button>
       <p>Please do <strong>Watch TUTORIAL Video FIRST</strong>, so that you not face any Problem.</p>
-      <p class="loading" id="loadingMessage">Generating URL, please wait...</p>
+      <p class="loading" id="loadingMessage">Generating Key, please wait...</p>
     </div>
   </div>
 
@@ -292,59 +146,51 @@
       retina_detect: true
     });
 
-    /* JavaScript Logic */
-    const urls = {
-      server02: 'https://reel2earn.com/xlPui0Mc',
-      server03: 'https://reel2earn.com/xlPui0Mc',
-      recommendServer: 'https://reel2earn.com/xlPui0Mc',
-      tutorialVideo: 'https://example.com/tutorial' // Replace with your actual tutorial video URL
-    };
-
-    function setTemporaryCookieAndRedirect(cookieName, url) {
-      if (!url) return alert('Invalid URL!');
+    function generateKeyAndShowHomepage() {
       document.getElementById("loadingMessage").style.display = "block";
+      
       setTimeout(() => {
-        document.cookie = `${cookieName}=true; path=/; max-age=${24 * 60 * 60}`; // Changed to 24 hours
+        // Generate a random key (for demonstration)
+        const generatedKey = 'KEY-' + Math.random().toString(36).substr(2, 8).toUpperCase();
         
-        // Redirect to the key generation URL
-        window.location.href = url;
+        // Store the key in localStorage
+        localStorage.setItem('accessKey', generatedKey);
         
-        // Alternatively, if you want to show the homepage after key generation:
-        // document.getElementById("key-generation-page").style.display = "none";
-        // document.getElementById("homepage").style.display = "block";
-        // const script = document.createElement('script');
-        // script.type = 'module';
-        // script.src = '/src/main.tsx';
-        // document.body.appendChild(script);
+        // Set cookie for 24 hours
+        document.cookie = `accessKeyGenerated=true; path=/; max-age=${24 * 60 * 60}`;
+        
+        // Hide key generation page and show homepage
+        document.getElementById("key-generation-page").style.display = "none";
+        document.getElementById("homepage").style.display = "block";
+        
+        // Load the React app
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = '/src/main.tsx';
+        document.body.appendChild(script);
       }, 2000);
     }
 
-    // All server buttons now point to the same URL
-    document.getElementById('server02').addEventListener('click', () => setTemporaryCookieAndRedirect('server02KeyGenerated', urls.server02));
-    document.getElementById('server03Url').addEventListener('click', () => setTemporaryCookieAndRedirect('server03KeyGenerated', urls.server03));
-    document.getElementById('recommendServer').addEventListener('click', () => setTemporaryCookieAndRedirect('recommendServerKeyGenerated', urls.recommendServer));
-    document.getElementById('watchVideo').addEventListener('click', () => window.open(urls.tutorialVideo, '_blank'));
-
-    // Show popup only if user hasn't joined
-    window.addEventListener('load', () => {
-      const joined = localStorage.getItem("joinedTelegram");
-      if (!joined) {
-        document.getElementById("telegram-popup").style.display = "flex";
-      }
+    // All server buttons trigger the same function
+    document.getElementById('server02').addEventListener('click', generateKeyAndShowHomepage);
+    document.getElementById('server03Url').addEventListener('click', generateKeyAndShowHomepage);
+    document.getElementById('recommendServer').addEventListener('click', generateKeyAndShowHomepage);
+    document.getElementById('watchVideo').addEventListener('click', () => {
+      window.open('https://example.com/tutorial', '_blank'); // Replace with your tutorial URL
     });
 
-    function closePopup() {
-      // Do nothing, popup will return on next visit
-      document.getElementById("telegram-popup").style.display = "none";
-    }
-
-    function joinChannel() {
-      localStorage.setItem("joinedTelegram", "true");
-      // Open Telegram
-      window.open("https://t.me/studyx_1", "_blank");
-      // Hide popup
-      document.getElementById("telegram-popup").style.display = "none";
-    }
+    // Check if key already exists
+    window.addEventListener('load', () => {
+      const hasKey = localStorage.getItem('accessKey') || document.cookie.includes('accessKeyGenerated');
+      if (hasKey) {
+        document.getElementById("key-generation-page").style.display = "none";
+        document.getElementById("homepage").style.display = "block";
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = '/src/main.tsx';
+        document.body.appendChild(script);
+      }
+    });
   </script>
 </body>
 </html>
