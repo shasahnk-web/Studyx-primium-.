@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 declare global {
   interface Window {
@@ -7,15 +7,13 @@ declare global {
 }
 
 const PreHomepage = () => {
-  const [loading, setLoading] = useState(false);
-  const [accessTime, setAccessTime] = useState<number | null>(null);
-  const [remainingTime, setRemainingTime] = useState<number | null>(null);
-  
-  const serverLink = 'https://reel2earn.com/xlPui0Mc';
-  const tutorialLink = 'https://t.me/studyx_1';
-  const accessDuration = 30 * 60 * 60 * 1000; // 30 hours in milliseconds
+  const [cooldownMessage, setCooldownMessage] = useState('');
+  const [buttonsDisabled, setButtonsDisabled] = useState(false);
 
   useEffect(() => {
+    // Check cooldown on component mount
+    checkCooldown();
+
     // Load particles.js script
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js';
@@ -48,11 +46,7 @@ const PreHomepage = () => {
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
-    // Check existing access on load
-    checkAccess();
-
     return () => {
-      // Cleanup
       if (script.parentNode) {
         script.parentNode.removeChild(script);
       }
@@ -62,49 +56,42 @@ const PreHomepage = () => {
     };
   }, []);
 
-  useEffect(() => {
-    let timerInterval: NodeJS.Timeout;
+  const checkCooldown = () => {
+    const lastGenerated = localStorage.getItem('lastGenerated');
+    if (!lastGenerated) return false;
     
-    if (accessTime && remainingTime && remainingTime > 0) {
-      timerInterval = setInterval(() => {
-        setRemainingTime(prev => {
-          if (prev === null) return null;
-          const newTime = prev - 1000;
-          if (newTime <= 0) {
-            clearInterval(timerInterval);
-            showAccessExpired();
-            return 0;
-          }
-          return newTime;
-        });
-      }, 1000);
-    }
-
-    return () => clearInterval(timerInterval);
-  }, [accessTime]);
-
-  const checkAccess = () => {
-    const storedTime = localStorage.getItem('accessTime');
+    const now = new Date().getTime();
+    const cooldownPeriod = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    const elapsed = now - parseInt(lastGenerated);
     
-    if (storedTime) {
-      const now = new Date().getTime();
-      const elapsed = now - parseInt(storedTime);
+    if (elapsed < cooldownPeriod) {
+      const remaining = cooldownPeriod - elapsed;
+      const hours = Math.floor(remaining / (1000 * 60 * 60));
+      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
       
-      if (elapsed < accessDuration) {
-        // Access is still valid
-        setAccessTime(parseInt(storedTime));
-        setRemainingTime(accessDuration - elapsed);
-      } else {
-        // Access expired
-        showAccessExpired();
-      }
+      setCooldownMessage(`You can generate a new link in ${hours} hours and ${Math.round(minutes)} minutes.`);
+      setButtonsDisabled(true);
+      return true;
     }
+    return false;
   };
 
+  const serverLink = 'https://reel2earn.com/xlPui0Mc';
+  const tutorialLink = 'https://t.me/studyx_1';
+
   const redirectToUrl = (url: string) => {
-    setLoading(true);
+    if (buttonsDisabled) return;
+    
+    const loadingMessage = document.getElementById("loadingMessage");
+    if (loadingMessage) {
+      loadingMessage.style.display = "block";
+    }
+    
+    // Set last generated timestamp
+    localStorage.setItem('lastGenerated', new Date().getTime().toString());
+    
     setTimeout(() => { 
-      localStorage.setItem('accessTime', new Date().getTime().toString());
+      localStorage.setItem('preHomepageCompleted', 'true');
       window.location.href = url; 
     }, 1500);
   };
@@ -113,17 +100,34 @@ const PreHomepage = () => {
     window.open(tutorialLink, '_blank');
   };
 
-  const formatTime = (time: number) => {
-    const hours = Math.floor(time / (1000 * 60 * 60));
-    const minutes = Math.floor((time % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((time % (1000 * 60)) / 1000);
-    return `${hours}h ${minutes}m ${seconds}s`;
+  const buttonStyle = (disabled: boolean) => ({
+    width: '100%',
+    padding: '12px',
+    fontSize: '15px',
+    color: disabled ? '#666' : '#fff',
+    border: `1px solid ${disabled ? '#666' : '#00bcd4'}`,
+    background: 'transparent',
+    borderRadius: '8px',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    margin: '8px 0',
+    fontWeight: '600',
+    transition: '0.3s',
+    textTransform: 'uppercase',
+    opacity: disabled ? 0.5 : 1
+  });
+
+  const hoverStyle = (disabled: boolean, e: React.MouseEvent<HTMLButtonElement>) => {
+    if (disabled) return;
+    e.currentTarget.style.background = '#00bcd4';
+    e.currentTarget.style.color = '#000';
+    e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
   };
 
-  const showAccessExpired = () => {
-    setAccessTime(null);
-    setRemainingTime(null);
-    localStorage.removeItem('accessTime');
+  const leaveStyle = (disabled: boolean, e: React.MouseEvent<HTMLButtonElement>) => {
+    if (disabled) return;
+    e.currentTarget.style.background = 'transparent';
+    e.currentTarget.style.color = '#fff';
+    e.currentTarget.style.boxShadow = 'none';
   };
 
   return (
@@ -155,175 +159,53 @@ const PreHomepage = () => {
             marginBottom: '20px'
           }}
         >
-          {accessTime ? 'Access Granted' : 'Generate Your Access Key'}
+          Generate Your Access Key
         </h2>
         
         <p style={{ color: '#d4eaff', marginBottom: '20px', fontSize: '14px' }}>
-          {accessTime ? (
-            <>
-              You have active access to the website<br /><br />
-              Expires in: {remainingTime ? formatTime(remainingTime) : ''} ⏰
-            </>
-          ) : (
-            <>
-              Click the button below to generate your key.<br /><br />
-              Validity: 30 hours ⏰
-            </>
-          )}
+          Click the button below to generate your key.<br /><br />
+          Validity: 24 hours ⏰
         </p>
         
-        {!accessTime && (
-          <>
-            <button
-              onClick={() => redirectToUrl(serverLink)}
-              style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '15px',
-                color: '#fff',
-                border: '1px solid #00bcd4',
-                background: 'transparent',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                margin: '8px 0',
-                fontWeight: '600',
-                transition: '0.3s',
-                textTransform: 'uppercase'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#00bcd4';
-                e.currentTarget.style.color = '#000';
-                e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = '#fff';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              Website Server - 1
-            </button>
-            
-            <button
-              onClick={() => redirectToUrl(serverLink)}
-              style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '15px',
-                color: '#fff',
-                border: '1px solid #00bcd4',
-                background: 'transparent',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                margin: '8px 0',
-                fontWeight: '600',
-                transition: '0.3s',
-                textTransform: 'uppercase'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#00bcd4';
-                e.currentTarget.style.color = '#000';
-                e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = '#fff';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              Website Server - 2
-            </button>
-            
-            <button
-              onClick={() => redirectToUrl(serverLink)}
-              style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '15px',
-                color: '#fff',
-                border: '1px solid #00bcd4',
-                background: 'transparent',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                margin: '8px 0',
-                fontWeight: '600',
-                transition: '0.3s',
-                textTransform: 'uppercase'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#00bcd4';
-                e.currentTarget.style.color = '#000';
-                e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = '#fff';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              Website Server - 3
-            </button>
-          </>
-        )}
-        
-        {accessTime && (
-          <button
-            onClick={() => redirectToUrl(serverLink)}
-            style={{
-              width: '100%',
-              padding: '12px',
-              fontSize: '15px',
-              color: '#fff',
-              border: '1px solid #00bcd4',
-              background: 'transparent',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              margin: '8px 0',
-              fontWeight: '600',
-              transition: '0.3s',
-              textTransform: 'uppercase'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#00bcd4';
-              e.currentTarget.style.color = '#000';
-              e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = '#fff';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            Access Website
-          </button>
-        )}
+        <button
+          id="server01"
+          onClick={() => redirectToUrl(serverLink)}
+          style={buttonStyle(buttonsDisabled)}
+          onMouseEnter={(e) => hoverStyle(buttonsDisabled, e)}
+          onMouseLeave={(e) => leaveStyle(buttonsDisabled, e)}
+          disabled={buttonsDisabled}
+        >
+          Website Server - 1
+        </button>
         
         <button
+          id="server02"
+          onClick={() => redirectToUrl(serverLink)}
+          style={buttonStyle(buttonsDisabled)}
+          onMouseEnter={(e) => hoverStyle(buttonsDisabled, e)}
+          onMouseLeave={(e) => leaveStyle(buttonsDisabled, e)}
+          disabled={buttonsDisabled}
+        >
+          Website Server - 2
+        </button>
+        
+        <button
+          id="server03"
+          onClick={() => redirectToUrl(serverLink)}
+          style={buttonStyle(buttonsDisabled)}
+          onMouseEnter={(e) => hoverStyle(buttonsDisabled, e)}
+          onMouseLeave={(e) => leaveStyle(buttonsDisabled, e)}
+          disabled={buttonsDisabled}
+        >
+          Website Server - 3
+        </button>
+        
+        <button
+          id="watchVideo"
           onClick={handleTutorialVideo}
-          style={{
-            width: '100%',
-            padding: '12px',
-            fontSize: '15px',
-            color: '#fff',
-            border: '1px solid #00bcd4',
-            background: 'transparent',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            margin: '8px 0',
-            fontWeight: '600',
-            transition: '0.3s',
-            textTransform: 'uppercase'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#00bcd4';
-            e.currentTarget.style.color = '#000';
-            e.currentTarget.style.boxShadow = '0 0 12px rgba(0,188,212,0.6)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = '#fff';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
+          style={buttonStyle(false)}
+          onMouseEnter={(e) => hoverStyle(false, e)}
+          onMouseLeave={(e) => leaveStyle(false, e)}
         >
           TUTORIAL VIDEO [EASY METHOD]
         </button>
@@ -332,19 +214,36 @@ const PreHomepage = () => {
           <strong>Watch TUTORIAL Video FIRST</strong> so you don't face any problems.
         </p>
         
-        {loading && (
-          <p 
-            style={{ 
-              fontSize: '13px',
-              color: '#ffcb6b',
-              marginTop: '10px',
-              animation: 'flicker 1.5s infinite alternate'
-            }}
-          >
-            Generating URL, please wait...
+        <p 
+          id="loadingMessage"
+          style={{ 
+            fontSize: '13px',
+            color: '#ffcb6b',
+            marginTop: '10px',
+            display: 'none',
+            animation: 'flicker 1.5s infinite alternate'
+          }}
+        >
+          Generating URL, please wait...
+        </p>
+        
+        {cooldownMessage && (
+          <p style={{ 
+            fontSize: '12px',
+            color: '#ff6b6b',
+            marginTop: '5px'
+          }}>
+            {cooldownMessage}
           </p>
         )}
       </div>
+      
+      <style>{`
+        @keyframes flicker {
+          from { opacity: 0.6; }
+          to { opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 };
