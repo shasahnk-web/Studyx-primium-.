@@ -150,22 +150,21 @@
       retina_detect: true
     });
 
+    // Server URL to redirect to
+    const SERVER_URL = "https://reel2earn.com/xlPui0Mc";
+
     // Check if user has valid access
     function checkAccess() {
       const accessCookie = document.cookie.split('; ').find(row => row.startsWith('siteAccess='));
       if (accessCookie) {
         const expiryTime = parseInt(accessCookie.split('=')[1]);
         if (Date.now() < expiryTime) {
-          // Valid access, show homepage
-          document.getElementById('key-generation-page').style.display = 'none';
-          document.getElementById('homepage').style.display = 'block';
-          // Load your React app
-          const script = document.createElement('script');
-          script.type = 'module';
-          script.src = '/src/main.tsx';
-          document.body.appendChild(script);
+          // Valid access, redirect to server URL
+          window.location.href = SERVER_URL;
+          return true;
         }
       }
+      return false;
     }
 
     // Generate key and grant access
@@ -177,8 +176,8 @@
         const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
         document.cookie = `siteAccess=${expiryTime}; path=/; max-age=${24 * 60 * 60}`;
         
-        // Redirect to homepage
-        checkAccess();
+        // Redirect to server URL
+        window.location.href = SERVER_URL;
       }, 2000);
     });
 
@@ -187,8 +186,15 @@
       window.open('https://t.me/studyx_1', '_blank');
     });
 
-    // Check access on page load
-    window.addEventListener('load', checkAccess);
+    // Check access on page load - if valid, redirect immediately
+    window.addEventListener('load', function() {
+      if (checkAccess()) {
+        document.getElementById("loadingMessage").style.display = "block";
+        setTimeout(() => {
+          window.location.href = SERVER_URL;
+        }, 500);
+      }
+    });
   </script>
 </body>
 </html>
