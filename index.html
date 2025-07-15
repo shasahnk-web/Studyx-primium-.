@@ -234,6 +234,31 @@
   width: 26px;
   height: 26px;
 }
+
+/* Cooldown Message */
+.cooldown-message {
+  display: none;
+  text-align: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 15px;
+  width: 400px;
+  margin: 0 auto;
+  box-shadow: 0 0 15px rgba(0, 174, 255, 0.3);
+  border: 1px solid rgba(0, 174, 255, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.cooldown-message h2 {
+  color: #ff6b6b;
+  margin-bottom: 15px;
+}
+
+.cooldown-timer {
+  font-size: 18px;
+  color: #a3f7ff;
+  margin-top: 10px;
+}
 </style>
 </head>
 <body>
@@ -249,7 +274,8 @@
   </div>
 </div> -->
   <div id="particles-js"></div>
-  <div class="container">
+  
+  <div id="main-container" class="container">
     <h2>Generate Your Access Key</h2>
     <p>Click the button below to generate your key.<br><br>Validity: 24 hours ⏰</p>
     <button id="server02" class="button">Website Server - 1</button>
@@ -258,6 +284,13 @@
     <button id="watchVideo" class="button">TUTORIAL VIDEO [EASY METHOD]</button>
     <p>Please do <strong>Watch TUTORIAL Video FIRST</strong>, so that you not face any Problem.</p>
     <p class="loading" id="loadingMessage">Generating URL, please wait...</p>
+  </div>
+
+  <div id="cooldown-container" class="cooldown-message">
+    <h2>⏳ Key Generation On Cooldown ⏳</h2>
+    <p>You have already generated a key recently.</p>
+    <p>Please wait until the cooldown period ends to generate another key.</p>
+    <div class="cooldown-timer" id="cooldown-timer"></div>
   </div>
 
   <script>
@@ -285,13 +318,55 @@
       server02: 'https://reel2earn.com/xlPui0Mc',
       server03: 'https://reel2earn.com/xlPui0Mc',
       recommendServer: 'https://reel2earn.com/xlPui0Mc',
+      tutorialVideo: 'https://t.me/studyx_1'
     };
+
+    // Check if user is on cooldown
+    function checkCooldown() {
+      const lastGenerated = localStorage.getItem("lastKeyGenerated");
+      if (lastGenerated) {
+        const now = new Date().getTime();
+        const cooldownEnd = parseInt(lastGenerated) + (24 * 60 * 60 * 1000); // 24 hours in milliseconds
+        
+        if (now < cooldownEnd) {
+          // Still in cooldown
+          document.getElementById("main-container").style.display = "none";
+          document.getElementById("cooldown-container").style.display = "block";
+          
+          // Update timer every second
+          const timer = setInterval(() => {
+            const remaining = cooldownEnd - new Date().getTime();
+            if (remaining <= 0) {
+              clearInterval(timer);
+              localStorage.removeItem("lastKeyGenerated");
+              document.getElementById("main-container").style.display = "block";
+              document.getElementById("cooldown-container").style.display = "none";
+              return;
+            }
+            
+            const hours = Math.floor(remaining / (1000 * 60 * 60));
+            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+            
+            document.getElementById("cooldown-timer").innerHTML = 
+              `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          }, 1000);
+        }
+      }
+    }
+
+    // Run cooldown check on page load
+    window.addEventListener('load', checkCooldown);
 
     function setTemporaryCookieAndRedirect(cookieName, url) {
       if (!url) return alert('Invalid URL!');
       document.getElementById("loadingMessage").style.display = "block";
+      
+      // Set cooldown in localStorage
+      localStorage.setItem("lastKeyGenerated", new Date().getTime().toString());
+      
       setTimeout(() => {
-        document.cookie = `${cookieName}=true; path=/; max-age=${24 * 60 * 60}`; // Changed to 24 hours
+        document.cookie = `${cookieName}=true; path=/; max-age=${24 * 60 * 60}`;
         window.location.href = url;
       }, 2000);
     }
