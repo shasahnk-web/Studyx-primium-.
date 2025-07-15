@@ -9,10 +9,20 @@ declare global {
 const PreHomepage = () => {
   const [cooldownMessage, setCooldownMessage] = useState('');
   const [buttonsDisabled, setButtonsDisabled] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
-    // Check cooldown on component mount
-    checkCooldown();
+    // Check if user just returned from redirection
+    const justReturned = sessionStorage.getItem('justReturned');
+    if (justReturned === 'true') {
+      // User came back without completing the flow
+      sessionStorage.removeItem('justReturned');
+      setButtonsDisabled(true);
+      startCooldownTimer();
+    } else {
+      // Normal cooldown check
+      checkCooldown();
+    }
 
     // Load particles.js script
     const script = document.createElement('script');
@@ -65,35 +75,70 @@ const PreHomepage = () => {
     const elapsed = now - parseInt(lastGenerated);
     
     if (elapsed < cooldownPeriod) {
-      const remaining = cooldownPeriod - elapsed;
+      startCooldownTimer(cooldownPeriod - elapsed);
+      return true;
+    }
+    return false;
+  };
+
+  const startCooldownTimer = (initialRemaining?: number) => {
+    setButtonsDisabled(true);
+    
+    const cooldownPeriod = 24 * 60 * 60 * 1000; // 24 hours
+    let remaining = initialRemaining || cooldownPeriod;
+    
+    const updateTimer = () => {
       const hours = Math.floor(remaining / (1000 * 60 * 60));
       const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
       
       setCooldownMessage(`You can generate a new link in ${hours} hours and ${Math.round(minutes)} minutes.`);
-      setButtonsDisabled(true);
-      return true;
-    }
-    return false;
+      
+      if (remaining <= 0) {
+        setButtonsDisabled(false);
+        setCooldownMessage('');
+        localStorage.removeItem('lastGenerated');
+        return;
+      }
+      
+      remaining -= 1000;
+      setTimeout(updateTimer, 1000);
+    };
+    
+    updateTimer();
   };
 
   const serverLink = 'https://reel2earn.com/xlPui0Mc';
   const tutorialLink = 'https://t.me/studyx_1';
 
   const redirectToUrl = (url: string) => {
-    if (buttonsDisabled) return;
+    if (buttonsDisabled || isRedirecting) return;
     
+    setIsRedirecting(true);
     const loadingMessage = document.getElementById("loadingMessage");
     if (loadingMessage) {
       loadingMessage.style.display = "block";
     }
     
-    // Set last generated timestamp
-    localStorage.setItem('lastGenerated', new Date().getTime().toString());
+    // Mark that we're about to redirect
+    sessionStorage.setItem('justRedirected', 'true');
     
-    setTimeout(() => { 
+    // Open in new tab to prevent back navigation
+    const newWindow = window.open(url, '_blank');
+    
+    if (newWindow) {
+      // Successfully opened new tab
+      localStorage.setItem('lastGenerated', new Date().getTime().toString());
       localStorage.setItem('preHomepageCompleted', 'true');
-      window.location.href = url; 
-    }, 1500);
+      startCooldownTimer();
+    } else {
+      // Popup blocked or other error
+      alert('Please allow popups to continue');
+      setIsRedirecting(false);
+      if (loadingMessage) {
+        loadingMessage.style.display = "none";
+      }
+      sessionStorage.removeItem('justRedirected');
+    }
   };
 
   const handleTutorialVideo = () => {
