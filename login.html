@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/cookie-validator.js" defer></script>
+  <title>Login | CoderHub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon-192.png">
+  <meta name="theme-color" content="#facc15">
+  <script src="/init.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if user is authenticated first
+  const authValidation = validateAuthAccess ? validateAuthAccess() : { isValid: false };
+  
+  if (!authValidation.isValid) {
+    console.log('Authentication required, redirecting to auth page');
+    window.location.href = "/auth.html";
+    return;
+  }
+  
+  // User is authenticated, now check if they have login cookies
+  const loginValidation = validateLoginAccess ? validateLoginAccess() : { isValid: false };
+  
+  // Store current URL for return after shortener process if needed
+  if (!loginValidation.isValid) {
+    console.log('Login cookies required, user will need to complete shortener process');
+    sessionStorage.setItem('redirectUrl', window.location.pathname || 'index.html');
+  }
+});
+</script>
+  <style>
+    /* General Styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f8f9fa; /* Light background */
+      overflow: hidden;
+      position: relative;
+      color: #333333;
+    }
+
+    /* Particle Background */
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    /* Soft Light Themed Box */
+    .container {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(240, 240, 255, 0.8));
+      border-radius: 20px;
+      padding: 35px;
+      width: 400px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(5px);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Colorful accent border */
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #72efdd, #5e60ce, #64dfdf, #6930c3, #80ffdb, #48bfe3);
+      border-radius: 20px 20px 0 0;
+    }
+
+    h2 {
+      font-size: 28px;
+      color: #5e60ce; /* Purple text */
+      margin-bottom: 15px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+
+    p {
+      font-size: 16px;
+      margin-bottom: 20px;
+      color: #333333;
+      line-height: 1.5;
+    }
+
+    /* Buttons */
+    .button {
+      display: inline-block;
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      color: #ffffff;
+      border: none;
+      background: linear-gradient(135deg, #5e60ce, #6930c3);
+      border-radius: 12px;
+      cursor: pointer;
+      margin: 8px 0;
+      font-weight: 600;
+      transition: 0.3s;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(105, 48, 195, 0.3);
+    }
+
+    .button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(105, 48, 195, 0.4);
+      background: linear-gradient(135deg, #6930c3, #5e60ce);
+    }
+    
+    /* Button variants */
+    .button.primary {
+      background: linear-gradient(135deg, #5e60ce, #6930c3);
+    }
+    
+    .button.secondary {
+      background: linear-gradient(135deg, #48bfe3, #56cfe1);
+    }
+    
+    .button.accent {
+      background: linear-gradient(135deg, #64dfdf, #72efdd);
+      color: #333;
+    }
+
+    .button:active {
+      transform: translateY(1px);
+    }
+
+    /* Loading Animation */
+    .loading {
+      font-size: 14px;
+      color: #5e60ce;
+      margin-top: 15px;
+      display: none;
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from {
+        opacity: 0.6;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="particles-js"></div>
+  <div class="container">
+    <h2>Generate Your Access Key</h2>
+    <p>Click any button below to generate your access key.<br><br>Validity: <strong>30 hours</strong> ⏰</p>
+    <button id="server01" class="button primary">Generate Access Key - 1</button>
+    <button id="server02" class="button secondary">Generate Access Key - 2</button><br> 
+    <button id="server03" class="button accent">Generate Access Key - 3</button><br>
+    <button id="watchVideo" class="button">TUTORIAL VIDEO [EASY METHOD]</button>
+    <p>Please do <strong>Watch TUTORIAL Video FIRST</strong>, so that you not face any problem.</p>
+    <p class="loading" id="loadingMessage">Generating access, please wait...</p>
+  </div>
+
+  <script>
+    // 🎈 Colorful Balloon Particles
+    particlesJS("particles-js", {
+      particles: {
+        number: { 
+          value: 50, 
+          density: { enable: true, value_area: 800 } 
+        },
+        color: { 
+          value: ["#72efdd", "#5e60ce", "#64dfdf", "#6930c3", "#80ffdb", "#48bfe3"] 
+        },
+        shape: { 
+          type: "circle" 
+        },
+        opacity: { 
+          value: 0.8, 
+          random: true,
+          anim: { enable: true, speed: 0.5, opacity_min: 0.4, sync: false }
+        },
+        size: { 
+          value: 10, 
+          random: true,
+          anim: { enable: true, speed: 2, size_min: 5, sync: false }
+        },
+        line_linked: { 
+          enable: true, 
+          distance: 150, 
+          color: "#5e60ce",
+          opacity: 0.4, 
+          width: 1 
+        },
+        move: { 
+          enable: true, 
+          speed: 2, 
+          direction: "none", 
+          random: true,
+          straight: false,
+          out_mode: "out", 
+          bounce: false,
+          attract: { enable: true, rotateX: 600, rotateY: 1200 }
+        }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: {
+          onhover: { enable: true, mode: "bubble" },
+          onclick: { enable: true, mode: "push" }
+        },
+        modes: {
+          bubble: { distance: 200, size: 15, duration: 2, opacity: 0.8, speed: 3 },
+          push: { particles_nb: 4 }
+        }
+      },
+      retina_detect: true
+    });
+  
+    // 🔐 Cookie functions from validator
+    function setCookie(name, value, hours) {
+      const date = new Date();
+      date.setTime(date.getTime() + hours * 60 * 60 * 1000);
+      const expires = "expires=" + date.toUTCString();
+      document.cookie = `${name}=${value}; ${expires}; path=/; SameSite=Lax`;
+    }
+  
+    function setAccessCookie() {
+      // TEMPORARY cookie that just marks the verification process has started
+      // This cookie is NOT the final access cookie
+      const now = Date.now();
+      document.cookie = `verify_initiated=true; max-age=3600; path=/; SameSite=Lax`;
+      sessionStorage.setItem('verificationStartTime', now.toString());
+      console.log('Setting verification initiation timestamp:', now);
+    }
+  
+    // Tutorial video URL
+    const tutorialVideoUrl = 'https://t.me/discussioncoders/9722';
+    
+    // Button redirect URLs
+    const SERVER_URLS = {
+      server01: 'https://reel2earn.com/VRFY1',
+      server02: 'https://reel2earn.com/VRFY2',
+      server03: 'https://reel2earn.com/VRFY3'
+    };
+    
+    function setAccessAndRedirect(serverId) {
+      // Set temporary verification cookies (NOT final access cookies)
+      setAccessCookie();
+      
+      // Show loading message
+      document.getElementById("loadingMessage").style.display = "block";
+      
+      // Store return URL for after verification
+      const redirectUrl = sessionStorage.getItem('redirectUrl') || 'index.html';
+      sessionStorage.setItem('returnUrl', redirectUrl);
+      
+      // Get the external URL for this server
+      const externalUrl = SERVER_URLS[serverId];
+      
+      // Redirect to external URL after a short delay
+      setTimeout(() => {
+        window.location.href = externalUrl;
+      }, 1500);
+    }
+  
+    // Button click listeners - each button redirects to a different external URL
+    document.getElementById("server01").addEventListener("click", () => {
+      setAccessAndRedirect('server01');
+    });
+    
+    document.getElementById("server02").addEventListener("click", () => {
+      setAccessAndRedirect('server02');
+    });
+    
+    document.getElementById("server03").addEventListener("click", () => {
+      setAccessAndRedirect('server03');
+    });
+  
+    document.getElementById("watchVideo").addEventListener("click", () => {
+      window.open(tutorialVideoUrl, '_blank');
+    });
+  
+    // Auto-redirect after coming back from verification if both auth and login cookies are valid
+    const returnUrl = sessionStorage.getItem('returnUrl');
+    if (returnUrl) {
+      // Check if both auth and login cookies are valid
+      const fullValidation = validateBatchAccess ? validateBatchAccess() : { isValid: false };
+      
+      if (fullValidation.isValid) {
+        console.log('Full access validated, redirecting to:', returnUrl);
+        sessionStorage.removeItem('returnUrl');
+        window.location.href = returnUrl;
+      }
+    }
+  </script>
+</body>
+</html>
