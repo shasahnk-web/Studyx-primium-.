@@ -5,23 +5,8 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Educational Platform</title>
-    <script>
-      // Immediate redirect to login page
-      window.location.replace("login.html");
-      
-      // Alternative option with timeout (3 seconds delay example):
-      // setTimeout(() => {
-      //   window.location.href = "login.html";
-      // }, 3000);
-    </script>
   </head>
   <body>
-    <!-- Optional: You can add a message for users without JavaScript -->
-    <noscript>
-      <h2>Please enable JavaScript to continue</h2>
-      <p>Or <a href="login.html">click here</a> to go to the login page</p>
-    </noscript>
-    
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
