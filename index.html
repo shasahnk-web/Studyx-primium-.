@@ -4,10 +4,50 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Educational Platform</title>
+    <title>StudyX Home</title>
+    <script>
+      // Strictly allow only this exact URL
+      const allowedUrl = "https://studyx-app.vercel.app/home";
+      
+      // Check current URL (case-sensitive exact match)
+      if (window.location.href !== allowedUrl) {
+        // Immediate redirect with replacement (no back button history)
+        window.location.replace(allowedUrl);
+      }
+      
+      // Block any iframe attempts
+      if (window.self !== window.top) {
+        window.top.location.href = allowedUrl;
+      }
+    </script>
+    <style>
+      /* Hide everything until URL is verified */
+      body { display: none; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Only shown when accessed from correct URL -->
+    <div id="root">
+      <h1>Welcome to StudyX Home</h1>
+      <p>This page is exclusively available at: https://studyx-app.vercel.app/home</p>
+      <!-- Your actual content here -->
+    </div>
+    
+    <!-- Fallback for non-JS browsers -->
+    <noscript>
+      <meta http-equiv="refresh" content="0; url=https://studyx-app.vercel.app/home" />
+      <style>
+        #root { display: none !important; }
+        body::after {
+          content: "Redirecting to StudyX Home...";
+          display: block;
+          padding: 20px;
+          text-align: center;
+        }
+      </style>
+    </noscript>
+
+    <!-- Your main script -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
