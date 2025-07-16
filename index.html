@@ -1,13 +1,71 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Educational Platform</title>
-  </head>
-  <body>
-    <div id="root"></div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Platform - Redirecting</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f5f5f5;
+        }
+        .redirect-message {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+    </style>
+    <script>
+        // Immediate redirect with fallback
+        try {
+            window.location.replace("login.html");
+        } catch(e) {
+            document.getElementById('redirect-fail').style.display = 'block';
+            document.getElementById('redirect-spinner').style.display = 'none';
+        }
+    </script>
+</head>
+<body>
+    <div class="redirect-message">
+        <h2>Redirecting to Login Page</h2>
+        <div id="redirect-spinner" class="spinner"></div>
+        <div id="redirect-fail" style="display: none;">
+            <p>Unable to redirect automatically.</p>
+            <p>Please <a href="login.html">click here</a> to continue to the login page.</p>
+        </div>
+    </div>
+
+    <noscript>
+        <div class="redirect-message">
+            <h2>JavaScript is Disabled</h2>
+            <p>Please enable JavaScript or <a href="login.html">click here</a> to go to the login page.</p>
+        </div>
+    </noscript>
+
+    <!-- Original app content (hidden during redirect) -->
+    <div id="root" style="display: none;"></div>
     <script type="module" src="/src/main.tsx"></script>
-  </body>
+</body>
 </html>
