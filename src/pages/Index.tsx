@@ -67,15 +67,15 @@ const Index = () => {
       isBeta: true
     },
     {
-      id: 'live-lectures',
-      title: 'Live Lectures',
-      subtitle: 'Interactive Sessions',
-      description: 'Watch live classes from top educators',
-      subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
-      gradient: 'from-red-400 to-red-600',
-      icon: '📺',
-      badge: 'Live',
-      link: 'https://studyverse-network.netlify.app/studyverse-pw'
+     id: 'live-lectures',
+     title: 'Live Lectures',
+     subtitle: 'Interactive Sessions',
+     description: 'Watch live classes from top educators',
+     subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
+     gradient: 'from-red-400 to-red-600',
+     icon: '📺',
+    badge: 'Live',
+    link: 'https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php' // यहां लिंक बदला गया है
     }
   ];
 
