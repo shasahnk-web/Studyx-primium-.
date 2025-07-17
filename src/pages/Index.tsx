@@ -49,9 +49,9 @@ const Index = () => {
   const [loadingKey, setLoadingKey] = useState(false);
   const [hasValidKey, setHasValidKey] = useState(false);
 
-  // Check for valid key on component mount
+  // Check key validity on component mount
   useEffect(() => {
-    const checkKey = () => {
+    const checkKeyValidity = () => {
       const keyData = localStorage.getItem('pwCourseAccess');
       if (!keyData) {
         setHasValidKey(false);
@@ -68,7 +68,7 @@ const Index = () => {
       }
     };
 
-    checkKey();
+    checkKeyValidity();
     loadAllData();
   }, []);
 
@@ -114,6 +114,7 @@ const Index = () => {
   const generateKeyAndRedirect = () => {
     setLoadingKey(true);
     setTimeout(() => {
+      // Store key with current timestamp
       localStorage.setItem('pwCourseAccess', JSON.stringify({
         timestamp: new Date().getTime()
       }));
@@ -121,7 +122,9 @@ const Index = () => {
       setLoadingKey(false);
       setShowKeyModal(false);
       setHasValidKey(true);
+      // Open external link in new tab
       window.open('https://reel2earn.com/RNTky', '_blank');
+      // Automatically redirect to PW Courses
       navigate('/courses/pw-courses');
     }, 2000);
   };
@@ -215,13 +218,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
+      {/* Strict Access Modal - No Cancel Option */}
       {showKeyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full border border-green-500">
             <h3 className="text-2xl font-bold mb-4 text-green-400">Access Required</h3>
             <p className="text-gray-300 mb-6">
-              You must generate an access key to view PW Courses content.
-              This key will be valid for 24 hours.
+              To access PW Courses, you must generate an access key. 
+              This will automatically redirect you after completion.
             </p>
             <div className="flex justify-center">
               <Button
@@ -251,6 +255,7 @@ const Index = () => {
         </div>
       )}
 
+      {/* Rest of your existing UI remains the same */}
       <header className="flex items-center justify-between p-4 border-b border-gray-800">
         <div className="flex items-center space-x-4">
           <img 
