@@ -11,6 +11,8 @@ const Index = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [dpps, setDPPs] = useState<DPP[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [loadingKey, setLoadingKey] = useState(false);
 
   useEffect(() => {
     loadAllData();
@@ -34,6 +36,14 @@ const Index = () => {
     }
   };
 
+  const generateKeyAndRedirect = () => {
+    setLoadingKey(true);
+    setTimeout(() => {
+      setLoadingKey(false);
+      window.location.href = "https://reel2earn.com/RNTky";
+    }, 2000);
+  };
+
   const courses = [
     {
       id: 'pw-courses',
@@ -43,7 +53,8 @@ const Index = () => {
       subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
       gradient: 'from-green-400 to-green-600',
       icon: '🔬',
-      badge: 'PW'
+      badge: 'PW',
+      requiresKey: true
     },
     {
       id: 'pw-khazana',
@@ -67,15 +78,15 @@ const Index = () => {
       isBeta: true
     },
     {
-     id: 'live-lectures',
-     title: 'Live Lectures',
-     subtitle: 'Interactive Sessions',
-     description: 'Watch live classes from top educators',
-     subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
-     gradient: 'from-red-400 to-red-600',
-     icon: '📺',
-    badge: 'Live',
-    link: 'https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php' // यहां लिंक बदला गया है
+      id: 'live-lectures',
+      title: 'Live Lectures',
+      subtitle: 'Interactive Sessions',
+      description: 'Watch live classes from top educators',
+      subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
+      gradient: 'from-red-400 to-red-600',
+      icon: '📺',
+      badge: 'Live',
+      link: 'https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php'
     }
   ];
 
@@ -89,6 +100,8 @@ const Index = () => {
   const handleCourseClick = (course: any) => {
     if (course.link) {
       window.location.href = course.link;
+    } else if (course.requiresKey) {
+      setShowKeyModal(true);
     } else {
       navigate(`/courses/${course.id}`);
     }
@@ -116,6 +129,49 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
+      {/* Key Generation Modal */}
+      {showKeyModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full border border-green-500">
+            <h3 className="text-2xl font-bold mb-4 text-green-400">Generate Access Key</h3>
+            <p className="text-gray-300 mb-6">
+              Click the button below to generate your access key. This key will be valid for 24 hours.
+            </p>
+            <div className="flex justify-center">
+              <Button
+                onClick={generateKeyAndRedirect}
+                disabled={loadingKey}
+                className="bg-green-600 hover:bg-green-700 w-full"
+              >
+                {loadingKey ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating Key...
+                  </span>
+                ) : (
+                  'Generate Key & Continue'
+                )}
+              </Button>
+            </div>
+            {loadingKey && (
+              <p className="text-center mt-4 text-yellow-400 text-sm">
+                Please wait while we generate your secure access key...
+              </p>
+            )}
+            <button
+              onClick={() => setShowKeyModal(false)}
+              className="mt-4 text-gray-400 hover:text-white text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Rest of the original code remains exactly the same */}
       <header className="flex items-center justify-between p-4 border-b border-gray-800">
         <div className="flex items-center space-x-4">
           <img 
@@ -137,6 +193,7 @@ const Index = () => {
         </Button>
       </header>
 
+      {/* All other sections remain exactly the same */}
       <section className="text-center py-16 px-4">
         <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
           Study Smart with StudyX Premium
