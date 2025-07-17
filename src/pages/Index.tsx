@@ -50,7 +50,7 @@ const Index = () => {
   const [hasValidKey, setHasValidKey] = useState(false);
   const [keyGenerationStarted, setKeyGenerationStarted] = useState(false);
 
-  // Strict key verification on mount
+  // Strict key verification
   useEffect(() => {
     const verifyKey = () => {
       const keyData = localStorage.getItem('pwCourseAccess');
@@ -75,14 +75,12 @@ const Index = () => {
     loadAllData();
   }, []);
 
-  // Block unauthorized access to PW Courses
+  // Block unauthorized access
   useEffect(() => {
     const handleRouteChange = () => {
-      if (window.location.pathname.includes('/courses/pw-courses') {
-        if (!hasValidKey) {
-          navigate('/');
-          setShowKeyModal(true);
-        }
+      if (window.location.pathname.includes('/courses/pw-courses') && !hasValidKey) {
+        navigate('/');
+        setShowKeyModal(true);
       }
     };
 
@@ -161,10 +159,10 @@ const Index = () => {
       requiresKey: true
     },
     {
-      id: 'pw-live',
-      title: 'PW Live',
-      subtitle: 'Live Classes',
-      description: 'Interactive live sessions with top educators',
+      id: 'pw-live-lectures', // Changed ID
+      title: 'PW Live Lectures', // Changed title
+      subtitle: 'Live Interactive Classes',
+      description: 'Real-time learning with top educators',
       subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
       gradient: 'from-blue-400 to-blue-600',
       icon: '📺',
@@ -444,7 +442,7 @@ const Index = () => {
 
                   <Button className="w-full bg-white/90 text-gray-900 hover:bg-white mt-auto">
                     {course.id === 'pw-test-series' ? 'Start Tests' : 
-                     course.id === 'pw-live' ? 'Join Live' : 
+                     course.id === 'pw-live-lectures' ? 'Join Live' : // Updated reference
                      course.link ? 'Explore Now' : 'Start Learning'}
                   </Button>
                 </CardContent>
@@ -467,7 +465,7 @@ const Index = () => {
                 <span className="text-lg font-semibold">StudyX Premium</span>
               </div>
               <p className="text-gray-400 text-sm">
-                Empowering students with quality education and comprehensive study materials for academic excellence.
+                Empowering students with quality education and comprehensive study materials.
               </p>
             </div>
 
