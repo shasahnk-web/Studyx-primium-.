@@ -1,3 +1,9 @@
+r>
+    </div>
+  );
+};
+
+export default Index;
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -47,6 +53,30 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [loadingKey, setLoadingKey] = useState(false);
+  const [hasValidKey, setHasValidKey] = useState(false);
+
+  // Check for valid key on component mount
+  useEffect(() => {
+    const checkKey = () => {
+      const keyData = localStorage.getItem('pwCourseAccess');
+      if (!keyData) {
+        setHasValidKey(false);
+        return;
+      }
+      
+      try {
+        const { timestamp } = JSON.parse(keyData);
+        const now = new Date().getTime();
+        const isValid = now - timestamp < 24 * 60 * 60 * 1000; // 24 hours validity
+        setHasValidKey(isValid);
+      } catch {
+        setHasValidKey(false);
+      }
+    };
+
+    checkKey();
+    loadAllData();
+  }, []);
 
   const fetchBatches = async (): Promise<Batch[]> => {
     return [
@@ -69,38 +99,21 @@ const Index = () => {
     ];
   };
 
-  useEffect(() => {
-    const loadAllData = async () => {
-      try {
-        setIsLoading(true);
-        const [batchesData, notesData, dppsData] = await Promise.all([
-          fetchBatches(),
-          fetchNotes(),
-          fetchDPPs()
-        ]);
-        setBatches(batchesData);
-        setNotes(notesData);
-        setDPPs(dppsData);
-      } catch (error) {
-        console.error('Error loading data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadAllData();
-  }, []);
-
-  const checkValidKey = (): boolean => {
-    const keyData = localStorage.getItem('pwCourseAccess');
-    if (!keyData) return false;
-    
+  const loadAllData = async () => {
     try {
-      const { timestamp } = JSON.parse(keyData);
-      const now = new Date().getTime();
-      return now - timestamp < 24 * 60 * 60 * 1000;
-    } catch {
-      return false;
+      setIsLoading(true);
+      const [batchesData, notesData, dppsData] = await Promise.all([
+        fetchBatches(),
+        fetchNotes(),
+        fetchDPPs()
+      ]);
+      setBatches(batchesData);
+      setNotes(notesData);
+      setDPPs(dppsData);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -113,6 +126,7 @@ const Index = () => {
       
       setLoadingKey(false);
       setShowKeyModal(false);
+      setHasValidKey(true);
       window.open('https://reel2earn.com/RNTky', '_blank');
       navigate('/courses/pw-courses');
     }, 2000);
@@ -175,7 +189,7 @@ const Index = () => {
     if (course.link) {
       window.location.href = course.link;
     } else if (course.requiresKey) {
-      if (checkValidKey()) {
+      if (hasValidKey) {
         navigate('/courses/pw-courses');
       } else {
         setShowKeyModal(true);
@@ -210,9 +224,10 @@ const Index = () => {
       {showKeyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full border border-green-500">
-            <h3 className="text-2xl font-bold mb-4 text-green-400">Generate Access Key</h3>
+            <h3 className="text-2xl font-bold mb-4 text-green-400">Access Required</h3>
             <p className="text-gray-300 mb-6">
-              Click the button below to generate your access key. This key will be valid for 24 hours.
+              You must generate an access key to view PW Courses content.
+              This key will be valid for 24 hours.
             </p>
             <div className="flex justify-center">
               <Button
@@ -226,24 +241,18 @@ const Index = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Generating Key...
+                    Generating Access...
                   </span>
                 ) : (
-                  'Generate Key & Continue'
+                  'Generate Access Key'
                 )}
               </Button>
             </div>
             {loadingKey && (
               <p className="text-center mt-4 text-yellow-400 text-sm">
-                Please wait while we generate your secure access key...
+                Please wait while we verify your access...
               </p>
             )}
-            <button
-              onClick={() => setShowKeyModal(false)}
-              className="mt-4 text-gray-400 hover:text-white text-sm"
-            >
-              Cancel
-            </button>
           </div>
         </div>
       )}
