@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 interface Batch {
   id: string;
   name: string;
-  // Add other batch properties as needed
 }
 
 interface Note {
@@ -16,7 +15,6 @@ interface Note {
   subject: string;
   batch_id?: string;
   pdf_url: string;
-  // Add other note properties as needed
 }
 
 interface DPP {
@@ -25,7 +23,6 @@ interface DPP {
   subject: string;
   batch_id?: string;
   pdf_url: string;
-  // Add other DPP properties as needed
 }
 
 interface Course {
@@ -51,7 +48,6 @@ const Index = () => {
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [loadingKey, setLoadingKey] = useState(false);
 
-  // Mock API functions - replace with your actual implementations
   const fetchBatches = async (): Promise<Batch[]> => {
     return [
       { id: '1', name: 'Batch 1' },
@@ -74,26 +70,26 @@ const Index = () => {
   };
 
   useEffect(() => {
+    const loadAllData = async () => {
+      try {
+        setIsLoading(true);
+        const [batchesData, notesData, dppsData] = await Promise.all([
+          fetchBatches(),
+          fetchNotes(),
+          fetchDPPs()
+        ]);
+        setBatches(batchesData);
+        setNotes(notesData);
+        setDPPs(dppsData);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     loadAllData();
   }, []);
-
-  const loadAllData = async () => {
-    try {
-      setIsLoading(true);
-      const [batchesData, notesData, dppsData] = await Promise.all([
-        fetchBatches(),
-        fetchNotes(),
-        fetchDPPs()
-      ]);
-      setBatches(batchesData);
-      setNotes(notesData);
-      setDPPs(dppsData);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const checkValidKey = (): boolean => {
     const keyData = localStorage.getItem('pwCourseAccess');
@@ -102,7 +98,7 @@ const Index = () => {
     try {
       const { timestamp } = JSON.parse(keyData);
       const now = new Date().getTime();
-      return now - timestamp < 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+      return now - timestamp < 24 * 60 * 60 * 1000;
     } catch {
       return false;
     }
@@ -111,13 +107,13 @@ const Index = () => {
   const generateKeyAndRedirect = () => {
     setLoadingKey(true);
     setTimeout(() => {
-      // Store key with current timestamp
       localStorage.setItem('pwCourseAccess', JSON.stringify({
         timestamp: new Date().getTime()
       }));
       
       setLoadingKey(false);
       setShowKeyModal(false);
+      window.open('https://reel2earn.com/RNTky', '_blank');
       navigate('/courses/pw-courses');
     }, 2000);
   };
@@ -211,14 +207,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* Key Generation Modal */}
       {showKeyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full border border-green-500">
             <h3 className="text-2xl font-bold mb-4 text-green-400">Generate Access Key</h3>
             <p className="text-gray-300 mb-6">
               Click the button below to generate your access key. This key will be valid for 24 hours.
-              After that, you'll need to generate a new key to access PW Courses.
             </p>
             <div className="flex justify-center">
               <Button
