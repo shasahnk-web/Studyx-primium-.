@@ -2,86 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Educational Platform</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        height: 100%;
-      }
-
-      #root {
-        display: none;
-        height: 100%;
-      }
-
-      #accessDenied {
-        display: none;
-        height: 100vh;
-        background-color: #0a0f1d;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-      }
-
-      #accessDenied button {
-        margin-top: 20px;
-        padding: 12px 20px;
-        background: #00bcd4;
-        border: none;
-        border-radius: 6px;
-        color: #fff;
-        font-size: 14px;
-        cursor: pointer;
-      }
-
-      #accessDenied button:hover {
-        background: #0097a7;
-      }
-    </style>
+    <title>Educational Platform</title>
   </head>
   <body>
-    <!-- 🚫 Access Blocked Page -->
-    <div id="accessDenied">
-      <h2>🔐 Access Denied</h2>
-      <p>You need to generate a secure link to access this site.</p>
-      <p>Click the button below to generate a 24-hour access key.</p>
-      <button onclick="window.location.href='https://vplink.in/nrLwIQ'">Generate Access Key 🔑</button>
-    </div>
-
-    <!-- ✅ Main App Content -->
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-
-    <!-- 🔁 Access Logic Script -->
-    <script>
-      function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-      }
-
-      const hasAccess = getCookie('verified');
-
-      // If access is already granted (cookie exists)
-      if (hasAccess === 'true') {
-        document.getElementById('root').style.display = 'block';
-      } else {
-        const ref = document.referrer;
-        if (ref.includes('vplink.in/nrLwIQ')) {
-          // ✅ Came from valid link → grant access for 24 hours
-          document.cookie = "verified=true; path=/; max-age=" + 24 * 60 * 60;
-          document.getElementById('root').style.display = 'block';
-        } else {
-          // ❌ Direct visit → Block
-          document.getElementById('accessDenied').style.display = 'flex';
-        }
-      }
-    </script>
   </body>
 </html>
