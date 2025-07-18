@@ -4,6 +4,13 @@ import { Button } from '@/components/ui/button';
 import { BookOpen, FileText, Users, Clock, Settings, Download, Video, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { fetchBatches, fetchNotes, fetchDPPs, type Batch, type Note, type DPP } from '@/services/supabaseService';
+import CryptoJS from 'crypto-js';
+
+// Security Configuration
+const SECRET_KEY = process.env.REACT_APP_SECRET_KEY || 'your-very-secure-secret-key-1234';
+const VERIFICATION_URL = 'https://reel2earn.com/RNTky';
+const ACCESS_COOKIE_NAME = 'pw_courses_verified_v2';
+const ACCESS_EXPIRY_HOURS = 24;
 
 const Index = () => {
   const navigate = useNavigate();
@@ -11,10 +18,48 @@ const Index = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [dpps, setDPPs] = useState<DPP[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [accessVerified, setAccessVerified] = useState(false);
+  const [verificationWindow, setVerificationWindow] = useState<Window | null>(null);
 
+  // Encryption/Decryption functions
+  const encryptData = (data: string): string => {
+    return CryptoJS.AES.encrypt(data, SECRET_KEY).toString();
+  };
+
+  const decryptData = (ciphertext: string): string | null => {
+    try {
+      const bytes = CryptoJS.AES.decrypt(ciphertext, SECRET_KEY);
+      return bytes.toString(CryptoJS.enc.Utf8);
+    } catch (e) {
+      return null;
+    }
+  };
+
+  // Verify access on component mount
   useEffect(() => {
     loadAllData();
+    checkAccess();
+    
+    // Clean up verification window reference
+    return () => {
+      if (verificationWindow && !verificationWindow.closed) {
+        verificationWindow.close();
+      }
+    };
   }, []);
+
+  // Handle message from verification window
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data === 'access-granted') {
+        grantAccess();
+        navigate('/courses/pw-courses');
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [navigate]);
 
   const loadAllData = async () => {
     try {
@@ -34,6 +79,59 @@ const Index = () => {
     }
   };
 
+  const checkAccess = (): boolean => {
+    const cookies = document.cookie.split(';');
+    const accessCookie = cookies.find(c => c.trim().startsWith(`${ACCESS_COOKIE_NAME}=`));
+    
+    if (!accessCookie) {
+      setAccessVerified(false);
+      return false;
+    }
+
+    const encryptedValue = accessCookie.split('=')[1];
+    const decryptedValue = decryptData(encryptedValue);
+    
+    if (!decryptedValue) {
+      setAccessVerified(false);
+      removeAccess();
+      return false;
+    }
+
+    try {
+      const { expiry, hash, userAgent } = JSON.parse(decryptedValue);
+      const expectedHash = CryptoJS.SHA256(`${expiry}${userAgent}${SECRET_KEY}`).toString();
+      
+      if (hash !== expectedHash || Date.now() > expiry || userAgent !== navigator.userAgent) {
+        setAccessVerified(false);
+        removeAccess();
+        return false;
+      }
+
+      setAccessVerified(true);
+      return true;
+    } catch (e) {
+      setAccessVerified(false);
+      removeAccess();
+      return false;
+    }
+  };
+
+  const grantAccess = () => {
+    const expiry = Date.now() + (ACCESS_EXPIRY_HOURS * 60 * 60 * 1000);
+    const userAgent = navigator.userAgent;
+    const hash = CryptoJS.SHA256(`${expiry}${userAgent}${SECRET_KEY}`).toString();
+    const data = JSON.stringify({ expiry, hash, userAgent });
+    const encryptedData = encryptData(data);
+    
+    document.cookie = `${ACCESS_COOKIE_NAME}=${encryptedData}; path=/; max-age=${ACCESS_EXPIRY_HOURS * 60 * 60}; secure; samesite=strict`;
+    setAccessVerified(true);
+  };
+
+  const removeAccess = () => {
+    document.cookie = `${ACCESS_COOKIE_NAME}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+    setAccessVerified(false);
+  };
+
   const courses = [
     {
       id: 'pw-courses',
@@ -44,7 +142,7 @@ const Index = () => {
       gradient: 'from-green-400 to-green-600',
       icon: '🔬',
       badge: 'PW',
-      keyGenUrl: 'https://key-gen-cyberpunk-glow.lovable.app/'
+      verificationUrl: VERIFICATION_URL
     },
     {
       id: 'pw-khazana',
@@ -87,25 +185,28 @@ const Index = () => {
     { number: '24/7', label: 'Expert Support', icon: Clock, color: 'text-orange-400' }
   ];
 
-  const hasValidAccess = () => {
-    const cookies = document.cookie.split(';');
-    const accessCookie = cookies.find(cookie => cookie.trim().startsWith('pwCoursesAccess='));
-    if (!accessCookie) return false;
-    
-    const expiry = parseInt(accessCookie.split('=')[1]);
-    return Date.now() < expiry;
-  };
-
   const handleCourseClick = (course: any) => {
     if (course.link) {
       window.location.href = course.link;
     } else if (course.id === 'pw-courses') {
-      if (hasValidAccess()) {
+      if (accessVerified) {
         navigate(`/courses/${course.id}`);
       } else {
-        const expiry = Date.now() + (24 * 60 * 60 * 1000);
-        document.cookie = `pwCoursesAccess=${expiry}; path=/; max-age=${24 * 60 * 60}`;
-        window.location.href = course.keyGenUrl;
+        const newWindow = window.open(course.verificationUrl, '_blank', 'noopener,noreferrer');
+        if (newWindow) {
+          setVerificationWindow(newWindow);
+          
+          const checkWindow = setInterval(() => {
+            if (newWindow.closed) {
+              clearInterval(checkWindow);
+              if (checkAccess()) {
+                navigate(`/courses/${course.id}`);
+              } else {
+                alert('Please complete the verification process to access PW Courses.');
+              }
+            }
+          }, 500);
+        }
       }
     } else {
       navigate(`/courses/${course.id}`);
@@ -126,7 +227,7 @@ const Index = () => {
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-xl">Loading StudyX...</p>
+          <p className="text-xl">Loading StudyX Premium...</p>
         </div>
       </div>
     );
@@ -283,7 +384,8 @@ const Index = () => {
                   </div>
 
                   <Button className="w-full bg-white text-gray-900 hover:bg-gray-100">
-                    {course.id === 'pw-tests' ? 'Start Practice' : 
+                    {course.id === 'pw-courses' && !accessVerified ? 'Verify Access' : 
+                     course.id === 'pw-tests' ? 'Start Practice' : 
                      course.id === 'live-lectures' ? 'Watch Live' : 'Start Learning'}
                   </Button>
                 </CardContent>
