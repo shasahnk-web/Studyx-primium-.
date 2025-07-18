@@ -7,10 +7,24 @@ import { fetchBatches, fetchNotes, fetchDPPs, type Batch, type Note, type DPP } 
 import CryptoJS from 'crypto-js';
 
 // Security Configuration
-const SECRET_KEY = process.env.REACT_APP_SECRET_KEY || 'your-very-secure-secret-key-1234';
+const SECRET_KEY = process.env.REACT_APP_SECRET_KEY || 'secure-key-9876-xyz-2024';
 const VERIFICATION_URL = 'https://reel2earn.com/RNTky';
-const ACCESS_COOKIE_NAME = 'pw_courses_verified_v2';
+const ACCESS_COOKIE_NAME = 'pw_courses_verified_v4';
 const ACCESS_EXPIRY_HOURS = 24;
+
+interface Course {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  subjects: string[];
+  gradient: string;
+  icon: string;
+  badge: string;
+  isBeta?: boolean;
+  link?: string;
+  verificationUrl?: string;
+}
 
 const Index = () => {
   const navigate = useNavigate();
@@ -20,10 +34,16 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [accessVerified, setAccessVerified] = useState(false);
   const [verificationWindow, setVerificationWindow] = useState<Window | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Encryption/Decryption functions
+  // Security functions
   const encryptData = (data: string): string => {
-    return CryptoJS.AES.encrypt(data, SECRET_KEY).toString();
+    try {
+      return CryptoJS.AES.encrypt(data, SECRET_KEY).toString();
+    } catch (e) {
+      console.error('Encryption error:', e);
+      return '';
+    }
   };
 
   const decryptData = (ciphertext: string): string | null => {
@@ -31,86 +51,40 @@ const Index = () => {
       const bytes = CryptoJS.AES.decrypt(ciphertext, SECRET_KEY);
       return bytes.toString(CryptoJS.enc.Utf8);
     } catch (e) {
+      console.error('Decryption error:', e);
       return null;
     }
   };
 
-  // Verify access on component mount
-  useEffect(() => {
-    loadAllData();
-    checkAccess();
-    
-    // Clean up verification window reference
-    return () => {
-      if (verificationWindow && !verificationWindow.closed) {
-        verificationWindow.close();
-      }
-    };
-  }, []);
-
-  // Handle message from verification window
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data === 'access-granted') {
-        grantAccess();
-        navigate('/courses/pw-courses');
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [navigate]);
-
-  const loadAllData = async () => {
+  const verifyAccess = (): boolean => {
     try {
-      setIsLoading(true);
-      const [batchesData, notesData, dppsData] = await Promise.all([
-        fetchBatches(),
-        fetchNotes(),
-        fetchDPPs()
-      ]);
-      setBatches(batchesData);
-      setNotes(notesData);
-      setDPPs(dppsData);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const checkAccess = (): boolean => {
-    const cookies = document.cookie.split(';');
-    const accessCookie = cookies.find(c => c.trim().startsWith(`${ACCESS_COOKIE_NAME}=`));
-    
-    if (!accessCookie) {
-      setAccessVerified(false);
-      return false;
-    }
-
-    const encryptedValue = accessCookie.split('=')[1];
-    const decryptedValue = decryptData(encryptedValue);
-    
-    if (!decryptedValue) {
-      setAccessVerified(false);
-      removeAccess();
-      return false;
-    }
-
-    try {
-      const { expiry, hash, userAgent } = JSON.parse(decryptedValue);
-      const expectedHash = CryptoJS.SHA256(`${expiry}${userAgent}${SECRET_KEY}`).toString();
+      const cookies = document.cookie.split(';');
+      const accessCookie = cookies.find(c => c.trim().startsWith(`${ACCESS_COOKIE_NAME}=`));
       
-      if (hash !== expectedHash || Date.now() > expiry || userAgent !== navigator.userAgent) {
-        setAccessVerified(false);
+      if (!accessCookie) return false;
+
+      const encryptedValue = accessCookie.split('=')[1];
+      const decryptedValue = decryptData(encryptedValue);
+      
+      if (!decryptedValue) {
         removeAccess();
         return false;
       }
 
-      setAccessVerified(true);
-      return true;
+      const { expiry, hash, userAgent } = JSON.parse(decryptedValue);
+      const expectedHash = CryptoJS.SHA256(`${expiry}${userAgent}${SECRET_KEY}`).toString();
+      
+      const isValid = (
+        hash === expectedHash && 
+        Date.now() < expiry && 
+        userAgent === navigator.userAgent
+      );
+
+      setAccessVerified(isValid);
+      if (!isValid) removeAccess();
+      return isValid;
     } catch (e) {
-      setAccessVerified(false);
+      console.error('Access verification error:', e);
       removeAccess();
       return false;
     }
@@ -132,7 +106,59 @@ const Index = () => {
     setAccessVerified(false);
   };
 
-  const courses = [
+  // Data loading
+  const loadAllData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const [batchesData, notesData, dppsData] = await Promise.all([
+        fetchBatches(),
+        fetchNotes(),
+        fetchDPPs()
+      ]);
+      setBatches(batchesData);
+      setNotes(notesData);
+      setDPPs(dppsData);
+    } catch (err) {
+      console.error('Data loading error:', err);
+      setError('Failed to load data. Please refresh the page.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Initialize
+  useEffect(() => {
+    loadAllData();
+    verifyAccess();
+    
+    return () => {
+      if (verificationWindow && !verificationWindow.closed) {
+        verificationWindow.close();
+      }
+    };
+  }, []);
+
+  // Handle verification messages
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        if (event.origin !== new URL(VERIFICATION_URL).origin) return;
+        if (event.data === 'access-granted') {
+          grantAccess();
+          navigate('/courses/pw-courses');
+        }
+      } catch (e) {
+        console.error('Message handling error:', e);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [navigate]);
+
+  // Courses data
+  const courses: Course[] = [
     {
       id: 'pw-courses',
       title: 'PW Courses',
@@ -185,32 +211,30 @@ const Index = () => {
     { number: '24/7', label: 'Expert Support', icon: Clock, color: 'text-orange-400' }
   ];
 
-  const handleCourseClick = (course: any) => {
+  // Handlers
+  const handleCourseClick = (course: Course) => {
     if (course.link) {
       window.location.href = course.link;
-    } else if (course.id === 'pw-courses') {
-      if (accessVerified) {
-        navigate(`/courses/${course.id}`);
-      } else {
-        const newWindow = window.open(course.verificationUrl, '_blank', 'noopener,noreferrer');
-        if (newWindow) {
-          setVerificationWindow(newWindow);
-          
-          const checkWindow = setInterval(() => {
-            if (newWindow.closed) {
-              clearInterval(checkWindow);
-              if (checkAccess()) {
-                navigate(`/courses/${course.id}`);
-              } else {
-                alert('Please complete the verification process to access PW Courses.');
-              }
-            }
-          }, 500);
-        }
-      }
-    } else {
-      navigate(`/courses/${course.id}`);
+      return;
     }
+
+    if (course.id === 'pw-courses' && !accessVerified) {
+      const newWindow = window.open(course.verificationUrl, '_blank', 'noopener,noreferrer');
+      if (newWindow) {
+        setVerificationWindow(newWindow);
+        const checkWindow = setInterval(() => {
+          if (newWindow.closed) {
+            clearInterval(checkWindow);
+            if (!verifyAccess()) {
+              alert('Please complete the verification process to access PW Courses.');
+            }
+          }
+        }, 500);
+      }
+      return;
+    }
+
+    navigate(`/courses/${course.id}`);
   };
 
   const handleNextTopperClick = () => {
@@ -222,6 +246,7 @@ const Index = () => {
     return batch ? batch.name : 'Unknown Batch';
   };
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
@@ -233,6 +258,22 @@ const Index = () => {
     );
   }
 
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-center p-6 bg-gray-800 rounded-lg">
+          <h2 className="text-2xl font-bold mb-4 text-red-400">Error Loading Data</h2>
+          <p className="mb-4">{error}</p>
+          <Button onClick={loadAllData} className="bg-blue-600 hover:bg-blue-700">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Main render
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <header className="flex items-center justify-between p-4 border-b border-gray-800">
@@ -388,6 +429,11 @@ const Index = () => {
                      course.id === 'pw-tests' ? 'Start Practice' : 
                      course.id === 'live-lectures' ? 'Watch Live' : 'Start Learning'}
                   </Button>
+                  {course.id === 'pw-courses' && accessVerified && (
+                    <div className="text-xs text-white/70 mt-2 text-center">
+                      Access granted for {ACCESS_EXPIRY_HOURS} hours
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -465,24 +511,4 @@ const Index = () => {
 
             <div>
               <h4 className="font-semibold mb-4 text-green-400">Contact Info</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>Email: support@studyx.com</li>
-                <li>Phone: +91 98765 43210</li>
-                <li>Address: Mumbai, India</li>
-                <li>Hours: 24/7 Support</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center">
-            <p className="text-gray-400 text-sm">
-              © 2024 StudyX Premium. All rights reserved. Made with ❤️ for students in India.
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-};
-
-export default Index;
+              <ul cla
