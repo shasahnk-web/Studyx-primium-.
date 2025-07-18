@@ -53,7 +53,7 @@ const Index = () => {
     const expiry = Date.now() + (ACCESS_EXPIRY_HOURS * 60 * 60 * 1000);
     const userAgent = navigator.userAgent;
     const hash = CryptoJS.SHA256(`${expiry}${userAgent}${SECRET_KEY}`).toString();
-    document.cookie = `${ACCESS_COOKIE_NAME}=${encryptData(JSON.stringify({ expiry, hash, userAgent }))}; path=/; max-age=${ACCESS_EXPIRY_HOURS * 60 * 60}; secure; samesite=strict`;
+    document.cookie = `${ACCESS_COOKIE_NAME}=${encryptData(JSON.stringify({ expiry, hash, userAgent })}; path=/; max-age=${ACCESS_EXPIRY_HOURS * 60 * 60}; secure; samesite=strict`;
     setAccessVerified(true);
   };
 
@@ -67,12 +67,24 @@ const Index = () => {
       setIsLoading(true);
       setError(null);
       const [batchesData, notesData, dppsData] = await Promise.all([fetchBatches(), fetchNotes(), fetchDPPs()]);
-      setBatches(batchesData); setNotes(notesData); setDPPs(dppsData);
-    } catch (err) { console.error('Data loading error:', err); setError('Failed to load data. Please refresh the page.'); } 
-    finally { setIsLoading(false); }
+      setBatches(batchesData); 
+      setNotes(notesData); 
+      setDPPs(dppsData);
+    } catch (err) { 
+      console.error('Data loading error:', err); 
+      setError('Failed to load data. Please refresh the page.'); 
+    } finally { 
+      setIsLoading(false); 
+    }
   };
 
-  useEffect(() => { loadAllData(); verifyAccess(); return () => { if (verificationWindow && !verificationWindow.closed) verificationWindow.close(); }; }, []);
+  useEffect(() => { 
+    loadAllData(); 
+    verifyAccess(); 
+    return () => {
+      if (verificationWindow && !verificationWindow.closed) verificationWindow.close();
+    };
+  }, []);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent): void => {
