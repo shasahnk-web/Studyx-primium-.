@@ -43,7 +43,8 @@ const Index = () => {
       subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
       gradient: 'from-green-400 to-green-600',
       icon: '🔬',
-      badge: 'PW'
+      badge: 'PW',
+      keyGenUrl: 'https://key-gen-cyberpunk-glow.lovable.app/'
     },
     {
       id: 'pw-khazana',
@@ -67,15 +68,15 @@ const Index = () => {
       isBeta: true
     },
     {
-     id: 'live-lectures',
-     title: 'Live Lectures',
-     subtitle: 'Interactive Sessions',
-     description: 'Watch live classes from top educators',
-     subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
-     gradient: 'from-red-400 to-red-600',
-     icon: '📺',
-    badge: 'Live',
-    link: 'https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php' // यहां लिंक बदला गया है
+      id: 'live-lectures',
+      title: 'Live Lectures',
+      subtitle: 'Interactive Sessions',
+      description: 'Watch live classes from top educators',
+      subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
+      gradient: 'from-red-400 to-red-600',
+      icon: '📺',
+      badge: 'Live',
+      link: 'https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php'
     }
   ];
 
@@ -86,9 +87,26 @@ const Index = () => {
     { number: '24/7', label: 'Expert Support', icon: Clock, color: 'text-orange-400' }
   ];
 
+  const hasValidAccess = () => {
+    const cookies = document.cookie.split(';');
+    const accessCookie = cookies.find(cookie => cookie.trim().startsWith('pwCoursesAccess='));
+    if (!accessCookie) return false;
+    
+    const expiry = parseInt(accessCookie.split('=')[1]);
+    return Date.now() < expiry;
+  };
+
   const handleCourseClick = (course: any) => {
     if (course.link) {
       window.location.href = course.link;
+    } else if (course.id === 'pw-courses') {
+      if (hasValidAccess()) {
+        navigate(`/courses/${course.id}`);
+      } else {
+        const expiry = Date.now() + (24 * 60 * 60 * 1000);
+        document.cookie = `pwCoursesAccess=${expiry}; path=/; max-age=${24 * 60 * 60}`;
+        window.location.href = course.keyGenUrl;
+      }
     } else {
       navigate(`/courses/${course.id}`);
     }
