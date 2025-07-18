@@ -12,6 +12,13 @@ const VERIFICATION_URL = 'https://reel2earn.com/RNTky';
 const ACCESS_COOKIE_NAME = 'pw_courses_verified_v4';
 const ACCESS_EXPIRY_HOURS = 24;
 
+interface StatItem {
+  number: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+}
+
 interface Course {
   id: string;
   title: string;
@@ -36,7 +43,7 @@ const Index = () => {
   const [verificationWindow, setVerificationWindow] = useState<Window | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Security functions
+  // Security functions with proper typing
   const encryptData = (data: string): string => {
     try {
       return CryptoJS.AES.encrypt(data, SECRET_KEY).toString();
@@ -71,13 +78,13 @@ const Index = () => {
         return false;
       }
 
-      const { expiry, hash, userAgent } = JSON.parse(decryptedValue);
-      const expectedHash = CryptoJS.SHA256(`${expiry}${userAgent}${SECRET_KEY}`).toString();
+      const parsedData: { expiry: number; hash: string; userAgent: string } = JSON.parse(decryptedValue);
+      const expectedHash = CryptoJS.SHA256(`${parsedData.expiry}${parsedData.userAgent}${SECRET_KEY}`).toString();
       
       const isValid = (
-        hash === expectedHash && 
-        Date.now() < expiry && 
-        userAgent === navigator.userAgent
+        parsedData.hash === expectedHash && 
+        Date.now() < parsedData.expiry && 
+        parsedData.userAgent === navigator.userAgent
       );
 
       setAccessVerified(isValid);
@@ -90,7 +97,7 @@ const Index = () => {
     }
   };
 
-  const grantAccess = () => {
+  const grantAccess = (): void => {
     const expiry = Date.now() + (ACCESS_EXPIRY_HOURS * 60 * 60 * 1000);
     const userAgent = navigator.userAgent;
     const hash = CryptoJS.SHA256(`${expiry}${userAgent}${SECRET_KEY}`).toString();
@@ -101,13 +108,13 @@ const Index = () => {
     setAccessVerified(true);
   };
 
-  const removeAccess = () => {
+  const removeAccess = (): void => {
     document.cookie = `${ACCESS_COOKIE_NAME}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
     setAccessVerified(false);
   };
 
-  // Data loading
-  const loadAllData = async () => {
+  // Data loading with proper typing
+  const loadAllData = async (): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
@@ -127,7 +134,7 @@ const Index = () => {
     }
   };
 
-  // Initialize
+  // Initialize with proper dependency array
   useEffect(() => {
     loadAllData();
     verifyAccess();
@@ -139,9 +146,9 @@ const Index = () => {
     };
   }, []);
 
-  // Handle verification messages
+  // Message handler with proper typing
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
+    const handleMessage = (event: MessageEvent): void => {
       try {
         if (event.origin !== new URL(VERIFICATION_URL).origin) return;
         if (event.data === 'access-granted') {
@@ -157,7 +164,7 @@ const Index = () => {
     return () => window.removeEventListener('message', handleMessage);
   }, [navigate]);
 
-  // Courses data
+  // Courses data with proper typing
   const courses: Course[] = [
     {
       id: 'pw-courses',
@@ -204,15 +211,15 @@ const Index = () => {
     }
   ];
 
-  const stats = [
+  const stats: StatItem[] = [
     { number: `${batches.length}`, label: 'Active Batches', icon: BookOpen, color: 'text-blue-400' },
     { number: `${notes.length + dpps.length}`, label: 'Study Materials', icon: FileText, color: 'text-purple-400' },
     { number: '100+', label: 'Students', icon: Users, color: 'text-green-400' },
     { number: '24/7', label: 'Expert Support', icon: Clock, color: 'text-orange-400' }
   ];
 
-  // Handlers
-  const handleCourseClick = (course: Course) => {
+  // Event handlers with proper typing
+  const handleCourseClick = (course: Course): void => {
     if (course.link) {
       window.location.href = course.link;
       return;
@@ -237,11 +244,11 @@ const Index = () => {
     navigate(`/courses/${course.id}`);
   };
 
-  const handleNextTopperClick = () => {
+  const handleNextTopperClick = (): void => {
     window.open('https://studyverse-network.netlify.app/', '_blank');
   };
 
-  const getBatchName = (batchId: string) => {
+  const getBatchName = (batchId: string): string => {
     const batch = batches.find(b => b.id === batchId);
     return batch ? batch.name : 'Unknown Batch';
   };
@@ -276,6 +283,7 @@ const Index = () => {
   // Main render
   return (
     <div className="min-h-screen bg-gray-900 text-white">
+      {/* Header section */}
       <header className="flex items-center justify-between p-4 border-b border-gray-800">
         <div className="flex items-center space-x-4">
           <img 
@@ -297,6 +305,7 @@ const Index = () => {
         </Button>
       </header>
 
+      {/* Hero section */}
       <section className="text-center py-16 px-4">
         <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
           Study Smart with StudyX Premium
@@ -306,6 +315,7 @@ const Index = () => {
         </p>
       </section>
 
+      {/* Stats section */}
       <section className="px-4 pb-8">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-4">
@@ -322,6 +332,7 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Study Materials section */}
       {(notes.length > 0 || dpps.length > 0) && (
         <section className="px-4 pb-16">
           <div className="max-w-6xl mx-auto">
@@ -375,6 +386,7 @@ const Index = () => {
         </section>
       )}
 
+      {/* Courses section */}
       <section className="px-4 pb-16">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-4 text-white">Our Courses</h2>
@@ -473,6 +485,7 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Footer section */}
       <footer className="bg-gray-800 border-t border-gray-700">
         <div className="max-w-6xl mx-auto px-4 py-12">
           <div className="grid md:grid-cols-4 gap-8">
@@ -500,15 +513,4 @@ const Index = () => {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4 text-purple-400">Popular Subjects</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white">Physics</a></li>
-                <li><a href="#" className="hover:text-white">Chemistry</a></li>
-                <li><a href="#" className="hover:text-white">Mathematics</a></li>
-                <li><a href="#" className="hover:text-white">Biology</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-4 text-green-400">Contact Info</h4>
-              <ul cla
+              <h4 className="font-semibold mb-
