@@ -5,6 +5,33 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Educational Platform</title>
+    <script>
+      // Check if the user has visited the link within the last 24 hours
+      function shouldRedirect() {
+        const lastVisit = localStorage.getItem('lastExternalVisit');
+        if (!lastVisit) return true;
+        
+        const now = new Date().getTime();
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+        return (now - parseInt(lastVisit)) > twentyFourHours;
+      }
+
+      // Redirect logic
+      if (shouldRedirect()) {
+        // Check if this is a redirect back from the external page
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromExternal = urlParams.get('fromExternal');
+        
+        if (!fromExternal) {
+          // Redirect to external page with return URL
+          const returnUrl = encodeURIComponent(window.location.href);
+          window.location.href = `https://vplink.in/nrLwIQ?return=${returnUrl}`;
+        } else {
+          // User is returning from external page - store the visit time
+          localStorage.setItem('lastExternalVisit', new Date().getTime().toString());
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
