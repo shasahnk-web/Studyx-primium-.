@@ -1,35 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Educational Platform</title>
-  <script>
-    (function() {
-      // Check if returning from external page
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('fromExternal')) {
-        localStorage.setItem('lastRedirectTime', Date.now().toString());
-        // Clean the URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-        return;
-      }
-
-      // Check redirect conditions
-      const lastRedirectTime = localStorage.getItem('lastRedirectTime');
-      const currentTime = Date.now();
-      const twentyFourHours = 24 * 60 * 60 * 1000;
-
-      if (!lastRedirectTime || (currentTime - parseInt(lastRedirectTime)) > twentyFourHours) {
-        const returnUrl = encodeURIComponent(window.location.href + '?fromExternal=true');
-        window.location.href = `https://vplink.in/nrLwIQ?return=${returnUrl}`;
-      }
-    })();
-  </script>
-</head>
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Educational Platform</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
