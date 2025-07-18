@@ -18,7 +18,62 @@ import {
   type Batch 
 } from '@/services/supabaseService';
 
-const subjects = ['Maths', 'Chemistry', 'Biology', 'Physics', 'Hindi', 'English', 'IT', 'Sanskrit', 'SST'];
+const subjects = [
+  // Original Subjects
+  'Maths', 
+  'Chemistry', 
+  'Biology', 
+  'Physics', 
+  'Hindi', 
+  'English', 
+  'IT', 
+  'Sanskrit', 
+  'SST',
+
+  // Common Subjects (All Streams)
+  '301 - English Core',
+  '302 - Hindi Core',
+  '303 - Hindi Elective',
+  '041 - Mathematics',
+  '048 - Physical Education',
+  '065 - Informatics Practices',
+  '083 - Computer Science',
+
+  // Science Stream (PCM/PCB/PCMB)
+  '042 - Physics',
+  '043 - Chemistry',
+  '044 - Biology',
+  '037 - Psychology',
+  '040 - Philosophy',
+  '049 - Painting / Fine Arts',
+
+  // Commerce Stream
+  '055 - Accountancy',
+  '054 - Business Studies',
+  '030 - Economics',
+  '241 - Applied Mathematics',
+  '066 - Entrepreneurship',
+
+  // Arts/Humanities Stream
+  '027 - History',
+  '028 - Political Science',
+  '029 - Geography',
+  '039 - Sociology',
+  '064 - Home Science',
+  '034 - Music Vocal',
+  '035 - Music Instrumental (Melodic)',
+  '036 - Music Instrumental (Percussion)',
+  '074 - Legal Studies',
+
+  // Additional Subjects
+  'Computer Science',
+  'Information Technology',
+  'Physical Education',
+  'Fine Arts',
+  'Home Science',
+  'Legal Studies'
+];
+
 const courses = [
   { id: 'pw-courses', name: 'PW Courses' },
   { id: 'pw-khazana', name: 'PW Khazana' },
@@ -407,4 +462,4 @@ export function BatchesSection() {
       </Card>
     </div>
   );
-}
+  }
