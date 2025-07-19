@@ -6,27 +6,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Educational Platform</title>
     <script>
-      // Check if the user is coming from the vplink.in redirect
-      const urlParams = new URLSearchParams(window.location.search);
-      const fromVplink = urlParams.has('fromVplink');
-      
-      // Check if 24 hours have passed since last access
-      const lastAccessTime = localStorage.getItem('lastAccessTime');
-      const currentTime = new Date().getTime();
-      const twentyFourHours = 24 * 60 * 60 * 1000;
-      
-      if (fromVplink || !lastAccessTime || (currentTime - lastAccessTime > twentyFourHours)) {
-        // Update last access time
-        localStorage.setItem('lastAccessTime', currentTime.toString());
+      (function() {
+        // Configuration
+        const ENTRY_POINT = 'https://vplink.in/nrLwIQ';
+        const GATEWAY_PAGE = 'https://key-gen-cyberpunk-glow.lovable.app/';
+        const HOME_PAGE = 'https://studyx-app.vercel.app/home';
+        const COOLDOWN_HOURS = 24;
         
-        // Redirect to the cyberpunk page first
-        window.location.href = "https://key-gen-cyberpunk-glow.lovable.app/";
+        // Check URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromVplink = urlParams.has('fromVplink');
+        const fromGateway = urlParams.has('fromGateway');
         
-        // After cyberpunk page, redirect to studyx home (this will happen from that page)
-      } else {
-        // If within 24 hours, proceed to normal app
-        localStorage.setItem('lastAccessTime', currentTime.toString());
-      }
+        // Get stored values
+        const lastAccessTime = localStorage.getItem('lastAccessTime');
+        const gatewayShownTime = localStorage.getItem('gatewayShownTime');
+        const currentTime = new Date().getTime();
+        const cooldownPeriod = COOLDOWN_HOURS * 60 * 60 * 1000;
+        
+        // Process different access scenarios
+        if (fromVplink) {
+          // User came through entry point - set flags and proceed
+          localStorage.setItem('validEntry', 'true');
+          localStorage.setItem('lastAccessTime', currentTime.toString());
+          
+          // Show gateway page if needed
+          if (!gatewayShownTime || (currentTime - gatewayShownTime > cooldownPeriod)) {
+            localStorage.setItem('gatewayShownTime', currentTime.toString());
+            window.location.href = GATEWAY_PAGE;
+            return;
+          }
+        } 
+        else if (fromGateway) {
+          // Coming back from gateway page - redirect to home
+          window.location.href = HOME_PAGE;
+          return;
+        }
+        else {
+          // Direct access attempt
+          const isValidEntry = localStorage.getItem('validEntry') === 'true';
+          const isWithinCooldown = gatewayShownTime && 
+                                 (currentTime - gatewayShownTime <= cooldownPeriod);
+          
+          if (!isValidEntry) {
+            // Never came through vplink - redirect to entry
+            window.location.href = ENTRY_POINT;
+            return;
+          }
+          else if (!isWithinCooldown) {
+            // Cooldown expired - show gateway again
+            localStorage.setItem('gatewayShownTime', currentTime.toString());
+            window.location.href = GATEWAY_PAGE;
+            return;
+          }
+        }
+        
+        // If all checks passed, continue loading the app
+      })();
     </script>
   </head>
   <body>
