@@ -1,149 +1,75 @@
+import React from 'react';
+import { FaBolt, FaBookOpen, FaClock, FaPlayCircle } from 'react-icons/fa';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ExternalLink, Video, Users, Clock, Play, Calendar } from 'lucide-react';
+const StudyXLive: React.FC = () => {
+  const liveLectures = [
+    {
+      id: '68779351ac0f7a2563ec72b2',
+      topic: 'Limit, Continuity and Differentiability 11 : Question Practice || NO DPP || Rescheduled @ 06:05 PM',
+      startTime: '2025-07-18 12:27:04'
+    },
+    {
+      id: '68492af1e8f7df3f31142782',
+      topic: 'Chemical Kinetics 02 : Rate of Reaction || NO DPP',
+      startTime: '2025-07-18 12:39:52'
+    },
+    {
+      id: '6879332b51ba0dcd46949fd7',
+      topic: 'Quadratic Equations 01 : Identities || Basic of Quadratic Equations || NO DPP',
+      startTime: '2025-07-18 12:42:35'
+    },
+    {
+      id: '68317eb12da436329a1dc631',
+      topic: 'Trigonometric Functions 07 : Trigo Ratios for 18° & 36° || 2 Extra Formulas - Double Angles || NO DPP',
+      startTime: '2025-07-18 12:45:32'
+    },
+    {
+      id: '687933b4087d0116763c0b65',
+      topic: 'Biological Classification 02 : Kingdom Monera',
+      startTime: '2025-07-18 12:49:17'
+    }
+  ];
 
-const LiveLecturesSection = () => {
-  const handleOpenLivePlayer = () => {
-    window.open('https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php', '_blank', 'noopener,noreferrer');
+  const handleLectureClick = (batchId: string) => {
+    window.location.href = `?batch=${batchId}`;
   };
 
   return (
-    <section className="px-4 pb-16">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4 text-white flex items-center justify-center">
-            <Video className="w-8 h-8 mr-3 text-red-500" />
-            🎥 Live Lectures
-          </h2>
-          <p className="text-gray-400 text-lg">
-            Join live interactive sessions with our expert instructors
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Main Live Player Card */}
-          <Card className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-all duration-300 shadow-lg rounded-xl">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-white flex items-center space-x-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <span>Live Now</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <Play className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                  <p className="text-gray-400">Interactive Live Session</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between text-sm text-gray-400">
-                <div className="flex items-center space-x-2">
-                  <Users className="w-4 h-4" />
-                  <span>Live Students</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4" />
-                  <span>Real-time</span>
-                </div>
-              </div>
-
-              <Button 
-                onClick={handleOpenLivePlayer}
-                className="w-full bg-red-600 hover:bg-red-700 text-white"
-                size="lg"
-              >
-                <Video className="w-4 h-4 mr-2" />
-                Join Live Session
-                <ExternalLink className="w-4 h-4 ml-2" />
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Features Card */}
-          <Card className="bg-gray-800 border-gray-700 rounded-xl shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-white">Live Learning Features</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Users className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-medium">Interactive Sessions</h4>
-                    <p className="text-gray-400 text-sm">Engage with instructors and peers in real-time</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-medium">Instant Doubt Solving</h4>
-                    <p className="text-gray-400 text-sm">Get your questions answered immediately</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Video className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-medium">HD Quality</h4>
-                    <p className="text-gray-400 text-sm">Crystal clear video and audio streaming</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Calendar className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-medium">Scheduled Classes</h4>
-                    <p className="text-gray-400 text-sm">Regular timetable for consistent learning</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-gray-700">
-                <Button 
-                  variant="outline" 
-                  className="w-full border-gray-600 text-gray-300 hover:bg-gray-700"
-                >
-                  View Schedule
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Embedded Player Card */}
-        <Card className="mt-8 bg-gray-800 border-gray-700 rounded-xl shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center space-x-2">
-              <Video className="w-5 h-5 text-red-500" />
-              <span>Live Player</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-gray-900 rounded-lg p-2">
-              <iframe
-                src="https://bhanuyadav.xyz/kgprojects/liveplayer/activelive.php"
-                title="Live Lectures Player"
-                className="w-full h-96 rounded-lg border-0"
-                allow="fullscreen"
-                loading="lazy"
-              />
-            </div>
-          </CardContent>
-        </Card>
+    <div className="min-h-screen bg-gradient-to-br from-[#0f2027] to-[#2c5364] text-white font-sans transition-colors duration-400">
+      {/* Topbar */}
+      <div className="w-full bg-slate-800/90 shadow-md py-3 sticky top-0 z-50 flex items-center justify-center gap-4">
+        <span className="text-3xl text-blue-500 mr-2">
+          <FaBolt />
+        </span>
+        <span className="text-xl font-bold tracking-wide">StudyX Live</span>
       </div>
-    </section>
+
+      {/* Live Lectures List */}
+      <div className="max-w-2xl mx-auto mt-10 px-4">
+        {liveLectures.map((lecture) => (
+          <div
+            key={lecture.id}
+            className="bg-zinc-900/95 rounded-xl mb-6 p-6 flex items-center justify-between cursor-pointer transition-all duration-200 border-2 border-zinc-800 shadow-md hover:bg-slate-800 hover:border-blue-500 hover:-translate-y-1 hover:scale-[1.012] hover:shadow-lg"
+            onClick={() => handleLectureClick(lecture.id)}
+          >
+            <div className="flex flex-col gap-2">
+              <span className="text-lg font-semibold text-blue-500 flex items-center gap-2">
+                <FaBookOpen />
+                {lecture.topic}
+              </span>
+              <span className="text-sm text-gray-400 flex items-center gap-2">
+                <FaClock />
+                Started: {lecture.startTime}
+              </span>
+            </div>
+            <span className="text-2xl text-blue-500 transition-colors duration-200 group-hover:text-white">
+              <FaPlayCircle />
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 
-export default LiveLecturesSection;
+export default StudyXLive;
