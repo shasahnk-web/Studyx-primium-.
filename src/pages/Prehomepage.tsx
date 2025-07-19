@@ -1,0 +1,313 @@
+import React, { useEffect } from 'react';
+import Head from 'next/head';
+
+const StudyXVerification = () => {
+  useEffect(() => {
+    // Load SweetAlert script
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const handleVerifyClick = () => {
+    window.location.href = "https://vplink.in/nrLwIQ";
+  };
+
+  const handleHowToVerifyClick = () => {
+    window.location.href = "https://t.me/studyx_1";
+  };
+
+  const handleAccessContentClick = () => {
+    if (typeof window !== 'undefined' && (window as any).Swal) {
+      (window as any).Swal.fire({
+        title: 'Success!',
+        text: 'Redirecting you to the content...',
+        icon: 'success',
+        showConfirmButton: false,
+        timer: 1500,
+        timerProgressBar: true
+      }).then(() => {
+        window.location.href = 'https://studyx-app.vercel.app/home';
+      });
+    }
+  };
+
+  return (
+    <>
+      <Head>
+        <title>StudyX Verification</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+      </Head>
+
+      <div className="container">
+        <style jsx global>{`
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+          }
+          
+          body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f9ca24, #6c5ce7, #fd79a8);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            opacity: 0.1;
+            z-index: -1;
+          }
+          
+          @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          
+          .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+            z-index: -1;
+          }
+          
+          @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(360deg); }
+          }
+          
+          .container {
+            background: rgba(15, 15, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+          }
+          
+          .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #f9ca24, #6c5ce7);
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+          }
+          
+          @keyframes shimmer {
+            0%, 100% { background-position: -200% 0; }
+            50% { background-position: 200% 0; }
+          }
+          
+          .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 20px;
+            position: relative;
+            animation: glow 2s ease-in-out infinite alternate;
+          }
+          
+          @keyframes glow {
+            from { filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.5)); }
+            to { filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.8)); }
+          }
+          
+          h1 {
+            font-size: 2rem;
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff, #a0a0a0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+          }
+          
+          p {
+            font-size: 1rem;
+            color: #b0b0b0;
+            margin-bottom: 30px;
+            line-height: 1.6;
+          }
+          
+          button {
+            width: 100%;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 0;
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+            position: relative;
+            overflow: hidden;
+          }
+          
+          button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+          }
+          
+          button:hover::before {
+            left: 100%;
+          }
+          
+          button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4);
+            background: linear-gradient(135deg, #ff5252, #26a69a);
+          }
+          
+          button:active {
+            transform: translateY(-1px);
+          }
+          
+          #countdown {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f9ca24, #ff6b6b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 25px 0;
+            animation: pulse 1.5s ease-in-out infinite;
+          }
+          
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+          }
+          
+          .hidden {
+            display: none;
+          }
+          
+          .progress-bar {
+            height: 8px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin: 25px 0;
+            overflow: hidden;
+            position: relative;
+          }
+          
+          .progress {
+            height: 100%;
+            width: 85%;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+            border-radius: 20px;
+            position: relative;
+            animation: progressGlow 2s ease-in-out infinite;
+          }
+          
+          @keyframes progressGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(78, 205, 196, 0.8); }
+          }
+          
+          @media (max-width: 480px) {
+            .container {
+              padding: 30px 25px;
+            }
+            
+            .logo {
+              font-size: 2rem;
+            }
+            
+            h1 {
+              font-size: 1.6rem;
+            }
+            
+            p {
+              font-size: 0.9rem;
+            }
+            
+            button {
+              padding: 14px;
+              font-size: 1rem;
+            }
+            
+            #countdown {
+              font-size: 1.8rem;
+            }
+          }
+        `}</style>
+
+        {/* Floating particles */}
+        <div className="particle" style={{ left: '10%', animationDelay: '0s' }}></div>
+        <div className="particle" style={{ left: '20%', animationDelay: '2s' }}></div>
+        <div className="particle" style={{ left: '30%', animationDelay: '4s' }}></div>
+        <div className="particle" style={{ left: '40%', animationDelay: '6s' }}></div>
+        <div className="particle" style={{ left: '50%', animationDelay: '8s' }}></div>
+        <div className="particle" style={{ left: '60%', animationDelay: '10s' }}></div>
+        <div className="particle" style={{ left: '70%', animationDelay: '12s' }}></div>
+        <div className="particle" style={{ left: '80%', animationDelay: '14s' }}></div>
+        <div className="particle" style={{ left: '90%', animationDelay: '16s' }}></div>
+
+        <div className="container">
+          <div className="logo">StudyX Verification</div>
+          
+          <h1 id="taskTitle">Task Verification</h1>
+          <p id="taskInstructions">Complete verification to access exclusive StudyX premium content and resources for 24 hours absolutely free!</p>
+          
+          <div className="progress-bar">
+            <div className="progress"></div>
+          </div>
+          
+          <button id="verifyBtn" onClick={handleVerifyClick}>Click here to Verify Task</button>
+          <div id="countdown" className="hidden"></div>
+          <button id="accessContentBtn" className="hidden" onClick={handleAccessContentClick}>✨ ACCESS CONTENT NOW</button>
+          <button id="HowverifyBtn" onClick={handleHowToVerifyClick}>How to Verify Task</button>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default StudyXVerification;
