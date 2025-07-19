@@ -11,38 +11,37 @@
         const GATEWAY_PAGE = 'https://key-gen-cyberpunk-glow.lovable.app/';
         const HOME_PAGE = 'https://studyx-app.vercel.app/home';
         const COOLDOWN_HOURS = 24;
-        const VERIFICATION_KEY = 'gateway_verified';
-        
-        // Check if returning from gateway
+        const VERIFICATION_KEY = 'gateway_verified_v2';
+
+        // Check if we should show the app (after verification)
         const urlParams = new URLSearchParams(window.location.search);
-        const gatewayVerified = urlParams.get('verified') === 'true';
-        
-        if (gatewayVerified) {
+        const showApp = urlParams.get('show_app') === 'true';
+
+        if (showApp) {
           // Set verification with expiry
           const expiryTime = Date.now() + (COOLDOWN_HOURS * 60 * 60 * 1000);
           localStorage.setItem(VERIFICATION_KEY, expiryTime.toString());
-          
-          // Redirect to home page
-          window.location.href = HOME_PAGE;
-          return;
+          // Remove the parameter to prevent looping
+          window.history.replaceState({}, document.title, window.location.pathname);
+          return; // Continue loading the app
         }
-        
+
         // Check existing verification
         const storedExpiry = localStorage.getItem(VERIFICATION_KEY);
         const currentTime = Date.now();
-        
+
         if (!storedExpiry || currentTime > parseInt(storedExpiry)) {
           // Not verified or expired - redirect to gateway
           if (storedExpiry) localStorage.removeItem(VERIFICATION_KEY);
           
           // Set return URL with verification parameter
           const returnUrl = encodeURIComponent(
-            window.location.origin + '?verified=true'
+            window.location.origin + window.location.pathname + '?show_app=true'
           );
-          window.location.href = `${GATEWAY_PAGE}?return=${returnUrl}`;
+          window.location.href = `${GATEWAY_PAGE}?return_to=${returnUrl}`;
           return;
         }
-        
+
         // If verified, continue to load the app
       })();
     </script>
