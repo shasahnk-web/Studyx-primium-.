@@ -7,42 +7,34 @@
     <title>Educational Platform</title>
     <script>
       (function() {
-        // Configuration
-        const GATEWAY_PAGE = 'https://key-gen-cyberpunk-glow.lovable.app/';
+        // Configuration - added at the top
+        const GATEWAY_URL = 'https://key-gen-cyberpunk-glow.lovable.app/';
         const HOME_PAGE = 'https://studyx-app.vercel.app/home';
         const COOLDOWN_HOURS = 24;
-        const VERIFICATION_KEY = 'gateway_verified_v2';
+        const VERIFICATION_KEY = 'gateway_verified_v4';
 
-        // Check if we should show the app (after verification)
+        // Check for verification
         const urlParams = new URLSearchParams(window.location.search);
-        const showApp = urlParams.get('show_app') === 'true';
+        const verified = urlParams.get('verified') === 'true';
 
-        if (showApp) {
-          // Set verification with expiry
-          const expiryTime = Date.now() + (COOLDOWN_HOURS * 60 * 60 * 1000);
-          localStorage.setItem(VERIFICATION_KEY, expiryTime.toString());
-          // Remove the parameter to prevent looping
-          window.history.replaceState({}, document.title, window.location.pathname);
-          return; // Continue loading the app
+        if (verified) {
+          // Set verification expiry
+          const expiry = Date.now() + (COOLDOWN_HOURS * 60 * 60 * 1000);
+          localStorage.setItem(VERIFICATION_KEY, expiry.toString());
+          // Clean URL without reloading
+          history.replaceState({}, '', location.pathname);
+          return; // Continue to load your React app
         }
 
         // Check existing verification
         const storedExpiry = localStorage.getItem(VERIFICATION_KEY);
-        const currentTime = Date.now();
+        const now = Date.now();
 
-        if (!storedExpiry || currentTime > parseInt(storedExpiry)) {
-          // Not verified or expired - redirect to gateway
-          if (storedExpiry) localStorage.removeItem(VERIFICATION_KEY);
-          
-          // Set return URL with verification parameter
-          const returnUrl = encodeURIComponent(
-            window.location.origin + window.location.pathname + '?show_app=true'
-          );
-          window.location.href = `${GATEWAY_PAGE}?return_to=${returnUrl}`;
-          return;
+        if (!storedExpiry || now > parseInt(storedExpiry)) {
+          // Redirect to gateway with return URL
+          const returnUrl = encodeURIComponent(location.href.split('?')[0] + '?verified=true');
+          location.replace(`${GATEWAY_URL}?return=${returnUrl}`);
         }
-
-        // If verified, continue to load the app
       })();
     </script>
   </head>
