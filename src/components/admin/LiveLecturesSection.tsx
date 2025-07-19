@@ -536,7 +536,7 @@ export function LiveLecturesSection() {
                   ))}
                 </TableBody>
               </Table>
-              {liveLectures.length === 0 && 
+              {liveLectures.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   No live lectures found. Add your first live lecture!
                 </div>
@@ -630,5 +630,3 @@ https://example.com/video3`}
     </div>
   );
 }
-
-                  
