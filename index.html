@@ -8,7 +8,6 @@
   <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
   <style>
-    /* [All previous CSS styles remain exactly the same] */
     * {
       margin: 0;
       padding: 0;
@@ -17,14 +16,18 @@
 
     body {
       font-family: 'Poppins', sans-serif;
+      background: #0a0f1d;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    /* Access Key Section Styles */
+    #access-key-section {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      background: #0a0f1d;
-      overflow: hidden;
+      min-height: 100vh;
       position: relative;
-      color: #ffffff;
     }
 
     #particles-js {
@@ -43,6 +46,7 @@
       box-shadow: 0 0 15px rgba(0, 174, 255, 0.3);
       border: 1px solid rgba(0, 174, 255, 0.2);
       backdrop-filter: blur(8px);
+      margin: 20px;
     }
 
     h2 {
@@ -71,8 +75,6 @@
       font-weight: 600;
       transition: 0.3s;
       text-transform: uppercase;
-      position: relative;
-      overflow: hidden;
     }
 
     .button:hover {
@@ -93,16 +95,41 @@
       from { opacity: 0.6; }
       to { opacity: 1; }
     }
-    
+
+    /* Main App Styles */
     #app-content {
       display: none;
-      width: 100%;
-      height: 100%;
+      min-height: 100vh;
+      background: #0a0f1d;
+    }
+
+    #root {
+      padding: 20px;
+    }
+
+    /* Homepage Content Styles */
+    .home-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      color: white;
+    }
+
+    .home-content h1 {
+      color: #00bcd4;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .home-content p {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 15px;
     }
   </style>
 </head>
 <body>
-  <!-- Access Key Generation Section -->
+  <!-- Access Key Section (Shows first) -->
   <div id="access-key-section">
     <div id="particles-js"></div>
     <div class="container">
@@ -117,9 +144,16 @@
     </div>
   </div>
 
-  <!-- Main App Content -->
+  <!-- Main App Content (Hidden initially) -->
   <div id="app-content">
-    <div id="root"></div>
+    <div id="root">
+      <!-- This will be replaced by your React/Vue app -->
+      <div class="home-content">
+        <h1>Welcome to Our Educational Platform</h1>
+        <p>This is your homepage content that will be visible after generating the access key.</p>
+        <p>Your main application content will load here.</p>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -145,6 +179,8 @@
     function showMainApp() {
       document.getElementById('access-key-section').style.display = 'none';
       document.getElementById('app-content').style.display = 'block';
+      
+      // Load your main application script
       const script = document.createElement('script');
       script.type = 'module';
       script.src = '/src/main.tsx';
@@ -152,26 +188,32 @@
     }
 
     function showAccessKeySection() {
-      document.getElementById('access-key-section').style.display = 'block';
+      document.getElementById('access-key-section').style.display = 'flex';
+      document.getElementById('app-content').style.display = 'none';
       
+      // Initialize particles.js
       particlesJS("particles-js", {
         particles: {
-          number: { value: 100, density: { enable: true, value_area: 800 } },
+          number: { value: 80, density: { enable: true, value_area: 800 } },
           color: { value: "#00bcd4" },
           shape: { type: "circle" },
           opacity: { value: 0.5, anim: { enable: true, speed: 1, opacity_min: 0.1 } },
-          size: { value: 2.5, random: true },
-          line_linked: { enable: true, distance: 140, color: "#00bcd4", opacity: 0.3, width: 1 },
-          move: { enable: true, speed: 1.5, out_mode: "out" }
+          size: { value: 3, random: true },
+          line_linked: { enable: true, distance: 150, color: "#00bcd4", opacity: 0.4, width: 1 },
+          move: { enable: true, speed: 2, out_mode: "out" }
         },
         interactivity: {
           detect_on: "canvas",
-          events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" } },
-          modes: { grab: { distance: 120, line_linked: { opacity: 1 } } }
+          events: { 
+            onhover: { enable: true, mode: "grab" }, 
+            onclick: { enable: true, mode: "push" } 
+          },
+          modes: { grab: { distance: 140, line_linked: { opacity: 1 } } }
         },
         retina_detect: true
       });
 
+      // Server links configuration
       const serverLinks = {
         server02: 'https://vplink.in/nrLwIQ',
         server03: 'https://vplink.in/nrLwIQ',
@@ -179,16 +221,18 @@
         tutorialVideo: 'https://example.com/tutorial'
       };
 
+      // Handle server button clicks
       function handleServerClick(cookieName, url) {
         document.getElementById("loadingMessage").style.display = "block";
         setTimeout(() => {
-          // Set cookie for future visits
-          document.cookie = `${cookieName}=true; path=/; max-age=${24 * 61 * 60}`;
+          // Set cookie for future visits (30 hours)
+          document.cookie = `${cookieName}=true; path=/; max-age=${30 * 60 * 60}`;
           // Redirect to the server URL
           window.location.href = url;
-        }, 2000);
+        }, 1500);
       }
 
+      // Add event listeners
       document.getElementById('server02').addEventListener('click', 
         () => handleServerClick('server02KeyGenerated', serverLinks.server02));
       document.getElementById('server03Url').addEventListener('click', 
@@ -199,6 +243,7 @@
         () => window.open(serverLinks.tutorialVideo, '_blank'));
     }
 
+    // Initialize when page loads
     window.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
