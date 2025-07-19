@@ -6,36 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Educational Platform</title>
     <script>
-      // Fixed security checks that allow proper access
       (function() {
-        // 1. Check if this is the first access or 24 hours have passed
+        // 1. Check last access time
         const lastAccessTime = localStorage.getItem('lastAccessTime');
         const currentTime = new Date().getTime();
         const twentyFourHours = 24 * 60 * 60 * 1000;
         
-        // 2. Check URL parameters for valid access
+        // 2. Check if coming from vplink
         const urlParams = new URLSearchParams(window.location.search);
         const fromVplink = urlParams.has('fromVplink');
-        const bypassCheck = urlParams.has('bypassCheck'); // For testing
         
-        // 3. If coming from vplink or first access/24h passed
-        if (fromVplink || bypassCheck || !lastAccessTime || (currentTime - lastAccessTime > twentyFourHours)) {
-          // Update last access time
+        // 3. Access control logic
+        if (fromVplink) {
+          // Valid access from vplink - update access time
           localStorage.setItem('lastAccessTime', currentTime.toString());
-          
-          // Only redirect if NOT coming from vplink AND not bypassing
-          if (!fromVplink && !bypassCheck) {
-            window.location.href = "https://key-gen-cyberpunk-glow.lovable.app/";
-            return;
-          }
+        } else if (!lastAccessTime || (currentTime - lastAccessTime > twentyFourHours)) {
+          // Either first access or 24h passed - redirect to keygen
+          localStorage.setItem('lastAccessTime', currentTime.toString());
+          window.location.href = "https://key-gen-cyberpunk-glow.lovable.app/";
+          return;
         }
         
-        // 4. Set a session timeout (optional)
+        // 4. Set 24h session timeout
         setTimeout(() => {
           localStorage.removeItem('lastAccessTime');
-          alert('Your session has expired. Please regenerate access.');
           window.location.href = "https://key-gen-cyberpunk-glow.lovable.app/";
-        }, 24 * 60 * 60 * 1000); // 24 hours timeout
+        }, twentyFourHours);
       })();
     </script>
   </head>
