@@ -7,37 +7,43 @@
     <title>Educational Platform</title>
     <script>
       (function() {
-        // Check if user came through vplink.in redirect
+        // Configuration
+        const GATEWAY_PAGE = 'https://key-gen-cyberpunk-glow.lovable.app/';
+        const HOME_PAGE = 'https://studyx-app.vercel.app/home';
+        const COOLDOWN_HOURS = 24;
+        const VERIFICATION_KEY = 'gateway_verified';
+        
+        // Check if returning from gateway
         const urlParams = new URLSearchParams(window.location.search);
-        const fromVplink = urlParams.has('fromVplink');
+        const gatewayVerified = urlParams.get('verified') === 'true';
         
-        // Set a flag in localStorage when user comes through vplink.in
-        if (fromVplink) {
-          localStorage.setItem('validEntry', 'true');
-          localStorage.setItem('lastAccessTime', new Date().getTime().toString());
-        }
-        
-        // Check if user has valid entry permission
-        const hasValidEntry = localStorage.getItem('validEntry') === 'true';
-        const lastAccessTime = localStorage.getItem('lastAccessTime');
-        const currentTime = new Date().getTime();
-        const twentyFourHours = 24 * 60 * 60 * 1000;
-        
-        if (!hasValidEntry) {
-          // If no valid entry, redirect to vplink.in
-          window.location.href = "https://vplink.in/nrLwIQ";
+        if (gatewayVerified) {
+          // Set verification with expiry
+          const expiryTime = Date.now() + (COOLDOWN_HOURS * 60 * 60 * 1000);
+          localStorage.setItem(VERIFICATION_KEY, expiryTime.toString());
+          
+          // Redirect to home page
+          window.location.href = HOME_PAGE;
           return;
         }
         
-        if (!lastAccessTime || (currentTime - lastAccessTime > twentyFourHours)) {
-          // If 24 hours have passed, show cyberpunk page first
-          localStorage.setItem('lastAccessTime', currentTime.toString());
-          window.location.href = "https://key-gen-cyberpunk-glow.lovable.app/";
+        // Check existing verification
+        const storedExpiry = localStorage.getItem(VERIFICATION_KEY);
+        const currentTime = Date.now();
+        
+        if (!storedExpiry || currentTime > parseInt(storedExpiry)) {
+          // Not verified or expired - redirect to gateway
+          if (storedExpiry) localStorage.removeItem(VERIFICATION_KEY);
+          
+          // Set return URL with verification parameter
+          const returnUrl = encodeURIComponent(
+            window.location.origin + '?verified=true'
+          );
+          window.location.href = `${GATEWAY_PAGE}?return=${returnUrl}`;
           return;
         }
         
-        // If we get here, user has valid entry and within 24 hours
-        // Continue loading the normal app
+        // If verified, continue to load the app
       })();
     </script>
   </head>
