@@ -6,87 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Educational Platform</title>
     <script>
-      // Enhanced security checks
+      // Fixed security checks that allow proper access
       (function() {
-        // 1. Check referrer and URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const fromVplink = urlParams.has('fromVplink');
-        const secureToken = urlParams.get('token');
-        
-        // 2. Server-side validation would be better, but client-side checks
-        const expectedToken = 'secure_' + Math.floor(Date.now() / (24 * 60 * 60 * 1000)); // Changes daily
-        
-        // 3. Check if coming from valid source with proper token
-        if (!fromVplink || secureToken !== expectedToken) {
-          // 4. Additional check for direct access
-          if (document.referrer === "" || 
-              !document.referrer.includes('vplink.in') || 
-              !document.referrer.includes('key-gen-cyberpunk-glow.lovable.app')) {
-            // 5. Redirect to access denied page or back to generator
-            window.location.href = "https://key-gen-cyberpunk-glow.lovable.app/?error=invalid_access";
-            return;
-          }
-        }
-        
-        // 6. Time-based access control
+        // 1. Check if this is the first access or 24 hours have passed
         const lastAccessTime = localStorage.getItem('lastAccessTime');
         const currentTime = new Date().getTime();
         const twentyFourHours = 24 * 60 * 60 * 1000;
         
-        if (!lastAccessTime || (currentTime - lastAccessTime > twentyFourHours)) {
+        // 2. Check URL parameters for valid access
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromVplink = urlParams.has('fromVplink');
+        const bypassCheck = urlParams.has('bypassCheck'); // For testing
+        
+        // 3. If coming from vplink or first access/24h passed
+        if (fromVplink || bypassCheck || !lastAccessTime || (currentTime - lastAccessTime > twentyFourHours)) {
+          // Update last access time
           localStorage.setItem('lastAccessTime', currentTime.toString());
-          window.location.href = "https://key-gen-cyberpunk-glow.lovable.app/";
-          return;
+          
+          // Only redirect if NOT coming from vplink AND not bypassing
+          if (!fromVplink && !bypassCheck) {
+            window.location.href = "https://key-gen-cyberpunk-glow.lovable.app/";
+            return;
+          }
         }
         
-        // 7. Set a short session timeout (30 minutes)
+        // 4. Set a session timeout (optional)
         setTimeout(() => {
           localStorage.removeItem('lastAccessTime');
           alert('Your session has expired. Please regenerate access.');
           window.location.href = "https://key-gen-cyberpunk-glow.lovable.app/";
-        }, 30 * 60 * 1000);
-        
-        // 8. Prevent right-click and inspect element
-        document.addEventListener('contextmenu', function(e) {
-          e.preventDefault();
-        });
-        
-        document.onkeydown = function(e) {
-          if (e.key === 'F12' || 
-              (e.ctrlKey && e.shiftKey && e.key === 'I') || 
-              (e.ctrlKey && e.shiftKey && e.key === 'J') || 
-              (e.ctrlKey && e.key === 'U')) {
-            e.preventDefault();
-            return false;
-          }
-        };
+        }, 24 * 60 * 60 * 1000); // 24 hours timeout
       })();
     </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- Additional security measures -->
-    <script>
-      // 9. Detect and prevent iframe embedding
-      if (window !== window.top) {
-        window.top.location = window.location;
-      }
-      
-      // 10. Obfuscate sensitive data in localStorage
-      const obfuscate = (data) => btoa(encodeURIComponent(data).split('').map(
-        c => String.fromCharCode(c.charCodeAt(0) + 1).join(''));
-      
-      const deobfuscate = (data) => decodeURIComponent(atob(data.split('').map(
-        c => String.fromCharCode(c.charCodeAt(0) - 1).join('')));
-      
-      // 11. Periodic security checks
-      setInterval(() => {
-        if (!localStorage.getItem('lastAccessTime')) {
-          window.location.href = "https://key-gen-cyberpunk-glow.lovable.app/";
-        }
-      }, 5 * 60 * 1000); // Check every 5 minutes
-    </script>
   </body>
 </html>
