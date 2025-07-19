@@ -1,42 +1,345 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Educational Platform</title>
-    <script>
-      (function() {
-        // 1. Check last access time
-        const lastAccessTime = localStorage.getItem('lastAccessTime');
-        const currentTime = new Date().getTime();
-        const twentyFourHours = 24 * 60 * 60 * 1000;
-        
-        // 2. Check if coming from vplink
-        const urlParams = new URLSearchParams(window.location.search);
-        const fromVplink = urlParams.has('fromVplink');
-        
-        // 3. Access control logic
-        if (fromVplink) {
-          // Valid access from vplink - update access time
-          localStorage.setItem('lastAccessTime', currentTime.toString());
-        } else if (!lastAccessTime || (currentTime - lastAccessTime > twentyFourHours)) {
-          // Either first access or 24h passed - redirect to keygen
-          localStorage.setItem('lastAccessTime', currentTime.toString());
-          window.location.href = "https://key-gen-cyberpunk-glow.lovable.app/";
-          return;
-        }
-        
-        // 4. Set 24h session timeout
-        setTimeout(() => {
-          localStorage.removeItem('lastAccessTime');
-          window.location.href = "https://key-gen-cyberpunk-glow.lovable.app/";
-        }, twentyFourHours);
-      })();
-    </script>
-  </head>
-  <body>
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Educational Platform</title>
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  <style>
+    /* General Styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #0a0f1d;
+      overflow: hidden;
+      position: relative;
+      color: #ffffff;
+    }
+
+    /* Particle Background */
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    /* Cyberpunk-Themed Box */
+    .container {
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 15px;
+      padding: 30px;
+      width: 400px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0, 174, 255, 0.3);
+      border: 1px solid rgba(0, 174, 255, 0.2);
+      backdrop-filter: blur(8px);
+    }
+
+    h2 {
+      font-size: 24px;
+      color: #a3f7ff;
+      text-shadow: 0 0 10px rgba(0, 234, 255, 0.5);
+    }
+
+    p {
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: #d4eaff;
+    }
+
+    /* Buttons */
+    .button {
+      display: inline-block;
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      color: #ffffff;
+      border: 1px solid #00bcd4;
+      background: transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 8px 0;
+      font-weight: 600;
+      transition: 0.3s;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .button:hover {
+      background: #00bcd4;
+      color: #000;
+      box-shadow: 0 0 12px rgba(0, 188, 212, 0.6);
+    }
+
+    /* Key Generation Animation */
+    .loading {
+      font-size: 13px;
+      color: #ffcb6b;
+      margin-top: 10px;
+      display: none;
+      animation: flicker 1.5s infinite alternate;
+    }
+
+    /* Subtle Glow */
+    @keyframes flicker {
+      from {
+        opacity: 0.6;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    .tiny-footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      font-size: 10px;
+      padding: 4px 0;
+      z-index: 1000;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+    }
+
+    .tiny-footer:hover {
+      box-shadow: 0 0 8px #0ff, 0 0 12px #0ff;
+      color: #0ff;
+    }
+    
+    .telegram-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(10, 10, 10, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      animation: shake 1s ease-in-out infinite alternate;
+    }
+
+    /* Popup Box */
+    .popup-content {
+      background-color: #111827;
+      color: #f9f9f9;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(0, 153, 255, 0.7);
+      animation: glow 2s infinite ease-in-out;
+      position: relative;
+    }
+
+    /* Popup Header */
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .popup-icon {
+      width: 36px;
+      height: 36px;
+    }
+
+    .close-btn {
+      font-size: 28px;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* Text */
+    .popup-content h2 {
+      margin: 10px 0 5px;
+      font-size: 1.4rem;
+    }
+
+    .popup-content p {
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+    }
+
+    /* Join Button */
+    .join-btn {
+      background-color: #0088cc;
+      color: white;
+      padding: 12px 22px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      display: inline-block;
+      transition: background 0.3s ease;
+    }
+
+    .join-btn:hover {
+      background-color: #0077b6;
+    }
+
+    /* Glow Animation */
+    @keyframes glow {
+      0% {
+        box-shadow: 0 0 15px #00bfff;
+      }
+      100% {
+        box-shadow: 0 0 30px #00bfff;
+      }
+    }
+
+    /* Shake Animation */
+    @keyframes shake {
+      0% {
+        transform: translateY(0px);
+      }
+      100% {
+        transform: translateY(-4px);
+      }
+    }
+
+    /* Floating Telegram Button */
+    .floating-telegram {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #0088cc;
+      padding: 12px;
+      border-radius: 50%;
+      z-index: 9999;
+      box-shadow: 0 0 15px rgba(0, 136, 204, 0.6);
+      animation: glow 2s infinite ease-in-out;
+    }
+    .floating-telegram img {
+      width: 26px;
+      height: 26px;
+    }
+
+    /* Main App Content (hidden initially) */
+    #app-content {
+      display: none;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <!-- Access Key Generation Section -->
+  <div id="access-key-section">
+    <div id="particles-js"></div>
+    <div class="container">
+      <h2>Generate Your Access Key</h2>
+      <p>Click the button below to generate your key.<br><br>Validity: 30 hours ⏰</p>
+      <button id="server02" class="button">Website Server - 1</button>
+      <button id="server03Url" class="button">Website Server - 2</button><br> 
+      <button id="recommendServer" class="button">Website Server - 3</button><br>
+      <button id="watchVideo" class="button">TUTORIAL VIDEO [EASY METHOD]</button>
+      <p>Please do <strong>Watch TUTORIAL Video FIRST</strong>, so that you not face any Problem.</p>
+      <p class="loading" id="loadingMessage">Generating URL, please wait...</p>
+    </div>
+  </div>
+
+  <!-- Main App Content -->
+  <div id="app-content">
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+  </div>
+
+  <script>
+    // Check for existing valid access key
+    function hasValidAccessKey() {
+      const cookies = document.cookie.split(';');
+      return cookies.some(cookie => 
+        cookie.trim().startsWith('server02KeyGenerated=') || 
+        cookie.trim().startsWith('server03KeyGenerated=') || 
+        cookie.trim().startsWith('recommendServerKeyGenerated=')
+      );
+    }
+
+    // Initialize the page
+    function init() {
+      if (hasValidAccessKey()) {
+        // Show main app content
+        document.getElementById('access-key-section').style.display = 'none';
+        document.getElementById('app-content').style.display = 'block';
+        // Load your main app script
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = '/src/main.tsx';
+        document.body.appendChild(script);
+      } else {
+        // Show access key generation section
+        document.getElementById('access-key-section').style.display = 'block';
+        
+        /* Particles.js Configuration */
+        particlesJS("particles-js", {
+          particles: {
+            number: { value: 100, density: { enable: true, value_area: 800 } },
+            color: { value: "#00bcd4" },
+            shape: { type: "circle" },
+            opacity: { value: 0.5, anim: { enable: true, speed: 1, opacity_min: 0.1 } },
+            size: { value: 2.5, random: true },
+            line_linked: { enable: true, distance: 140, color: "#00bcd4", opacity: 0.3, width: 1 },
+            move: { enable: true, speed: 1.5, out_mode: "out" }
+          },
+          interactivity: {
+            detect_on: "canvas",
+            events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" } },
+            modes: { grab: { distance: 120, line_linked: { opacity: 1 } } }
+          },
+          retina_detect: true
+        });
+
+        /* JavaScript Logic */
+        const urls = {
+          server02: 'https://vplink.in/nrLwIQ',
+          server03: 'https://vplink.in/nrLwIQ',
+          recommendServer: 'https://vplink.in/nrLwIQ',
+          tutorialVideo: 'https://example.com/tutorial'
+        };
+
+        function setTemporaryCookieAndRedirect(cookieName) {
+          document.getElementById("loadingMessage").style.display = "block";
+          setTimeout(() => {
+            document.cookie = `${cookieName}=true; path=/; max-age=${24 * 61 * 60}`;
+            // Hide access key section and show main content
+            document.getElementById('access-key-section').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            // Load your main app script
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = '/src/main.tsx';
+            document.body.appendChild(script);
+          }, 2000);
+        }
+
+        document.getElementById('server02').addEventListener('click', () => setTemporaryCookieAndRedirect('server02KeyGenerated'));
+        document.getElementById('server03Url').addEventListener('click', () => setTemporaryCookieAndRedirect('server03KeyGenerated'));
+        document.getElementById('recommendServer').addEventListener('click', () => setTemporaryCookieAndRedirect('recommendServerKeyGenerated'));
+        document.getElementById('watchVideo').addEventListener('click', () => window.open(urls.tutorialVideo, '_blank'));
+      }
+    }
+
+    // Initialize when page loads
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+  </html>
