@@ -7,34 +7,37 @@
     <title>Educational Platform</title>
     <script>
       (function() {
-        // Configuration - added at the top
-        const GATEWAY_URL = 'https://key-gen-cyberpunk-glow.lovable.app/';
-        const HOME_PAGE = 'https://studyx-app.vercel.app/home';
-        const COOLDOWN_HOURS = 24;
-        const VERIFICATION_KEY = 'gateway_verified_v4';
-
-        // Check for verification
+        // Check if user came through vplink.in redirect
         const urlParams = new URLSearchParams(window.location.search);
-        const verified = urlParams.get('verified') === 'true';
-
-        if (verified) {
-          // Set verification expiry
-          const expiry = Date.now() + (COOLDOWN_HOURS * 60 * 60 * 1000);
-          localStorage.setItem(VERIFICATION_KEY, expiry.toString());
-          // Clean URL without reloading
-          history.replaceState({}, '', location.pathname);
-          return; // Continue to load your React app
+        const fromVplink = urlParams.has('fromVplink');
+        
+        // Set a flag in localStorage when user comes through vplink.in
+        if (fromVplink) {
+          localStorage.setItem('validEntry', 'true');
+          localStorage.setItem('lastAccessTime', new Date().getTime().toString());
         }
-
-        // Check existing verification
-        const storedExpiry = localStorage.getItem(VERIFICATION_KEY);
-        const now = Date.now();
-
-        if (!storedExpiry || now > parseInt(storedExpiry)) {
-          // Redirect to gateway with return URL
-          const returnUrl = encodeURIComponent(location.href.split('?')[0] + '?verified=true');
-          location.replace(`${GATEWAY_URL}?return=${returnUrl}`);
+        
+        // Check if user has valid entry permission
+        const hasValidEntry = localStorage.getItem('validEntry') === 'true';
+        const lastAccessTime = localStorage.getItem('lastAccessTime');
+        const currentTime = new Date().getTime();
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+        
+        if (!hasValidEntry) {
+          // If no valid entry, redirect to vplink.in
+          window.location.href = "https://vplink.in/nrLwIQ";
+          return;
         }
+        
+        if (!lastAccessTime || (currentTime - lastAccessTime > twentyFourHours)) {
+          // If 24 hours have passed, show cyberpunk page first
+          localStorage.setItem('lastAccessTime', currentTime.toString());
+          window.location.href = "https://key-gen-cyberpunk-glow.lovable.app/";
+          return;
+        }
+        
+        // If we get here, user has valid entry and within 24 hours
+        // Continue loading the normal app
       })();
     </script>
   </head>
