@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
   <style>
+    /* General Styling */
     * {
       margin: 0;
       padding: 0;
@@ -16,28 +17,28 @@
 
     body {
       font-family: 'Poppins', sans-serif;
+      height: 100vh;
       background: #0a0f1d;
       color: #ffffff;
-      overflow-x: hidden;
     }
 
-    /* Access Key Section Styles */
-    #access-key-section {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      position: relative;
-    }
-
+    /* Particle Background */
     #particles-js {
-      position: absolute;
+      position: fixed;
       width: 100%;
       height: 100%;
       z-index: -1;
     }
 
-    .container {
+    /* Access Key Container */
+    .access-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .key-box {
       background: rgba(255, 255, 255, 0.07);
       border-radius: 15px;
       padding: 30px;
@@ -46,7 +47,6 @@
       box-shadow: 0 0 15px rgba(0, 174, 255, 0.3);
       border: 1px solid rgba(0, 174, 255, 0.2);
       backdrop-filter: blur(8px);
-      margin: 20px;
     }
 
     h2 {
@@ -61,6 +61,7 @@
       color: #d4eaff;
     }
 
+    /* Buttons */
     .button {
       display: inline-block;
       width: 100%;
@@ -83,6 +84,7 @@
       box-shadow: 0 0 12px rgba(0, 188, 212, 0.6);
     }
 
+    /* Loading Animation */
     .loading {
       font-size: 13px;
       color: #ffcb6b;
@@ -96,43 +98,24 @@
       to { opacity: 1; }
     }
 
-    /* Main App Styles */
+    /* Main App Content */
     #app-content {
       display: none;
       min-height: 100vh;
-      background: #0a0f1d;
+      background: #f8f9fa; /* Light background for main app */
+      color: #212529; /* Dark text for main app */
     }
 
     #root {
       padding: 20px;
     }
-
-    /* Homepage Content Styles */
-    .home-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 40px 20px;
-      color: white;
-    }
-
-    .home-content h1 {
-      color: #00bcd4;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .home-content p {
-      font-size: 16px;
-      line-height: 1.6;
-      margin-bottom: 15px;
-    }
   </style>
 </head>
 <body>
-  <!-- Access Key Section (Shows first) -->
-  <div id="access-key-section">
+  <!-- Access Key Section -->
+  <div id="access-key-section" class="access-container">
     <div id="particles-js"></div>
-    <div class="container">
+    <div class="key-box">
       <h2>Generate Your Access Key</h2>
       <p>Click the button below to generate your key.<br><br>Validity: 30 hours ⏰</p>
       <button id="server02" class="button">Website Server - 1</button>
@@ -144,54 +127,48 @@
     </div>
   </div>
 
-  <!-- Main App Content (Hidden initially) -->
+  <!-- Main App Content -->
   <div id="app-content">
-    <div id="root">
-      <!-- This will be replaced by your React/Vue app -->
-      <div class="home-content">
-        <h1>Welcome to Our Educational Platform</h1>
-        <p>This is your homepage content that will be visible after generating the access key.</p>
-        <p>Your main application content will load here.</p>
-      </div>
-    </div>
+    <div id="root"></div>
   </div>
 
   <script>
-    // Check for existing valid access key
+    // Server URLs
+    const SERVER_URL = 'https://vplink.in/nrLwIQ';
+    const TUTORIAL_URL = 'https://example.com/tutorial';
+
+    // Check for valid access key
     function hasValidAccessKey() {
-      const cookies = document.cookie.split(';');
-      return cookies.some(cookie => 
+      return document.cookie.split(';').some(cookie => 
         cookie.trim().startsWith('server02KeyGenerated=') || 
         cookie.trim().startsWith('server03KeyGenerated=') || 
         cookie.trim().startsWith('recommendServerKeyGenerated=')
       );
     }
 
-    // Initialize the page
-    function init() {
+    // Initialize page
+    function initPage() {
       if (hasValidAccessKey()) {
         showMainApp();
       } else {
-        showAccessKeySection();
+        initAccessKeyUI();
       }
     }
 
+    // Show main application
     function showMainApp() {
       document.getElementById('access-key-section').style.display = 'none';
       document.getElementById('app-content').style.display = 'block';
       
-      // Load your main application script
+      // Load main application script
       const script = document.createElement('script');
       script.type = 'module';
       script.src = '/src/main.tsx';
       document.body.appendChild(script);
     }
 
-    function showAccessKeySection() {
-      document.getElementById('access-key-section').style.display = 'flex';
-      document.getElementById('app-content').style.display = 'none';
-      
-      // Initialize particles.js
+    // Initialize access key UI
+    function initAccessKeyUI() {
       particlesJS("particles-js", {
         particles: {
           number: { value: 80, density: { enable: true, value_area: 800 } },
@@ -199,7 +176,7 @@
           shape: { type: "circle" },
           opacity: { value: 0.5, anim: { enable: true, speed: 1, opacity_min: 0.1 } },
           size: { value: 3, random: true },
-          line_linked: { enable: true, distance: 150, color: "#00bcd4", opacity: 0.4, width: 1 },
+          line_linked: { enable: true, distance: 150, color: "#00bcd4", opacity: 0.3, width: 1 },
           move: { enable: true, speed: 2, out_mode: "out" }
         },
         interactivity: {
@@ -213,38 +190,32 @@
         retina_detect: true
       });
 
-      // Server links configuration
-      const serverLinks = {
-        server02: 'https://vplink.in/nrLwIQ',
-        server03: 'https://vplink.in/nrLwIQ',
-        recommendServer: 'https://vplink.in/nrLwIQ',
-        tutorialVideo: 'https://example.com/tutorial'
-      };
+      // Set up button event handlers
+      document.getElementById('server02').addEventListener('click', () => handleServerClick('server02KeyGenerated'));
+      document.getElementById('server03Url').addEventListener('click', () => handleServerClick('server03KeyGenerated'));
+      document.getElementById('recommendServer').addEventListener('click', () => handleServerClick('recommendServerKeyGenerated'));
+      document.getElementById('watchVideo').addEventListener('click', () => window.open(TUTORIAL_URL, '_blank'));
+    }
 
-      // Handle server button clicks
-      function handleServerClick(cookieName, url) {
-        document.getElementById("loadingMessage").style.display = "block";
-        setTimeout(() => {
-          // Set cookie for future visits (30 hours)
-          document.cookie = `${cookieName}=true; path=/; max-age=${30 * 60 * 60}`;
-          // Redirect to the server URL
-          window.location.href = url;
-        }, 1500);
-      }
-
-      // Add event listeners
-      document.getElementById('server02').addEventListener('click', 
-        () => handleServerClick('server02KeyGenerated', serverLinks.server02));
-      document.getElementById('server03Url').addEventListener('click', 
-        () => handleServerClick('server03KeyGenerated', serverLinks.server03));
-      document.getElementById('recommendServer').addEventListener('click', 
-        () => handleServerClick('recommendServerKeyGenerated', serverLinks.recommendServer));
-      document.getElementById('watchVideo').addEventListener('click', 
-        () => window.open(serverLinks.tutorialVideo, '_blank'));
+    // Handle server button click
+    function handleServerClick(cookieName) {
+      const loadingMsg = document.getElementById("loadingMessage");
+      loadingMsg.style.display = "block";
+      
+      setTimeout(() => {
+        // Set cookie for future visits (30 hours)
+        document.cookie = `${cookieName}=true; path=/; max-age=${30 * 60 * 60}`;
+        
+        // Redirect to server URL in new tab
+        window.open(SERVER_URL, '_blank');
+        
+        // Show main app content in current tab
+        showMainApp();
+      }, 2000);
     }
 
     // Initialize when page loads
-    window.addEventListener('DOMContentLoaded', init);
+    window.addEventListener('DOMContentLoaded', initPage);
   </script>
 </body>
-</html>
+  </html>
