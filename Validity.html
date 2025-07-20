@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validate Access | StudyX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and General Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+        
+        :root {
+            --bg-color: linear-gradient(135deg, #0b0c17, #1e1038, #140912);
+            --card-bg: rgba(15, 10, 30, 0.95);
+            --text-color: #fff;
+            --accent-color: #ff2768;
+            --secondary-accent: #6a0dad;
+            --neon-glow: #00c3ff;
+            --header-bg: rgba(108, 0, 150, 0.85);
+        }
+        
+        body {
+
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+            position: relative;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid var(--accent-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            text-shadow: 0 0 10px var(--neon-glow);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        .loading-status {
+            font-size: 1rem;
+            color: #bbb;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        header {
+            z-index: 100;
+            background: var(--header-bg);
+            backdrop-filter: blur(18px);
+            width: 100%;
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 30px rgba(0, 123, 255, 0.5);
+            z-index: 100;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .back-button img {
+            width: 30px;
+            height: 30px;
+            filter: brightness(0) invert(1);
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        main {
+            max-width: 400px;
+            width: 100%;
+            padding: 2rem;
+            background: rgba(15, 10, 30, 0.85);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 123, 255, 0.5);
+            border: 1px solid rgba(255, 0, 102, 0.2);
+            backdrop-filter: blur(15px);
+            margin-top: 80px;
+            text-align: center;
+            animation: fadeIn 1.5s ease-out;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        main:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(0, 123, 255, 0.7);
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        main:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(128, 0, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--accent-color), #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px var(--accent-color);
+        }
+        
+        p {
+
+        .loading-dots {
+            font-size: 18px;
+            color: var(--neon-glow);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-shadow: 0 0 10px rgba(0, 195, 255, 0.7);
+        }
+        
+        .loading-dots span {
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.2s infinite;
+            color: #ffffff;
+            text-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+        }
+        
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 30px;
+            line-height: 1.6;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+        }
+        
+        .loading-dots {
+            font-size: 18px;
+            color: var(--neon-glow);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-shadow: 0 0 10px rgba(0, 195, 255, 0.7);
+        }
+        
+        .loading-dots span {
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.2s infinite;
+            color: #ffffff;
+            text-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+        }
+        
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @media (max-width: 480px) {
+        main {
+            max-width: 400px;
+            width: 100%;
+            padding: 2rem;
+            background: rgba(15, 10, 30, 0.85);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 123, 255, 0.5);
+            border: 1px solid rgba(255, 0, 102, 0.2);
+            backdrop-filter: blur(15px);
+            margin-top: 80px;
+            text-align: center;
+            animation: fadeIn 1.5s ease-out;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        main:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(0, 123, 255, 0.7);
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+            
+            header {
+            z-index: 100;
+                padding: 0.8rem;
+            }
+            
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--accent-color), #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px var(--accent-color);
+        }
+            
+            p {
+
+        .loading-dots {
+            font-size: 18px;
+            color: var(--neon-glow);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-shadow: 0 0 10px rgba(0, 195, 255, 0.7);
+        }
+        
+        .loading-dots span {
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.2s infinite;
+            color: #ffffff;
+            text-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+        }
+        
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    
+    <div class="loading-screen" id="loading-screen">
+        <div class="loader"></div>
+        <div class="loading-text">StudyX</div>
+        <div class="loading-status">Empowering Minds, Unlocking Excellence – By StudyX ⚡️</div>
+    </div>
+
+    <header>
+        <div class="header-left">
+            <a href="javascript:history.back()" class="back-button">
+                <img src="https://i.postimg.cc/zBxx1xyr/R.png" alt="Back">
+            </a>
+            <span class="header-title">StudyX</span>
+        </div>
+    </header>
+
+    <main>
+        <h1>🎉 Validating Access</h1>
+        <p>Please wait while we verify your credentials. This will only take a moment...</p>
+        <div class="loading-dots">
+            <span>.</span><span>.</span><span>.</span>
+        </div>
+    </main>
+
+    <!-- Particles.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    
+    <script>
+        /* Particles.js Configuration */
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 90, density: { enable: true, value_area: 800 } },
+                color: { value: "#00c3ff" },
+                shape: {
+                    type: "circle",
+                    stroke: { width: 0, color: "#000000" },
+                    polygon: { nb_sides: 5 },
+                },
+                opacity: {
+                    value: 0.6,
+                    random: false,
+                    anim: { enable: false, speed: 1, opacity_min: 0.1, sync: false },
+                },
+                size: {
+                    value: 3,
+                    random: true,
+                    anim: { enable: false, speed: 40, size_min: 0.1, sync: false },
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: "#ff2768",
+                    opacity: 0.5,
+                    width: 1.2,
+                },
+                move: {
+                    enable: true,
+                    speed: 6,
+                    direction: "none",
+                    random: false,
+                    straight: false,
+                    out_mode: "out",
+                    bounce: false,
+                    attract: { enable: false, rotateX: 600, rotateY: 1200 },
+                },
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: { enable: true, mode: "grab" },
+                    onclick: { enable: true, mode: "push" },
+                    resize: true,
+                },
+                modes: {
+                    grab: { distance: 140, line_linked: { opacity: 1 } },
+                    bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 },
+                    repulse: { distance: 200, duration: 0.4 },
+                    push: { particles_nb: 4 },
+                    remove: { particles_nb: 2 },
+                },
+            },
+            retina_detect: true,
+        });
+
+        // Class Paths Configuration
+        const classPaths = {
+            'class9': 'https://studyverse.netlify.app',
+        };
+
+        // Cookie Handling
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        // Check Cookie Expiration (Client-Side Approximation)
+        function isCookieExpired(cookieName) {
+            const keyGeneratedTime = getCookie('keyGeneratedTime');
+            if (!keyGeneratedTime) return true;
+            
+            const currentTime = new Date().getTime();
+            const hoursElapsed = (currentTime - parseInt(keyGeneratedTime)) / (1000 * 60 * 60);
+            
+            // Key expires after 24 hours
+            return hoursElapsed >= 24;
+        }
+
+        // Set cookie function
+        function setCookie(name, value, hours) {
+            // Set universal cookie for domain access
+            document.cookie = "🚀=success; path=/; Secure; expires=" + new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toUTCString();
+            const date = new Date();
+            date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
+            const expires = `expires=${date.toUTCString()}`;
+            document.cookie = `${name}=${value};${expires};path=/`;
+        }
+
+        // Set universal cookie for domain access
+        document.cookie = "🚀=success; path=/; Secure; expires=" + new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toUTCString();
+
+        // Loading Screen
+        const loadingScreen = document.getElementById('loading-screen');
+        setTimeout(() => {
+            try {
+                loadingScreen.classList.add('hidden');
+                
+                // Validate Cookie
+                const userKey = getCookie('userKey');
+                const pendingClassId = getCookie('pendingClassId');
+                
+                // Check for any valid key generation cookie
+                const hasValidCookie = getCookie('server02KeyGenerated') ||
+                    getCookie('server03KeyGenerated') ||
+                    getCookie('recommendServerKeyGenerated');
+
+                if (!userKey && !hasValidCookie) {
+                    alert('Authentication failed! Please generate an access key to continue.');
+                    window.location.href = 'login.html?error=no_key';
+                } else if (isCookieExpired('userKey')) {
+                    alert('Your access key has expired. Please generate a new key to continue.');
+                    window.location.href = 'login.html?error=expired';
+                } else {
+                    // Success case - key is valid
+                    alert('Login successful, you can now use our website for 24 hours!');
+                    
+                    // Determine where to redirect the user based on the class they originally clicked
+                    const redirectPath = classPaths[pendingClassId] || classPaths['class10']; // Default to class10 if not found
+                    
+                    // Redirect to the appropriate page
+                    window.location.href = redirectPath;
+                }
+            } catch (error) {
+                console.error("Error during validation:", error);
+                alert("An error occurred during validation. Please try again.");
+                window.location.href = "index.html";
+            }
+        }, 2000); // 2-second delay for loader
+    </script>
+</body>
+</html>
