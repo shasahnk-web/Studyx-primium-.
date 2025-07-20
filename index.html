@@ -19,11 +19,11 @@
       font-family: 'Poppins', sans-serif;
       height: 100vh;
       overflow-x: hidden;
-      background: #0a0f1d; /* Dark background for entire app */
-      color: #ffffff; /* White text by default */
+      background: #0a0f1d;
+      color: #ffffff;
     }
 
-    /* Particle Background */
+    /* Particle Background (only for access page) */
     #particles-js {
       position: fixed;
       width: 100%;
@@ -103,17 +103,18 @@
     /* Main App Content */
     #app-content {
       display: none;
+      width: 100%;
       min-height: 100vh;
-      background: #0a0f1d; /* Dark background for main app */
     }
 
     #root {
       width: 100%;
+      height: 100%;
     }
   </style>
 </head>
 <body>
-  <!-- Access Key Section (Shows first) -->
+  <!-- Access Key Section -->
   <div id="access-key-section" class="access-container">
     <div id="particles-js"></div>
     <div class="key-box">
@@ -128,7 +129,7 @@
     </div>
   </div>
 
-  <!-- Main App Content (Hidden initially) -->
+  <!-- Main App Content -->
   <div id="app-content">
     <div id="root"></div>
   </div>
@@ -160,10 +161,27 @@
       document.getElementById('access-key-section').style.display = 'none';
       document.getElementById('app-content').style.display = 'block';
       
-      // Dynamically load the main application script
+      // Load main app script
+      loadMainAppScript();
+    }
+
+    // Load the main application script
+    function loadMainAppScript() {
+      // Remove existing script if any
+      const oldScript = document.querySelector('script[src="/src/main.tsx"]');
+      if (oldScript) {
+        oldScript.remove();
+      }
+      
       const script = document.createElement('script');
       script.type = 'module';
       script.src = '/src/main.tsx';
+      script.onerror = function() {
+        console.error('Failed to load main application script');
+        // Fallback: Show access key section if main app fails to load
+        document.getElementById('access-key-section').style.display = 'flex';
+        document.getElementById('app-content').style.display = 'none';
+      };
       document.body.appendChild(script);
     }
 
@@ -192,6 +210,11 @@
       });
 
       // Set up button event handlers
+      setupAccessKeyButtons();
+    }
+
+    // Setup access key button handlers
+    function setupAccessKeyButtons() {
       document.getElementById('server02').addEventListener('click', 
         () => handleAccessKey('server02KeyGenerated'));
       document.getElementById('server03Url').addEventListener('click', 
