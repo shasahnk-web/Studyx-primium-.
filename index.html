@@ -3,18 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StudyX Verification</title>
+  <title>StudyX Platform</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.4.8/sweetalert2.all.min.js"></script>
   <style>
+    /* Common styles */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
     }
     
-    body {
-      font-family: 'Inter', sans-serif;
+    /* Login Page Styles */
+    .login-page {
       background: #0a0a0a;
       min-height: 100vh;
       display: flex;
@@ -25,7 +27,7 @@
       overflow-x: hidden;
     }
     
-    body::before {
+    .login-page::before {
       content: '';
       position: fixed;
       top: 0;
@@ -39,12 +41,6 @@
       z-index: -1;
     }
     
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    
     .particle {
       position: fixed;
       width: 4px;
@@ -55,12 +51,7 @@
       z-index: -1;
     }
     
-    @keyframes float {
-      0% { transform: translateY(100vh) rotate(0deg); }
-      100% { transform: translateY(-100vh) rotate(360deg); }
-    }
-    
-    .container {
+    .login-container {
       background: rgba(15, 15, 15, 0.95);
       backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -74,7 +65,7 @@
       overflow: hidden;
     }
     
-    .container::before {
+    .login-container::before {
       content: '';
       position: absolute;
       top: 0;
@@ -84,11 +75,6 @@
       background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #f9ca24, #6c5ce7);
       background-size: 200% 100%;
       animation: shimmer 3s ease-in-out infinite;
-    }
-    
-    @keyframes shimmer {
-      0%, 100% { background-position: -200% 0; }
-      50% { background-position: 200% 0; }
     }
     
     .logo {
@@ -103,213 +89,186 @@
       animation: glow 2s ease-in-out infinite alternate;
     }
     
+    /* Home Page Styles */
+    .home-page {
+      background: #f5f7fa;
+      min-height: 100vh;
+    }
+    
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .main-content {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .course-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    
+    .course-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    
+    .course-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .course-image {
+      height: 160px;
+      background: linear-gradient(45deg, #3498db, #2ecc71);
+    }
+    
+    .course-info {
+      padding: 1.5rem;
+    }
+    
+    /* Common Animations */
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); }
+      100% { transform: translateY(-100vh) rotate(360deg); }
+    }
+    
+    @keyframes shimmer {
+      0%, 100% { background-position: -200% 0; }
+      50% { background-position: 200% 0; }
+    }
+    
     @keyframes glow {
       from { filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.5)); }
       to { filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.8)); }
     }
     
-    h1 {
-      font-size: 2rem;
-      color: #ffffff;
-      margin-bottom: 15px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #ffffff, #a0a0a0);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    
-    p {
-      font-size: 1rem;
-      color: #b0b0b0;
-      margin-bottom: 30px;
-      line-height: 1.6;
-    }
-    
-    button {
-      width: 100%;
-      background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
-      color: white;
-      padding: 16px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 16px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin: 10px 0;
-      box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s;
-    }
-    
-    button:hover::before {
-      left: 100%;
-    }
-    
-    button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4);
-      background: linear-gradient(135deg, #ff5252, #26a69a);
-    }
-    
-    button:active {
-      transform: translateY(-1px);
-    }
-    
-    #countdown {
-      font-size: 2.2rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, #f9ca24, #ff6b6b);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      margin: 25px 0;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-    
+    /* Utility Classes */
     .hidden {
       display: none;
-    }
-    
-    .progress-bar {
-      height: 8px;
-      width: 100%;
-      background-color: rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      margin: 25px 0;
-      overflow: hidden;
-      position: relative;
-    }
-    
-    .progress {
-      height: 100%;
-      width: 85%;
-      background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
-      border-radius: 20px;
-      position: relative;
-      animation: progressGlow 2s ease-in-out infinite;
-    }
-    
-    @keyframes progressGlow {
-      0%, 100% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.5); }
-      50% { box-shadow: 0 0 20px rgba(78, 205, 196, 0.8); }
-    }
-    
-    @media (max-width: 480px) {
-      .container {
-        padding: 30px 25px;
-      }
-      
-      .logo {
-        font-size: 2rem;
-      }
-      
-      h1 {
-        font-size: 1.6rem;
-      }
-      
-      p {
-        font-size: 0.9rem;
-      }
-      
-      button {
-        padding: 14px;
-        font-size: 1rem;
-      }
-      
-      #countdown {
-        font-size: 1.8rem;
-      }
     }
   </style>
 </head>
 <body>
-<!-- Floating particles -->
-<div class="particle" style="left: 10%; animation-delay: 0s;"></div>
-<div class="particle" style="left: 20%; animation-delay: 2s;"></div>
-<div class="particle" style="left: 30%; animation-delay: 4s;"></div>
-<div class="particle" style="left: 40%; animation-delay: 6s;"></div>
-<div class="particle" style="left: 50%; animation-delay: 8s;"></div>
-<div class="particle" style="left: 60%; animation-delay: 10s;"></div>
-<div class="particle" style="left: 70%; animation-delay: 12s;"></div>
-<div class="particle" style="left: 80%; animation-delay: 14s;"></div>
-<div class="particle" style="left: 90%; animation-delay: 16s;"></div>
+  <!-- Login Page Content (shown by default) -->
+  <div id="loginPage" class="login-page">
+    <!-- Floating particles -->
+    <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 20%; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 30%; animation-delay: 4s;"></div>
+    <div class="particle" style="left: 40%; animation-delay: 6s;"></div>
+    <div class="particle" style="left: 50%; animation-delay: 8s;"></div>
+    <div class="particle" style="left: 60%; animation-delay: 10s;"></div>
+    <div class="particle" style="left: 70%; animation-delay: 12s;"></div>
+    <div class="particle" style="left: 80%; animation-delay: 14s;"></div>
+    <div class="particle" style="left: 90%; animation-delay: 16s;"></div>
 
-<div class="container">
-  <div class="logo">StudyX Verification</div>
-  
-  <h1 id="taskTitle">Task Verification</h1>
-  <p id="taskInstructions">Complete verification to access exclusive StudyX premium content and resources for 24 hours absolutely free!</p>
-  
-  <div class="progress-bar">
-    <div class="progress"></div>
+    <div class="login-container">
+      <div class="logo">StudyX Verification</div>
+      
+      <h1>Task Verification</h1>
+      <p>Complete verification to access exclusive StudyX premium content and resources for 24 hours absolutely free!</p>
+      
+      <div class="progress-bar">
+        <div class="progress"></div>
+      </div>
+      
+      <button id="verifyBtn">Click here to Verify Task</button>
+      <div id="countdown" class="hidden"></div>
+      <button id="accessContentBtn" class="hidden">✨ ACCESS CONTENT NOW</button>
+      <button id="HowverifyBtn">How to Verify Task</button>
+    </div>
   </div>
-  
-  <button id="verifyBtn">Click here to Verify Task</button>
-  <div id="countdown" class="hidden"></div>
-  <button id="accessContentBtn" class="hidden">✨ ACCESS CONTENT NOW</button>
-  <button id="HowverifyBtn">How to Verify Task</button>
-</div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Check if we're coming back from verification
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('verified')) {
-      // Show success state
-      document.getElementById('verifyBtn').classList.add('hidden');
-      document.getElementById('countdown').classList.remove('hidden');
-      document.getElementById('accessContentBtn').classList.remove('hidden');
+  <!-- Home Page Content (hidden by default) -->
+  <div id="homePage" class="home-page hidden">
+    <header>
+      <h1>Educational Platform</h1>
+    </header>
+    <div class="main-content">
+      <h1>Welcome to Your Learning Dashboard</h1>
+      <p>Continue your learning journey with these recommended courses</p>
       
-      // Start countdown
-      let count = 5;
-      const countdownEl = document.getElementById('countdown');
-      countdownEl.textContent = count;
-      
-      const timer = setInterval(() => {
-        count--;
-        countdownEl.textContent = count;
-        if (count <= 0) {
-          clearInterval(timer);
-          window.location.href = 'https://studyx-app.vercel.app/home';
-        }
-      }, 1000);
-      
-      return;
+      <div class="course-grid">
+        <div class="course-card">
+          <div class="course-image"></div>
+          <div class="course-info">
+            <h2>Mathematics Fundamentals</h2>
+            <p>Master the basics of algebra and calculus</p>
+          </div>
+        </div>
+        <div class="course-card">
+          <div class="course-image" style="background: linear-gradient(45deg, #e74c3c, #f39c12);"></div>
+          <div class="course-info">
+            <h2>Science Explorations</h2>
+            <p>Discover the wonders of physics and chemistry</p>
+          </div>
+        </div>
+        <div class="course-card">
+          <div class="course-image" style="background: linear-gradient(45deg, #9b59b6, #3498db);"></div>
+          <div class="course-info">
+            <h2>Literature Studies</h2>
+            <p>Explore classic and contemporary works</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check URL to determine which page to show
+    if(window.location.pathname === '/home' || window.location.search.includes('verified=true')) {
+      showHomePage();
+    } else {
+      showLoginPage();
     }
 
+    // Login page functionality
     document.getElementById("verifyBtn").onclick = function() {
-      // Redirect to verification URL with callback
-      window.location.href = "https://vplink.in/nrLwIQ?callback=" + 
-        encodeURIComponent(window.location.origin + window.location.pathname + '?verified=true');
+      window.location.href = "https://vplink.in/nrLwIQ";
     };
 
     document.getElementById("HowverifyBtn").onclick = function() {
       window.location.href = "https://t.me/studyx_1";
     };
     
-    document.getElementById('accessContentBtn').onclick = function() {
-      // Redirect directly to home page
-      window.location.href = 'https://studyx-app.vercel.app/home';
-    };
-  });
-</script>
+    document.getElementById('accessContentBtn').addEventListener('click', function() {
+      Swal.fire({
+        title: 'Success!',
+        text: 'Redirecting you to the content...',
+        icon: 'success',
+        showConfirmButton: false,
+        timer: 1500,
+        timerProgressBar: true
+      }).then(() => {
+        window.location.href = '/home';
+      });
+    });
+
+    function showLoginPage() {
+      document.getElementById('loginPage').classList.remove('hidden');
+      document.getElementById('homePage').classList.add('hidden');
+    }
+
+    function showHomePage() {
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('homePage').classList.remove('hidden');
+    }
+  </script>
 </body>
 </html>
