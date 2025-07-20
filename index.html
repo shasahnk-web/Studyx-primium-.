@@ -19,6 +19,8 @@
       font-family: 'Poppins', sans-serif;
       height: 100vh;
       overflow-x: hidden;
+      background: #0a0f1d; /* Dark background for entire app */
+      color: #ffffff; /* White text by default */
     }
 
     /* Particle Background */
@@ -35,7 +37,6 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: #0a0f1d;
     }
 
     .key-box {
@@ -47,7 +48,6 @@
       box-shadow: 0 0 15px rgba(0, 174, 255, 0.3);
       border: 1px solid rgba(0, 174, 255, 0.2);
       backdrop-filter: blur(8px);
-      color: white;
     }
 
     .key-box h2 {
@@ -104,6 +104,7 @@
     #app-content {
       display: none;
       min-height: 100vh;
+      background: #0a0f1d; /* Dark background for main app */
     }
 
     #root {
@@ -135,8 +136,8 @@
   <script>
     // Configuration
     const SERVER_URL = 'https://vplink.in/nrLwIQ';
-    const TUTORIAL_URL = 'https://t.me/studyx_1'; // Updated Telegram link
-    const COOKIE_EXPIRY_HOURS = 24; // Changed to 24 hours
+    const TUTORIAL_URL = 'https://t.me/studyx_1';
+    const COOKIE_EXPIRY_HOURS = 24;
 
     // Check for valid access key cookie
     function hasValidAccessKey() {
@@ -223,4 +224,4 @@
     window.addEventListener('DOMContentLoaded', initApp);
   </script>
 </body>
-  </html>
+</html>
