@@ -12,15 +12,25 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 import Homepage from "./pages/Homepage";
+import PreHomepage from "./pages/PreHomepage";
 
 const queryClient = new QueryClient();
 
 const App = () => {
+  const [preHomepageCompleted, setPreHomepageCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const isCompleted = localStorage.getItem('preHomepageCompleted') === 'true';
+    setPreHomepageCompleted(isCompleted);
     setIsLoading(false);
   }, []);
+
+  // Function to mark PreHomepage as completed
+  const completePreHomepage = () => {
+    localStorage.setItem('preHomepageCompleted', 'true');
+    setPreHomepageCompleted(true);
+  };
 
   if (isLoading) {
     return (
@@ -37,21 +47,37 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Main application routes */}
-            <Route path="/home" element={<Index />} />
+            {/* Root path - Show PreHomepage if not completed, else redirect to /home */}
+            <Route
+              path="/"
+              element={
+                !preHomepageCompleted ? (
+                  <PreHomepage onComplete={completePreHomepage} />
+                ) : (
+                  <Navigate to="/home" replace />
+                )
+              }
+            />
+
+            {/* Protected routes - Only accessible after PreHomepage completion */}
+            <Route
+              path="/home"
+              element={
+                !preHomepageCompleted ? (
+                  <Navigate to="/" replace />
+                ) : (
+                  <Index />
+                )
+              }
+            />
             <Route path="/homepage" element={<Homepage />} />
             <Route path="/courses/:courseId" element={<CoursePage />} />
             <Route path="/batch/:batchId" element={<BatchPage />} />
-            
-            {/* Admin routes */}
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/panel" element={<AdminPanel />} />
             
-            {/* Root path redirects to home */}
-            <Route path="/" element={<Navigate to="/home" replace />} />
-            
-            {/* 404 Not Found page */}
+            {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
