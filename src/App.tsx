@@ -3,6 +3,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { VerificationHandler } from "./components/VerificationHandler";
+import { VerifyPage } from "./components/VerifyPage";
 import Index from "./pages/Index";
 import CoursePage from "./pages/CoursePage";
 import BatchPage from "./pages/BatchPage";
@@ -30,6 +32,10 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Verification routes */}
+            <Route path="/verify" element={<VerifyPage />} />
+            <Route path="/set-verified" element={<VerificationHandler />} />
+            
             {/* Main application routes */}
             <Route path="/home" element={<Index />} />
             <Route path="/homepage" element={<Homepage />} />
