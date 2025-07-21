@@ -21,7 +21,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     // Check authentication
-    const isAuthenticated = localStorage.getItem('studyx_admin_auth');
+    const isAuthenticated = localStorage.getItem('studyproMax_admin_auth');
     if (!isAuthenticated) {
       navigate('/admin');
       return;
@@ -32,10 +32,10 @@ const AdminDashboard = () => {
   }, [navigate]);
 
   const updateStats = () => {
-    const batches = JSON.parse(localStorage.getItem('studyx_batches') || '[]');
-    const lectures = JSON.parse(localStorage.getItem('studyx_lectures') || '[]');
-    const notes = JSON.parse(localStorage.getItem('studyx_notes') || '[]');
-    const dpps = JSON.parse(localStorage.getItem('studyx_dpps') || '[]');
+    const batches = JSON.parse(localStorage.getItem('studyproMax_batches') || '[]');
+    const lectures = JSON.parse(localStorage.getItem('studyproMax_lectures') || '[]');
+    const notes = JSON.parse(localStorage.getItem('studyproMax_notes') || '[]');
+    const dpps = JSON.parse(localStorage.getItem('studyproMax_dpps') || '[]');
 
     setStats({
       batches: batches.length,
@@ -46,7 +46,7 @@ const AdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('studyx_admin_auth');
+    localStorage.removeItem('studyproMax_admin_auth');
     toast.success('Logged out successfully');
     navigate('/');
   };

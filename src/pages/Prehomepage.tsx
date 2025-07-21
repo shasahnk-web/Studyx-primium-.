@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import Head from 'next/head';
 
-const StudyXVerification = () => {
+const StudyProMaxVerification = () => {
   useEffect(() => {
     // Load SweetAlert script
     const script = document.createElement('script');
@@ -40,7 +40,7 @@ const StudyXVerification = () => {
   return (
     <>
       <Head>
-        <title>StudyX Verification</title>
+        <title>Study Pro Max Verification</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
       </Head>
 
@@ -291,10 +291,10 @@ const StudyXVerification = () => {
         <div className="particle" style={{ left: '90%', animationDelay: '16s' }}></div>
 
         <div className="container">
-          <div className="logo">StudyX Verification</div>
+          <div className="logo">Study Pro Max Verification</div>
           
           <h1 id="taskTitle">Task Verification</h1>
-          <p id="taskInstructions">Complete verification to access exclusive StudyX premium content and resources for 24 hours absolutely free!</p>
+          <p id="taskInstructions">Complete verification to access exclusive Study Pro Max premium content and resources for 24 hours absolutely free!</p>
           
           <div className="progress-bar">
             <div className="progress"></div>
@@ -310,4 +310,4 @@ const StudyXVerification = () => {
   );
 };
 
-export default StudyXVerification;
+export default StudyProMaxVerification;

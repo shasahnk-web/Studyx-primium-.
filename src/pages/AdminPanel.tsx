@@ -19,7 +19,7 @@ const AdminPanel = () => {
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('studyx_admin_auth');
+    const isAuthenticated = localStorage.getItem('studyproMax_admin_auth');
     if (!isAuthenticated) {
       navigate('/admin');
       return;

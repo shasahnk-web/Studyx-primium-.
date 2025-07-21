@@ -16,7 +16,7 @@ const AdminLogin = () => {
     e.preventDefault();
     
     if (password === '5355') {
-      localStorage.setItem('studyx_admin_auth', 'true');
+      localStorage.setItem('studyproMax_admin_auth', 'true');
       toast.success('Login successful!');
       navigate('/admin/panel');
     } else {

@@ -108,7 +108,7 @@ const CoursePage = () => {
             <div className="flex items-center space-x-2">
               <img 
                 src="/lovable-uploads/dcac7197-2a19-41d1-9f13-20ca958e4750.png" 
-                alt="StudyX Premium" 
+                alt="Study Pro Max Premium" 
                 className="h-8 w-auto"
               />
             </div>
@@ -159,7 +159,7 @@ const CoursePage = () => {
           <div className="flex items-center space-x-2">
             <img 
               src="/lovable-uploads/dcac7197-2a19-41d1-9f13-20ca958e4750.png" 
-              alt="StudyX Premium" 
+              alt="Study Pro Max Premium" 
               className="h-8 w-auto"
             />
           </div>
