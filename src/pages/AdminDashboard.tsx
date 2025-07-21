@@ -59,7 +59,7 @@ const AdminDashboard = () => {
           <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">S</span>
           </div>
-          <span className="text-xl font-bold">StudyX Admin</span>
+          <span className="text-xl font-bold">Study Pro Max Admin</span>
         </div>
         <Button variant="outline" onClick={handleLogout}>
           <LogOut className="w-4 h-4 mr-2" />

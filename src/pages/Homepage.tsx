@@ -28,10 +28,10 @@ const Homepage = () => {
             <div className="mb-6">
               <Home className="w-16 h-16 mx-auto mb-4 text-blue-400" />
               <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                Welcome to the Homepage!
+                Welcome to Study Pro Max!
               </h1>
               <p className="text-gray-300 text-lg mb-6">
-                You've successfully accessed StudyX Premium. Ready to start your learning journey?
+                You've successfully accessed Study Pro Max. Ready to start your learning journey?
               </p>
             </div>
             
@@ -40,7 +40,7 @@ const Homepage = () => {
                 onClick={handleEnterApp}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg"
               >
-                Enter StudyX Platform
+                Enter Study Pro Max Platform
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
               
