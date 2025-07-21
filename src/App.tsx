@@ -5,6 +5,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { VerificationHandler } from "./components/VerificationHandler";
 import { VerifyPage } from "./components/VerifyPage";
+import { PrivateRoute } from "./components/PrivateRoute";
+import { isVerified } from "./utils/auth";
 import Index from "./pages/Index";
 import CoursePage from "./pages/CoursePage";
 import BatchPage from "./pages/BatchPage";
@@ -37,18 +39,18 @@ const App = () => {
             <Route path="/set-verified" element={<VerificationHandler />} />
             
             {/* Main application routes */}
-            <Route path="/home" element={<Index />} />
-            <Route path="/homepage" element={<Homepage />} />
-            <Route path="/courses/:courseId" element={<CoursePage />} />
-            <Route path="/batch/:batchId" element={<BatchPage />} />
+            <Route path="/home" element={<PrivateRoute><Index /></PrivateRoute>} />
+            <Route path="/homepage" element={<PrivateRoute><Homepage /></PrivateRoute>} />
+            <Route path="/courses/:courseId" element={<PrivateRoute><CoursePage /></PrivateRoute>} />
+            <Route path="/batch/:batchId" element={<PrivateRoute><BatchPage /></PrivateRoute>} />
             
             {/* Admin routes */}
-            <Route path="/admin" element={<AdminLogin />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/panel" element={<AdminPanel />} />
+            <Route path="/admin" element={<PrivateRoute><AdminLogin /></PrivateRoute>} />
+            <Route path="/admin/dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
+            <Route path="/admin/panel" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
             
             {/* Root path redirect */}
-            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/" element={<Navigate to={isVerified() ? "/home" : "/verify"} replace />} />
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
