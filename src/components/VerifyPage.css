@@ -17,7 +17,29 @@
 
 .verify-container p {
   color: #666;
+  margin-bottom: 1rem;
+}
+
+.verify-info {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   margin-bottom: 2rem;
+  text-align: left;
+  max-width: 500px;
+  width: 90%;
+}
+
+.verify-info ol {
+  margin-top: 1rem;
+  margin-left: 1.5rem;
+  color: #444;
+}
+
+.verify-info li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
 }
 
 .verify-button {
@@ -28,9 +50,17 @@
   text-decoration: none;
   border-radius: 4px;
   font-weight: 600;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .verify-button:hover {
   background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.verify-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }

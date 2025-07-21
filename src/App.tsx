@@ -34,26 +34,31 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Verification routes */}
+            {/* Public verification routes */}
             <Route path="/verify" element={<VerifyPage />} />
             <Route path="/set-verified" element={<VerificationHandler />} />
             
-            {/* Main application routes */}
-            <Route path="/home" element={<PrivateRoute><Index /></PrivateRoute>} />
-            <Route path="/homepage" element={<PrivateRoute><Homepage /></PrivateRoute>} />
-            <Route path="/courses/:courseId" element={<PrivateRoute><CoursePage /></PrivateRoute>} />
-            <Route path="/batch/:batchId" element={<PrivateRoute><BatchPage /></PrivateRoute>} />
-            
-            {/* Admin routes */}
-            <Route path="/admin" element={<PrivateRoute><AdminLogin /></PrivateRoute>} />
-            <Route path="/admin/dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
-            <Route path="/admin/panel" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
+            {/* Protected routes - everything else requires verification */}
+            <Route element={<PrivateRoute>
+              <Routes>
+                {/* Main application routes */}
+                <Route path="/home" element={<Index />} />
+                <Route path="/homepage" element={<Homepage />} />
+                <Route path="/courses/:courseId" element={<CoursePage />} />
+                <Route path="/batch/:batchId" element={<BatchPage />} />
+                
+                {/* Admin routes */}
+                <Route path="/admin" element={<AdminLogin />} />
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/panel" element={<AdminPanel />} />
+              </Routes>
+            </PrivateRoute>} />
             
             {/* Root path redirect */}
             <Route path="/" element={<Navigate to={isVerified() ? "/home" : "/verify"} replace />} />
             
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
+            {/* Catch-all route - redirect unmatched routes to verify */}
+            <Route path="*" element={<Navigate to="/verify" replace />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
